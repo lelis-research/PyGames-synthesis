@@ -207,6 +207,9 @@ class LessThan(Node):
     def toString(self):
         return f"{self.left} < {self.right}"
 
+    def interpret(self, env):
+        return self.left.interpret(env) < self.right.interpret(env)
+
 
 """
 This class implements an AST node representing the '>' comparison
@@ -224,6 +227,9 @@ class GreaterThan(Node):
     def toString(self):
         return f"{self.left} > {self.right}"
 
+    def interpret(self, env):
+        return self.left.interpret(env) > self.right.interpret(env)
+
 
 """
 This class implements an AST node representing the '==' comparison
@@ -239,6 +245,9 @@ class EqualTo(Node):
 
     def toString(self):
         return f"{self.left} == {self.right}"
+
+    def interpret(self, env):
+        return self.left.interpret(env) == self.right.interpret(env)
 
 
 """
