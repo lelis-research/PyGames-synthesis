@@ -11,8 +11,6 @@ that represent programs written in the DSL designed for playing the Catcher game
 from pygame.constants import K_w, K_s, K_a, K_d
 import numpy as np
 
-import random
-
 """
 This is a base class representing the Node of an abstract-
 syntax tree for the DSL implemented in this module. All other
