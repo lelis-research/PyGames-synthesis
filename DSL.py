@@ -134,6 +134,9 @@ class PlayerPosition(Node):
     def toString(self):
         return PlayerPosition.className()
 
+    def interpret(self, env):
+        return env[self.statename]['player_position']
+
 
 """
 This class implements a domain-specific function that returns
@@ -147,6 +150,9 @@ class FallingFruitPosition(Node):
 
     def toString(self):
         return FallingFruitPosition.className()
+
+    def interpret(self, env):
+        return env[self.statename]['fruit_position']
 
 
 """
