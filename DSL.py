@@ -82,6 +82,10 @@ class IT(Node):
         it_string += f"""{self.if_body.toString()}"""
         return it_string
 
+    def interpret(self, env):
+        if self.condition.interpret(env):
+            return self.if_body.interpret(env)
+
 
 """
 This class represents an if-then-else conditional statement in the 
@@ -109,6 +113,12 @@ class ITE(Node):
         ite_string += f"""{tab}else:\n\t"""
         ite_string += f"""{self.else_body.toString()}"""
         return ite_string
+
+    def interpret(self, env):
+        if self.condition.interpret(env):
+            return self.if_body.interpret(env)
+        else:
+            return self.else_body.interpret(env)
 
 
 """
