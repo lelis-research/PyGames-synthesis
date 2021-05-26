@@ -55,6 +55,9 @@ class ReturnAction(Node):
     def toString(self):
         return f"return {self.action.toString()}"
 
+    def interpret(self, env):
+        return self.action.interpret(env)
+
 
 """
 This class represents an if-then conditional statement in the DSL. It is
@@ -150,6 +153,9 @@ class VarScalar(Node):
     def toString(self):
         return f"{self.name}"
 
+    def interpret(self, env):
+        return env[self.name]
+
 
 """
 This class implements an AST node representing a domain-specific variable from
@@ -164,6 +170,9 @@ class VarFromArray(Node):
     
     def toString(self):
         return f"{self.name}[{self.index}]"
+
+    def interpret(self, env):
+        return env[self.name][self.index]
 
 
 """
