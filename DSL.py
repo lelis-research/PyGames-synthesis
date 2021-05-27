@@ -264,6 +264,9 @@ class Plus(Node):
     def toString(self):
         return f"{self.left} + {self.right}"
 
+    def interpret(self, env):
+        return self.left.intepret(env) + self.right.interpret(env)
+
 
 """
 This class implements an AST node representing the multiplication operator
@@ -278,6 +281,9 @@ class Times(Node):
 
     def toString(self):
         return f"{self.left} * {self.right}"
+
+    def interpret(self, env):
+        return self.left.interpret(env) + self.right.interpret(env)
 
 
 """
@@ -294,6 +300,9 @@ class Minus(Node):
     def toString(self):
         return f"{self.left} - {self.right}"
 
+    def interpret(self, env):
+        return self.left.interpret(env) - self.right.interpret(env)
+
 
 """
 This class implements an AST node representing the integer division operator
@@ -309,6 +318,10 @@ class Division(Node):
     def toString(self):
         return f"{self.left} // {self.right}"
 
+    
+    def interpret(self, env):
+        return self.left.interpret(env) // self.right.interpret(env)
+
 
 """
 This class implements an AST node representing a constant.
@@ -323,6 +336,9 @@ class Constant(Node):
 
     def toString(self):
         return f"{self.value}"
+
+    def interpret(self):
+        return self.value
 
 
 """
@@ -346,3 +362,10 @@ class Strategy(Node):
             strategy_string += f"{self.next_statements.toString()}"
 
         return strategy_string
+
+    def interpret(self, env):
+        res = self.statement.interpret(env)
+        if res is None and self.next_statements is not None:
+            return self.next_statements.interpret(env)
+
+        return res
