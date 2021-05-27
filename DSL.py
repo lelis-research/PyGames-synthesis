@@ -307,10 +307,10 @@ class Minus(Node):
 """
 This class implements an AST node representing the integer division operator
 """
-class Division(Node):
+class Divide(Node):
 
     def __init__(self, left, right):
-        super(Division, self).__init__()
+        super(Divide, self).__init__()
         self.size = 1 + left.getSize() + right.getSize()
         self.left = left
         self.right = right
