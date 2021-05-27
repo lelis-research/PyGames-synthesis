@@ -265,7 +265,7 @@ class Plus(Node):
         return f"{self.left} + {self.right}"
 
     def interpret(self, env):
-        return self.left.intepret(env) + self.right.interpret(env)
+        return self.left.interpret(env) + self.right.interpret(env)
 
 
 """
