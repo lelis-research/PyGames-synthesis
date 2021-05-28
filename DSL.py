@@ -181,6 +181,7 @@ class VarFromArray(Node):
 
     def __init__(self, name, index):
         super(VarFromArray, self).__init__()
+        assert type(index).__name__ == Constant.className()
         self.name = name
         self.index = index
     
@@ -188,7 +189,7 @@ class VarFromArray(Node):
         return f"{self.name}[{self.index}]"
 
     def interpret(self, env):
-        return env[self.name][self.index]
+        return env[self.name][self.index.interpret(env)]
 
 
 """
