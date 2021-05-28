@@ -358,9 +358,9 @@ class Strategy(Node):
         self.next_statements = next_statements
 
     def toString(self):
-        strategy_string = f"{self.statement.toString()}\n"
+        strategy_string = f"{self.statement.toString(1)}\n"
         if self.next_statements is not None:
-            strategy_string += f"{self.next_statements.toString()}"
+            strategy_string += f"{self.next_statements.toString(1)}"
 
         return strategy_string
 
