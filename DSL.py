@@ -263,7 +263,7 @@ class Plus(Node):
         self.right = right
 
     def toString(self):
-        return f"{self.left.toString()} + {self.right.toString()}"
+        return f"({self.left.toString()} + {self.right.toString()})"
 
     def interpret(self, env):
         return self.left.interpret(env) + self.right.interpret(env)
@@ -281,7 +281,7 @@ class Times(Node):
         self.right = right
 
     def toString(self):
-        return f"{self.left.toString()} * {self.right.toString()}"
+        return f"({self.left.toString()} * {self.right.toString()})"
 
     def interpret(self, env):
         return self.left.interpret(env) * self.right.interpret(env)
@@ -299,7 +299,7 @@ class Minus(Node):
         self.right = right
 
     def toString(self):
-        return f"{self.left.toString()} - {self.right.toString()}"
+        return f"({self.left.toString()} - {self.right.toString()})"
 
     def interpret(self, env):
         return self.left.interpret(env) - self.right.interpret(env)
@@ -317,7 +317,7 @@ class Divide(Node):
         self.right = right
 
     def toString(self):
-        return f"{self.left.toString()} // {self.right.toString()}"
+        return f"({self.left.toString()} // {self.right.toString()})"
 
     
     def interpret(self, env):
