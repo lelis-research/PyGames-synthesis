@@ -78,8 +78,8 @@ class IT(Node):
         for i in range(indent):
             tab += "\t"
         
-        it_string = f"""{tab}if {self.condition.toString()}:\n\t"""
-        it_string += f"""{self.if_body.toString()}"""
+        it_string = f"""{tab}if {self.condition.toString()}:\n"""
+        it_string += f"""{tab}\t{self.if_body.toString()}"""
         return it_string
 
     def interpret(self, env):
@@ -108,10 +108,10 @@ class ITE(Node):
         for i in range(indent):
             tab += "\t"
         
-        ite_string = f"""{tab}if {self.condition.toString()}:\n\t"""
-        ite_string += f"""{self.if_body.toString()}\n"""
+        ite_string = f"""{tab}if {self.condition.toString()}:\n"""
+        ite_string += f"""{tab}\t{self.if_body.toString()}\n"""
         ite_string += f"""{tab}else:\n\t"""
-        ite_string += f"""{self.else_body.toString()}"""
+        ite_string += f"""{tab}\t{self.else_body.toString()}"""
         return ite_string
 
     def interpret(self, env):
@@ -358,7 +358,7 @@ class Strategy(Node):
         self.next_statements = next_statements
 
     def toString(self):
-        strategy_string = f"{self.statement.toString(1)}\n"
+        strategy_string = f"{self.statement.toString(0)}\n"
         if self.next_statements is not None:
             strategy_string += f"{self.next_statements.toString()}"
 
