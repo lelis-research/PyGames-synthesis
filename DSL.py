@@ -350,7 +350,7 @@ class Strategy(Node):
     def __init__(self, statement, next_statements):
         super(Strategy, self).__init__()
         assert type(statement).__name__ in [IT.className(), ITE.className()]
-        assert type(next_statements).__name__ == Strategy.className() or next_statements is None
+        assert type(next_statements).__name__ in [Strategy.className(), ReturnAction.className(), type(None).__name__]
         self.size = statement.getSize()
         if next_statements is not None:
             self.size += next_statements.getSize()
