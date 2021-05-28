@@ -360,7 +360,7 @@ class Strategy(Node):
     def toString(self):
         strategy_string = f"{self.statement.toString(1)}\n"
         if self.next_statements is not None:
-            strategy_string += f"{self.next_statements.toString(1)}"
+            strategy_string += f"{self.next_statements.toString()}"
 
         return strategy_string
 
