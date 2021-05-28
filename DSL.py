@@ -186,7 +186,7 @@ class VarFromArray(Node):
         self.index = index
     
     def toString(self):
-        return f"{self.name}[{self.index}]"
+        return f"{self.name}[{self.index.toString()}]"
 
     def interpret(self, env):
         return env[self.name][self.index.interpret(env)]
@@ -206,7 +206,7 @@ class LessThan(Node):
         self.right = right
 
     def toString(self):
-        return f"{self.left} < {self.right}"
+        return f"{self.left.toString()} < {self.right.toString()}"
 
     def interpret(self, env):
         return self.left.interpret(env) < self.right.interpret(env)
@@ -226,7 +226,7 @@ class GreaterThan(Node):
         self.right = right
 
     def toString(self):
-        return f"{self.left} > {self.right}"
+        return f"{self.left.toString()} > {self.right.toString()}"
 
     def interpret(self, env):
         return self.left.interpret(env) > self.right.interpret(env)
@@ -245,7 +245,7 @@ class EqualTo(Node):
         self.right = right
 
     def toString(self):
-        return f"{self.left} == {self.right}"
+        return f"{self.left.toString()} == {self.right.toString()}"
 
     def interpret(self, env):
         return self.left.interpret(env) == self.right.interpret(env)
@@ -263,7 +263,7 @@ class Plus(Node):
         self.right = right
 
     def toString(self):
-        return f"{self.left} + {self.right}"
+        return f"{self.left.toString()} + {self.right.toString()}"
 
     def interpret(self, env):
         return self.left.interpret(env) + self.right.interpret(env)
@@ -281,7 +281,7 @@ class Times(Node):
         self.right = right
 
     def toString(self):
-        return f"{self.left} * {self.right}"
+        return f"{self.left.toString()} * {self.right.toString()}"
 
     def interpret(self, env):
         return self.left.interpret(env) * self.right.interpret(env)
@@ -299,7 +299,7 @@ class Minus(Node):
         self.right = right
 
     def toString(self):
-        return f"{self.left} - {self.right}"
+        return f"{self.left.toString()} - {self.right.toString()}"
 
     def interpret(self, env):
         return self.left.interpret(env) - self.right.interpret(env)
@@ -317,7 +317,7 @@ class Divide(Node):
         self.right = right
 
     def toString(self):
-        return f"{self.left} // {self.right}"
+        return f"{self.left.toString()} // {self.right.toString()}"
 
     
     def interpret(self, env):
