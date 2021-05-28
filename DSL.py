@@ -338,7 +338,7 @@ class Constant(Node):
     def toString(self):
         return f"{self.value}"
 
-    def interpret(self):
+    def interpret(self, env):
         return self.value
 
 
