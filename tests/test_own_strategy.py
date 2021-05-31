@@ -13,24 +13,24 @@ class TestOwnStrategy(unittest.TestCase):
         """
         My strategy for playing Catcher is the following:
             
-            if FallingFruitPosition > PlayerPosition + (paddle_width // 2):
+            if FallingFruitPosition > PlayerPosition + (paddle_width * 0.5):
                 return action[1]
-            if FallingFruitPosition < PlayerPosition - (paddle_width // 2):
+            if FallingFruitPosition < PlayerPosition - (paddle_width * 0.5):
                 return action[0]
         """
-        self.str_representation = "if FallingFruitPosition > (PlayerPosition + (paddle_width // 2)):\n\t"
+        self.str_representation = "if FallingFruitPosition > (PlayerPosition + (paddle_width * 0.5)):\n\t"
         self.str_representation += "return action[1]\n"
-        self.str_representation += "if FallingFruitPosition < (PlayerPosition - (paddle_width // 2)):\n\t"
+        self.str_representation += "if FallingFruitPosition < (PlayerPosition - (paddle_width * 0.5)):\n\t"
         self.str_representation += "return action[0]\n"
         self.str_representation += "return action[2]"
         self.program = Strategy(
             IT( 
-                GreaterThan( FallingFruitPosition(), Plus( PlayerPosition(), Divide( VarScalar('paddle_width'), Constant(2) ) ) ),
+                GreaterThan( FallingFruitPosition(), Plus( PlayerPosition(), Times( VarScalar('paddle_width'), Constant(0.5) ) ) ),
                     ReturnAction( VarFromArray('action', Constant(1)) )
             ),
             Strategy( 
                 IT( 
-                    LessThan( FallingFruitPosition(), Minus( PlayerPosition(), Divide( VarScalar('paddle_width'), Constant(2) ) ) ), 
+                    LessThan( FallingFruitPosition(), Minus( PlayerPosition(), Times( VarScalar('paddle_width'), Constant(0.5) ) ) ), 
                         ReturnAction( VarFromArray('action', Constant(0)) )
                 ),
                 ReturnAction( VarFromArray('action', Constant(2)) )
