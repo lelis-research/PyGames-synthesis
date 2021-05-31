@@ -4,13 +4,16 @@ BUS.py
 Author: Olivier Vadiavaloo
 
 Description:
-This module implements a Bottom-Up Search synthesizer for the 
+This module implements a Bottom-Up Search synthesizer for 
 generating strategies for playing the Catcher game from 
 https://pygame-learning-environment.readthedocs.io/en/latest/user/games/catcher.html.
+
+The evaluation object is defined in the Evaluation module.
 
 """
 from concurrent.futures import ProcessPoolExecutor
 from .DSL import *
+from Evaluation import *
 import time
 
 class BUS:
@@ -19,7 +22,9 @@ class BUS:
         pass
 
     def synthesize(self, bound, operators, constants, scalars, 
-                dsfs, eval_funct, programs_not_to_eval, start):
+                dsfs, eval_funct):
+
+        start = time.time()
         """
         Implementation of Bottom-Up Search to synthesize program_decide_columns for
         the Can't Stop game
@@ -46,7 +51,7 @@ class BUS:
             ppool = []
             for p in self.grow(i):
                 number_of_evaluations += 1
-                if p.toString() in programs_not_to_eval or type(p).__name__ != 'Argmax':
+                if type(p).__name__ != 'Strategy':
                     continue
 
                 ppool.append(p)
@@ -64,19 +69,20 @@ class BUS:
                     for arg, res in zip(ppool, executor.map(eval_funct.is_correct, ppool, chunksize=5)):
                         print(f"{arg.toString()}, {res}")
                         if res:
-                            return arg
+                            return time.time() - start, arg
 
                 ppool = []
 
-                if (time.time() - start) > 1800:
+                end = time.time()
+                if (end - start) > 1800:
                     print('timeout: 30 mins has elapsed\n')
-                    return None
+                    return end, None
 
             print('Evaluations:', number_of_evaluations)
             print('----------')
         print()
 
-        return None
+        return time.time() - start, None
             
     def grow(self, psize):
         nplist = []
