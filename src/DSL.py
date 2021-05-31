@@ -87,6 +87,32 @@ class IT(Node):
         if self.condition.interpret(env):
             return self.if_body.interpret(env)
 
+    def grow(plist, psize):
+        if psize < 4:
+            return []
+
+        nplist = []
+        valid_dsbs = [LessThan, GreaterThan, EqualTo]
+        valid_return = [ReturnAction]
+        
+        cost_combinations = itertools.product(range(psize-1), repeat=2)
+
+        for cost in cost_combinations:
+
+            if cost[0] + cost[1] + 1 == psize:
+                program_set_1 = plist.get(cost[0])
+                program_set_2 = plist.get(cost[1])
+            
+                for p1 in program_set_1:
+                    if p1 in valid_dsbs:
+                        for p2 in program_set_2:
+                            if p2 in valid_return:
+                                it = IT(p1, p2)
+                                nplist.append(it)
+                                yield it
+
+        return nplist
+    
 
 """
 This class represents an if-then-else conditional statement in the 
