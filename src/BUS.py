@@ -28,7 +28,8 @@ class Plist:
             self.insert(scalar)
 
         for dsf in dsfs:
-            self.insert(dsf)
+            p = dsf()
+            self.insert(p)
         
     def insert(self, item):
         if self.plist.get(item.getSize()) is None:
