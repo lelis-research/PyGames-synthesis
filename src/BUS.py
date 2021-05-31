@@ -12,8 +12,8 @@ The evaluation object is defined in the Evaluation module.
 
 """
 from concurrent.futures import ProcessPoolExecutor
-from .DSL import *
-from Evaluation import *
+from DSL import *
+# from Evaluation import *
 import time
 
 class Plist:
@@ -126,6 +126,3 @@ class BUS:
         
         for p in nplist:
             self.plist.insert(p)
-
-    def get_closed_list(self):
-        return self.closed_list
