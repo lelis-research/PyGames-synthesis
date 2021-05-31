@@ -150,6 +150,39 @@ class ITE(Node):
         else:
             return self.else_body.interpret(env)
 
+    def grow(plist, psize):
+        nplist = []
+        valid_dsbs = [LessThan.className(), GreaterThan.className(), EqualTo.className()]
+        valid_return = [ReturnAction.className()]
+
+        cost_combinations = itertools.product(range(psize-1), repeat=3)
+        
+        for cost in cost_combinations:
+            if cost[0] + cost[1] + cost[2] + 1 == psize:
+                program_set_1 = plist.get(cost[0])
+                program_set_2 = plist.get(cost[1])
+                program_set_3 = plist.get(cost[2])
+
+                if program_set_1 is not None and program_set_2 is not None and program_set_3 is not None:
+                    
+                    for t1, p1 in program_set_1.items():
+                        if t1 in valid_dsbs:
+                            for if_cond in p1:
+
+                                for t2, p2 in program_set_2.items():
+                                    if t2 in valid_return:
+                                        for if_body in p2:
+
+                                            for t3, p3 in program_set_3.items():
+                                                if t3 in valid_return:
+                                                    for else_body in p3:
+
+                                                        ite = ITE(if_cond, if_body, else_body)
+                                                        nplist.append(ite)
+                                                        yield ite
+
+        return nplist
+
 
 """
 This class implements a domain-specific function that returns
