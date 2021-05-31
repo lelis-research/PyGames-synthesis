@@ -331,7 +331,7 @@ class Constant(Node):
 
     def __init__(self, value):
         super(Constant, self).__init__()
-        assert value in range(101)
+        assert value in np.arange(0, 101, 0.01)
         self.size = 1
         self.value = value
 
