@@ -88,9 +88,6 @@ class IT(Node):
             return self.if_body.interpret(env)
 
     def grow(plist, psize):
-        if psize < 4:
-            return []
-
         nplist = []
         valid_dsbs = [LessThan.className(), GreaterThan.className(), EqualTo.className()]
         valid_return = [ReturnAction.className()]
