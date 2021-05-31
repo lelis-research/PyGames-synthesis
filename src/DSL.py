@@ -389,8 +389,15 @@ class Times(Node):
                                     if t2 in valid_nodes:
                                         for right in p2:
                                             times = Times(left, right)
-                                            nplist.append(times)
-                                            yield times
+                                            eq = Times(right, left)
+                                            is_equivalent = False
+                                            for p in nplist:
+                                                if p.toString() == eq.toString():
+                                                    is_equivalent = True
+
+                                            if not is_equivalent:
+                                                nplist.append(times)
+                                                yield times
 
         return nplist
 
