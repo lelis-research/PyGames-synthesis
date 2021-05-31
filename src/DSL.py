@@ -94,7 +94,7 @@ class IT(Node):
         nplist = []
         valid_dsbs = [LessThan.className(), GreaterThan.className(), EqualTo.className()]
         valid_return = [ReturnAction.className()]
-        
+
         cost_combinations = itertools.product(range(psize-1), repeat=2)
 
         for cost in cost_combinations:
@@ -102,16 +102,20 @@ class IT(Node):
             if cost[0] + cost[1] + 1 == psize:
                 program_set_1 = plist.get(cost[0])
                 program_set_2 = plist.get(cost[1])
-            
-                for t1, p1 in program_set_1.items():
-                    if t1 in valid_dsbs:
-                        for if_cond in p1:
-                            for t2, p2 in program_set_2.items():
-                                if t2 in valid_return:
-                                    for if_body in p2:
-                                        it = IT(if_cond, if_body)
-                                        nplist.append(it)
-                                        yield it
+
+                if program_set_1 is not None and program_set_2 is not None:
+
+                    for t1, p1 in program_set_1.items():
+                        if t1 in valid_dsbs:    
+                            for if_cond in p1:
+                    
+                                for t2, p2 in program_set_2.items():
+                                    if t2 in valid_return:
+                                        for if_body in p2:
+                                            
+                                            it = IT(if_cond, if_body)
+                                            nplist.append(it)
+                                            yield it
 
         return nplist
     
