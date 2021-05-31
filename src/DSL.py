@@ -10,6 +10,7 @@ that represent programs written in the DSL designed for playing the Catcher game
 """
 from pygame.constants import K_w, K_s, K_a, K_d
 import numpy as np
+import itertools
 
 """
 This is a base class representing the Node of an abstract-
