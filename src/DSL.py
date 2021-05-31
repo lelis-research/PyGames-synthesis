@@ -8,7 +8,6 @@ This module implements the nodes used to create Abstract-Syntax Trees (ASTs)
 that represent programs written in the DSL designed for playing the Catcher game.
 
 """
-from DSL import Constant
 from pygame.constants import K_w, K_s, K_a, K_d
 import numpy as np
 import itertools
@@ -368,6 +367,32 @@ class Times(Node):
 
     def interpret(self, env):
         return self.left.interpret(env) * self.right.interpret(env)
+
+    def grow(plist, psize):
+        nplist = []
+        valid_nodes = [VarScalar.className(), PlayerPosition.className(), 
+            FallingFruitPosition.className()]
+
+        cost_combinations = itertools.product(range(psize-1), repeat=2)
+
+        for cost in cost_combinations:
+            if cost[0] + cost[1] + 1 == psize:
+                program_set_1 = plist.get(cost[0])
+                program_set_2 = plist.get(cost[1])
+
+                if program_set_1 is not None and program_set_2 is not None:
+                    for t1, p1 in program_set_1.items():
+                        if t1 in valid_nodes:
+                            for left in p1:
+                                
+                                for t2, p2 in program_set_2.items():
+                                    if t2 in valid_nodes:
+                                        for right in p2:
+                                            times = Times(left, right)
+                                            nplist.append(times)
+                                            yield times
+
+        return nplist
 
 
 """
