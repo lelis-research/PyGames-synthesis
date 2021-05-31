@@ -18,7 +18,7 @@ import time
 
 class Plist:
 
-    def __init__(self, constants, scalars, dsfs):
+    def __init__(self, constants=[], scalars=[], dsfs=[]):
         self.plist = {}
         
         for const in constants:
@@ -48,18 +48,22 @@ class Plist:
         
         return None
 
+    def copy(self):
+        newPlist = Plist()
+        newPlist.plist = self.plist.copy()
+        return newPlist
+
 
 class BUS:
 
     def synthesize(self, bound, operators, constants, scalars, 
                 dsfs, eval_funct):
-
-        start = time.time()
         """
         Implementation of Bottom-Up Search to synthesize program_decide_columns for
         the Can't Stop game
         """
         
+        start = time.time()
         self.closed_list = set()
         self.grammar = {}         
         
@@ -68,14 +72,11 @@ class BUS:
         self.grammar['constants'] = constants
         self.grammar['dsfs'] = dsfs
         
-        self.plist = self.init_plist()
+        self.plist = Plist(constants, scalars, dsfs)
 
         number_of_evaluations = 0
         START_PROGRAM_EVAL = 1000
         for i in range(1, bound):
-            if i not in self.plist:
-                self.plist[i] = []
-                
             print('psize', i)
             number_of_programs = 0
             ppool = []
@@ -124,7 +125,7 @@ class BUS:
                     yield p
         
         for p in nplist:
-            self.plist[psize].append(p)
+            self.plist.insert(p)
 
     def get_closed_list(self):
         return self.closed_list
