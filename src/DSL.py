@@ -110,7 +110,7 @@ class ITE(Node):
         
         ite_string = f"""{tab}if {self.condition.toString()}:\n"""
         ite_string += f"""{tab}\t{self.if_body.toString()}\n"""
-        ite_string += f"""{tab}else:\n\t"""
+        ite_string += f"""{tab}else:\n"""
         ite_string += f"""{tab}\t{self.else_body.toString()}"""
         return ite_string
 
