@@ -42,7 +42,10 @@ class Plist:
         
         self.plist[item.getSize()][type(item).__name__].append(item)
 
-    def get(self, size, ptype):
+    def get(self, size, ptype=None):
+        if ptype is None:
+            return self.plist.get(size)
+
         if self.plist.get(size) is not None:
             return self.plist[size].get(ptype)
         
