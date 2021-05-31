@@ -370,8 +370,8 @@ class Times(Node):
 
     def grow(plist, psize):
         nplist = []
-        valid_nodes = [VarScalar.className(), PlayerPosition.className(), 
-            FallingFruitPosition.className()]
+        valid_nodes = [VarScalar.className(), PlayerPosition.className(), FallingFruitPosition.className(),
+            Constant.className(), Times.className(), Minus.className(), Plus.className(), Divide.className()]
 
         cost_combinations = itertools.product(range(psize-1), repeat=2)
 
