@@ -42,13 +42,14 @@ class Plist:
         
         self.plist[item.getSize()][type(item).__name__].append(item)
 
+    def get(self, size, ptype):
+        if self.plist.get(size) is not None:
+            return self.plist[size].get(ptype)
+        
+        return None
+
 
 class BUS:
-
-    def init_plist(self, constants, scalars, dsfs):
-        self.plist = {}
-        self.plist[1] = 
-        
 
     def synthesize(self, bound, operators, constants, scalars, 
                 dsfs, eval_funct):
