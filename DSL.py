@@ -182,6 +182,7 @@ class VarFromArray(Node):
     def __init__(self, name, index):
         super(VarFromArray, self).__init__()
         assert type(index).__name__ == Constant.className()
+        self.size = 1 + index.getSize()
         self.name = name
         self.index = index
     
