@@ -33,7 +33,7 @@ class Node:
         raise Exception("Unimplemented method: interpret")
 
     @classmethod
-    def grow(plist, nplist):
+    def grow(plist, psize):
         pass
 
     @classmethod
