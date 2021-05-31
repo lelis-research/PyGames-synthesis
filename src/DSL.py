@@ -8,6 +8,7 @@ This module implements the nodes used to create Abstract-Syntax Trees (ASTs)
 that represent programs written in the DSL designed for playing the Catcher game.
 
 """
+from DSL import Constant
 from pygame.constants import K_w, K_s, K_a, K_d
 import numpy as np
 import itertools
@@ -40,6 +41,24 @@ class Node:
     @classmethod
     def className(cls):
         return cls.__name__
+
+
+"""
+This class implements an AST node representing a constant.
+"""
+class Constant(Node):
+
+    def __init__(self, value):
+        super(Constant, self).__init__()
+        assert value in np.arange(0, 101, 0.01)
+        self.size = 1
+        self.value = value
+
+    def toString(self):
+        return f"{self.value}"
+
+    def interpret(self, env):
+        return self.value
 
 
 """
@@ -386,24 +405,6 @@ class Divide(Node):
     
     def interpret(self, env):
         return self.left.interpret(env) // self.right.interpret(env)
-
-
-"""
-This class implements an AST node representing a constant.
-"""
-class Constant(Node):
-
-    def __init__(self, value):
-        super(Constant, self).__init__()
-        assert value in np.arange(0, 101, 0.01)
-        self.size = 1
-        self.value = value
-
-    def toString(self):
-        return f"{self.value}"
-
-    def interpret(self, env):
-        return self.value
 
 
 """
