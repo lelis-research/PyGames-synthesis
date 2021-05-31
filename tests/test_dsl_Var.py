@@ -44,7 +44,7 @@ class TestVarFromArray(unittest.TestCase):
 
     def test_size_one(self):
         var_from_arr = VarFromArray('action', Const(0))
-        self.assertEqual(var_from_arr.getSize(), 1, 'VarFromArray object should have size 1')
+        self.assertEqual(var_from_arr.getSize(), 2, 'VarFromArray object should have size 1')
 
     def test_size_change_var_size(self):
         var_from_arr = VarFromArray('action', Const(0))
@@ -58,17 +58,17 @@ class TestVarFromArray(unittest.TestCase):
 
     def test_interpret_index_one(self):
         self.init_env()
-        var_from_arr = VarFromArray('action', Const(0))
+        var_from_arr = VarFromArray('action', Const(1))
         self.assertEqual(var_from_arr.interpret(self.env), 83, 'interpret method of VarFromArray object should return 83')
 
     def test_interpret_index_two(self):
         self.init_env()
-        var_from_arr = VarFromArray('action', Const(0))
+        var_from_arr = VarFromArray('action', Const(2))
         self.assertEqual(var_from_arr.interpret(self.env), None, 'interpret method of VarFromArray object should return None')
 
     def test_interpret_index_error(self):
         self.init_env()
-        var_from_arr = VarFromArray('action', Const(0))
+        var_from_arr = VarFromArray('action', Const(100))
         test_msg = 'interpret method of VarFromArray object should raise IndexError'
         with self.assertRaises(IndexError, msg=test_msg) as cm:
             var_from_arr.interpret(self.env)
