@@ -27,7 +27,8 @@ if __name__ == '__main__':
         GreaterThan, LessThan, EqualTo]
     dsfs = [FallingFruitPosition, PlayerPosition]
     constants = [Constant(0), Constant(1), Constant(2)]
-    scalars = [VarScalar, VarFromArray]
+    scalars = [VarScalar('paddle_width'), VarFromArray('actions', Constant(0)), 
+        VarFromArray('actions', Constant(1)), VarFromArray('actions', Constant(2))]
 
     time, program = bus.synthesize(10, operators, constants, scalars, dsfs, eval_funct)
     print("Ran BUS for", time, "seconds\n")
