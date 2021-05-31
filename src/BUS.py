@@ -16,10 +16,39 @@ from .DSL import *
 from Evaluation import *
 import time
 
+class Plist:
+
+    def __init__(self, constants, scalars, dsfs):
+        self.plist = {}
+        
+        for const in constants:
+            self.insert(const)
+
+        for scalar in scalars:
+            self.insert(scalar)
+
+        for dsf in dsfs:
+            self.insert(dsf)
+        
+    def insert(self, item):
+        if self.plist.get(item.getSize()) is None:
+            self.plist[item.getSize()] = {}
+            self.plist[item.getSize()][type(item).__name__] = []
+            self.plist[item.getSize()][type(item).__name__].append(item)
+            return
+        
+        if self.plist[item.getSize()].get(type(item).__name__) is None:
+            self.plist[item.getSize()][type(item).__name__] = []
+        
+        self.plist[item.getSize()][type(item).__name__].append(item)
+
+
 class BUS:
 
-    def init_plist(self):
-        pass
+    def init_plist(self, constants, scalars, dsfs):
+        self.plist = {}
+        self.plist[1] = 
+        
 
     def synthesize(self, bound, operators, constants, scalars, 
                 dsfs, eval_funct):
