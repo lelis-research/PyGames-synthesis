@@ -105,11 +105,13 @@ class IT(Node):
             
                 for t1, p1 in program_set_1.items():
                     if t1 in valid_dsbs:
-                        for t2, p2 in program_set_2.items():
-                            if t2 in valid_return:
-                                it = IT(p1, p2)
-                                nplist.append(it)
-                                yield it
+                        for if_cond in p1:
+                            for t2, p2 in program_set_2.items():
+                                if t2 in valid_return:
+                                    for if_body in p2:
+                                        it = IT(if_cond, if_body)
+                                        nplist.append(it)
+                                        yield it
 
         return nplist
     
