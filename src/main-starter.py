@@ -23,10 +23,10 @@ if __name__ == '__main__':
     eval_funct = Evaluation()
     
     # Initialize the arguments to the synthesizer
-    operators = [IT, ITE, Strategy, Plus, Times, Divide, Minus, 
+    operators = [IT, ITE, Strategy, ReturnAction, Plus, Times, Divide, Minus, 
         GreaterThan, LessThan, EqualTo]
     dsfs = [FallingFruitPosition, PlayerPosition]
-    constants = [Constant(0), Constant(1), Constant(2)]
+    constants = [Constant(0), Constant(1), Constant(2), Constant(0.5), Constant(0.3)]
     scalars = [VarScalar('paddle_width'), VarFromArray('actions', Constant(0)), 
         VarFromArray('actions', Constant(1)), VarFromArray('actions', Constant(2))]
 
