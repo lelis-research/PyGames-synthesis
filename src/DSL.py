@@ -77,6 +77,17 @@ class ReturnAction(Node):
     def interpret(self, env):
         return self.action.interpret(env)
 
+    def grow(plist, psize):
+        nplist = []
+
+        programs = plist.get(psize-1, VarFromArray.className())
+        
+        if programs is not None:
+            for p in programs:
+                ra = ReturnAction(p)
+                nplist.append(ra)
+                yield ra
+
 
 """
 This class represents an if-then conditional statement in the DSL. It is
