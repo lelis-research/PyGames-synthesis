@@ -633,3 +633,32 @@ class Strategy(Node):
             return self.next_statements.interpret(env)
 
         return res
+
+    def grow(plist, psize):
+        nplist = []
+        valid_first_statement = [IT.className(), ITE.className()]
+        valid_next_statements = [Strategy.className(), ReturnAction.className(), type(None).__name__]
+
+        cost_combinations = itertools.product(range(psize+1), repeat=2)
+
+        for cost in cost_combinations:
+            if cost[0] + cost[1] == psize:
+                program_set_1 = plist.get(cost[0])
+                program_set_2 = plist.get(cost[1])
+                if cost[1] == 0 and program_set_2 is None:
+                    program_set_2 = {}
+                    program_set_2[type(None).__name__] = [None]
+
+                if program_set_1 is not None and program_set_2 is not None:
+                    for t1, p1 in program_set_1.items():
+                        if t1 in valid_first_statement:
+                            for statement in p1:
+
+                                for t2, p2 in program_set_2.items():
+                                    if t2 in valid_next_statements:
+                                        for next_statements in p2:
+                                            p = Strategy(statement, next_statements)
+                                            nplist.append(p)
+                                            yield p
+        
+        return nplist
