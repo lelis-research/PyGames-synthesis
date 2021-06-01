@@ -23,7 +23,8 @@ class Evaluation:
         the action set values.
         """
         env = {}
-        env['state']['fruit_x'] = game_state['fruit_x']
+        env['state'] = {}
+        env['state']['fruit_position'] = game_state['fruit_x']
         env['state']['player_position'] = game_state['player_x']
         env['paddle_width'] = game_state['paddle_width']
         env['actions'] = action_set
