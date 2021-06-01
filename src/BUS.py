@@ -81,7 +81,10 @@ class BUS:
         number_of_evaluations = 0
         START_PROGRAM_EVAL = 1000
         for i in range(1, bound):
+            print('-' * 10)         # print horizontal line
             print('psize', i)
+            print('-' * 10)
+
             number_of_programs = 0
             ppool = []
             for p in self.grow(i):
@@ -112,9 +115,6 @@ class BUS:
                 if (end - start) > 1800:
                     print('timeout: 30 mins has elapsed\n')
                     return end, None
-
-            print('Evaluations:', number_of_evaluations)
-            print('----------')
         print()
 
         return time.time() - start, None
