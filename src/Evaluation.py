@@ -39,7 +39,7 @@ class Evaluation:
         while not p.game_over():
             env = self.update_env(p.getGameState(), p.getActionSet())
             try:
-                action = p.interpret(env)
+                action = program.interpret(env)
             except:
                 return False, 0
             p.act(action)
