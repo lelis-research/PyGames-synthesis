@@ -30,7 +30,7 @@ if __name__ == '__main__':
     scalars = [VarScalar('paddle_width'), VarFromArray('actions', Constant(0)), 
         VarFromArray('actions', Constant(1)), VarFromArray('actions', Constant(2))]
 
-    time, program = bus.synthesize(10, operators, constants, scalars, dsfs, eval_funct)
+    time, program = bus.synthesize(20, operators, constants, scalars, dsfs, eval_funct)
     print("Ran BUS for", time, "seconds\n")
     print("BUS returned the following strategy:\n")
     print(program.toString())
