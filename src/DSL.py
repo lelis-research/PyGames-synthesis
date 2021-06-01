@@ -27,7 +27,7 @@ class Node:
     def getSize(self):
         return self.size
 
-    def toString(self):
+    def toString(self, indent=0):
         raise Exception("Unimplemented method: toStrng")
 
     def interpret(self):
@@ -53,7 +53,7 @@ class Constant(Node):
         self.size = 1
         self.value = value
 
-    def toString(self):
+    def toString(self, indent=0):
         return f"{self.value}"
 
     def interpret(self, env):
@@ -71,7 +71,7 @@ class ReturnAction(Node):
         self.size = 1 + action.getSize()
         self.action = action
 
-    def toString(self):
+    def toString(self, indent=0):
         return f"return {self.action.toString()}"
 
     def interpret(self, env):
@@ -103,7 +103,7 @@ class IT(Node):
         self.condition = condition
         self.if_body = if_body
 
-    def toString(self, indent):
+    def toString(self, indent=0):
         tab = ""
         for i in range(indent):
             tab += "\t"
@@ -162,7 +162,7 @@ class ITE(Node):
         self.if_body = if_body
         self.else_body = else_body
 
-    def toString(self, indent):
+    def toString(self, indent=0):
         tab = ""
         for i in range(indent):
             tab += "\t"
@@ -223,7 +223,7 @@ class PlayerPosition(Node):
         super(PlayerPosition, self).__init__()
         self.size = 1
 
-    def toString(self):
+    def toString(self, indent=0):
         return PlayerPosition.className()
 
     def interpret(self, env):
@@ -240,7 +240,7 @@ class FallingFruitPosition(Node):
         super(FallingFruitPosition, self).__init__()
         self.size = 1
 
-    def toString(self):
+    def toString(self, indent=0):
         return FallingFruitPosition.className()
 
     def interpret(self, env):
@@ -258,7 +258,7 @@ class VarScalar(Node):
         self.size = 1
         self.name = name
 
-    def toString(self):
+    def toString(self, indent=0):
         return f"{self.name}"
 
     def interpret(self, env):
@@ -278,7 +278,7 @@ class VarFromArray(Node):
         self.name = name
         self.index = index
     
-    def toString(self):
+    def toString(self, indent=0):
         return f"{self.name}[{self.index.toString()}]"
 
     def interpret(self, env):
@@ -298,7 +298,7 @@ class LessThan(Node):
         self.left = left
         self.right = right
 
-    def toString(self):
+    def toString(self, indent=0):
         return f"{self.left.toString()} < {self.right.toString()}"
 
     def interpret(self, env):
@@ -346,7 +346,7 @@ class GreaterThan(Node):
         self.left = left
         self.right = right
 
-    def toString(self):
+    def toString(self, indent=0):
         return f"{self.left.toString()} > {self.right.toString()}"
 
     def interpret(self, env):
@@ -393,7 +393,7 @@ class EqualTo(Node):
         self.left = left
         self.right = right
 
-    def toString(self):
+    def toString(self, indent=0):
         return f"{self.left.toString()} == {self.right.toString()}"
 
     def interpret(self, env):
@@ -439,7 +439,7 @@ class Plus(Node):
         self.left = left
         self.right = right
 
-    def toString(self):
+    def toString(self, indent=0):
         return f"({self.left.toString()} + {self.right.toString()})"
 
     def interpret(self, env):
@@ -484,7 +484,7 @@ class Times(Node):
         self.left = left
         self.right = right
 
-    def toString(self):
+    def toString(self, indent=0):
         return f"({self.left.toString()} * {self.right.toString()})"
 
     def interpret(self, env):
@@ -535,7 +535,7 @@ class Minus(Node):
         self.left = left
         self.right = right
 
-    def toString(self):
+    def toString(self, indent=0):
         return f"({self.left.toString()} - {self.right.toString()})"
 
     def interpret(self, env):
@@ -580,7 +580,7 @@ class Divide(Node):
         self.left = left
         self.right = right
 
-    def toString(self):
+    def toString(self, indent=0):
         return f"({self.left.toString()} // {self.right.toString()})"
 
     
@@ -631,7 +631,7 @@ class Strategy(Node):
         self.statement = statement
         self.next_statements = next_statements
 
-    def toString(self):
+    def toString(self, indent=0):
         strategy_string = f"{self.statement.toString(0)}\n"
         if self.next_statements is not None:
             strategy_string += f"{self.next_statements.toString()}"
