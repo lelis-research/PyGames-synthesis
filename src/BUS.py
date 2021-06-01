@@ -13,7 +13,7 @@ The evaluation object is defined in the Evaluation module.
 """
 from concurrent.futures import ProcessPoolExecutor
 from DSL import *
-# from Evaluation import *
+from Evaluation import *
 import time
 
 class Plist:
