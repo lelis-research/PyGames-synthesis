@@ -40,7 +40,7 @@ class Evaluation:
         game = Catcher(width=500, height=500, init_lives=3)
         p = PLE(game, fps=30, display_screen=False)
 
-        while not p.game_over():
+        while not p.game_over() and p.score() < self.score_threshold:
             env = self.update_env(p.getGameState(), p.getActionSet())
             try:
                 action = program.interpret(env)
