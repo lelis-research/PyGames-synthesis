@@ -17,7 +17,7 @@ class Evaluation:
     def __init__(self, threshold):
         self.score_threshold = threshold
 
-    def update_env(game_state, action_set):
+    def update_env(self, game_state, action_set):
         """
         This method updates the env variable based on the game_state and
         the action set values.
