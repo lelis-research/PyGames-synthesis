@@ -14,6 +14,9 @@ https://pygame-learning-environment.readthedocs.io/en/latest/user/games/catcher.
 
 class Evaluation:
 
+    def __init__(self, threshold):
+        self.score_threshold = threshold
+
     def update_env(game_state, action_set):
         """
         This method updates the env variable based on the game_state and
@@ -26,7 +29,7 @@ class Evaluation:
         env['actions'] = action_set
         return env
 
-    def is_correct(self, program, score_threshold):
+    def is_correct(self, program):
         """
         The is_correct method evaluates a generated program passed in as parameter.
         This method basically initializes a Catcher game and every time an action is
@@ -44,7 +47,7 @@ class Evaluation:
                 return False, 0
             p.act(action)
         
-        if p.score() < score_threshold:
+        if p.score() < self.score_threshold:
             return False, p.score()
         else:
             return True, p.score()
