@@ -1,23 +1,18 @@
 import unittest
-from DSL import VarScalar, VarFromArray
+from src.DSL import VarScalar, VarFromArray, Constant
+from unittest.mock import Mock
 
-class Const:
-
-    def __init__(self, value):
-        self.size = 1
-        self.value = value
-        self.__class__.__name__ = 'Constant'
-
-    def getSize(self):
-        return self.size
-
-    def interpret(self, env):
-        return self.value
+def Const(value):
+    const = Mock()
+    const.getSize.return_value = 1
+    const.interpret.return_value = value
+    type(const).__name__ = Constant.className()
+    return const
 
 
 class TestVarScalar(unittest.TestCase):
 
-    def init_env(self):
+    def setUp(self):
         self.env = {}
         self.env['SCALAR'] = 240
 
@@ -31,14 +26,13 @@ class TestVarScalar(unittest.TestCase):
         self.assertEqual(var_scalar.getSize(), 191, 'VarScalar object should have size 191')
 
     def test_interpret(self):
-        self.init_env()
         var_scalar = VarScalar('SCALAR')
         self.assertEqual(var_scalar.interpret(self.env), 240, 'interpret method of VarScalar object should return 240')
 
 
 class TestVarFromArray(unittest.TestCase):
 
-    def init_env(self):
+    def setUp(self):
         self.env = {}
         self.env['action'] = [119, 83, None]
 
@@ -52,22 +46,18 @@ class TestVarFromArray(unittest.TestCase):
         self.assertEqual(var_from_arr.getSize(), 45, 'VarFromArray object should have size 45')
 
     def test_interpret_index_zero(self):
-        self.init_env()
         var_from_arr = VarFromArray('action', Const(0))
         self.assertEqual(var_from_arr.interpret(self.env), 119, 'interpret method of VarFromArray object should return 119')
 
     def test_interpret_index_one(self):
-        self.init_env()
         var_from_arr = VarFromArray('action', Const(1))
         self.assertEqual(var_from_arr.interpret(self.env), 83, 'interpret method of VarFromArray object should return 83')
 
     def test_interpret_index_two(self):
-        self.init_env()
         var_from_arr = VarFromArray('action', Const(2))
         self.assertEqual(var_from_arr.interpret(self.env), None, 'interpret method of VarFromArray object should return None')
 
     def test_interpret_index_error(self):
-        self.init_env()
         var_from_arr = VarFromArray('action', Const(100))
         test_msg = 'interpret method of VarFromArray object should raise IndexError'
         with self.assertRaises(IndexError, msg=test_msg) as cm:
