@@ -43,7 +43,7 @@ class TestIT(unittest.TestCase):
         it = IT(self.if_cond, self.if_body)
         it.condition.getSize.return_value = 12
         it.if_body.getSize.return_value = 3
-        self.assertEqual(it.getSize(), 3, 'IT object should have size 16')
+        self.assertEqual(it.getSize(), 3, 'IT object should have size 3')
 
     def test_interpret_false_cond(self):
         # Test interpret method for if-condition evaluating to false
