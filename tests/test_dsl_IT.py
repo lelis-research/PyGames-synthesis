@@ -40,10 +40,10 @@ class TestIT(unittest.TestCase):
     def test_size_change_arg_sizes(self):
         # Manually change cond.size and body.size,
         # and re-instantiate an IT object
-        self.if_cond.getSize.return_value = 12
-        self.if_body.getSize.return_value = 3
         it = IT(self.if_cond, self.if_body)
-        self.assertEqual(it.getSize(), 16, 'IT object should have size 16')
+        it.condition.getSize.return_value = 12
+        it.if_body.getSize.return_value = 3
+        self.assertEqual(it.getSize(), 3, 'IT object should have size 16')
 
     def test_interpret_false_cond(self):
         # Test interpret method for if-condition evaluating to false
