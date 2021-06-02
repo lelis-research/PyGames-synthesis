@@ -1,32 +1,21 @@
 import unittest
-from DSL import Strategy, IT
+from src.DSL import Strategy, IT
+from unittest.mock import Mock
 
-class FirstStatement:
-
-    def __init__(self, value):
-        self.size = 1
-        self.value = value
-        type(self).__name__ = IT.className()
-
-    def getSize(self):
-        return self.size
-
-    def interpret(self, env):
-        return self.value
+def FirstStatement(value):
+    statement = Mock()
+    statement.getSize.return_value = 1
+    statement.interpret.return_value = value
+    type(statement).__name__ = IT.className()
+    return statement
 
 
-class NextStatement:
-
-    def __init__(self, value):
-        self.size = 1
-        self.value = value
-        type(self).__name__ = Strategy.className()
-
-    def getSize(self):
-        return self.size
-    
-    def interpret(self, env):
-        return self.value
+def NextStatement(value):
+    statement = Mock()
+    statement.getSize.return_value = 1
+    statement.interpret.return_value = value
+    type(statement).__name__ = Strategy.className()
+    return statement
 
 
 class TestStrategy(unittest.TestCase):
