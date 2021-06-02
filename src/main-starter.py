@@ -20,7 +20,7 @@ if __name__ == '__main__':
     bus = BUS()
 
     # Initialize the evaluation object
-    eval_funct = Evaluation()
+    eval_funct = Evaluation(0)
     
     # Initialize the arguments to the synthesizer
     operators = [IT, ITE, Strategy, ReturnAction, Plus, Times, Divide, Minus, 
