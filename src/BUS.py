@@ -85,8 +85,6 @@ class BUS:
             print('psize', i)
             print('-' * 10)
 
-            number_of_programs = 0
-            ppool = []
             for p in self.grow(i):
                 number_of_evaluations += 1
                 if type(p).__name__ != 'Strategy':
