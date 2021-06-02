@@ -51,4 +51,5 @@ class Evaluation:
         if p.score() < self.score_threshold:
             return False, p.score()
         else:
+            self.score_threshold = p.score()
             return True, p.score()
