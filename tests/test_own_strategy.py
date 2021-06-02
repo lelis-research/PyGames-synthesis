@@ -1,9 +1,9 @@
 import unittest
-from DSL import *
+from src.DSL import *
 
 class TestOwnStrategy(unittest.TestCase):
 
-    def init_attributes(self):
+    def setUp(self):
         self.env = {}
         self.env['state'] = {}
         self.env['action'] = ['LEFT', 'RIGHT', None]
@@ -38,12 +38,10 @@ class TestOwnStrategy(unittest.TestCase):
         )
 
     def test_to_string(self):
-        self.init_attributes()
         print('\n' + self.program.toString())
         self.assertEqual(self.program.toString(), self.str_representation, "Invalid string representation")
 
     def test_action_right(self):
-        self.init_attributes()
         self.env['paddle_width'] = 100
         self.env['state']['player_position'] = 35
         self.env['state']['fruit_position'] = 100
@@ -57,7 +55,6 @@ class TestOwnStrategy(unittest.TestCase):
         self.assertEqual(self.program.interpret(self.env), 'RIGHT', "Should return 'RIGHT'")
 
     def test_action_left(self):
-        self.init_attributes()
         self.env['paddle_width'] = 100
         self.env['state']['player_position'] = 100
         self.env['state']['fruit_position'] = 35
@@ -71,7 +68,6 @@ class TestOwnStrategy(unittest.TestCase):
         self.assertEqual(self.program.interpret(self.env), 'LEFT', "Should return 'LEFT'")
 
     def test_action_none(self):
-        self.init_attributes()
         self.env['paddle_width'] = 100
         self.env['state']['player_position'] = 50
         self.env['state']['fruit_position'] = 50
