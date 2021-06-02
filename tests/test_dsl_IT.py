@@ -1,41 +1,28 @@
 import unittest
-from DSL import IT, ReturnAction
+from unittest.mock import Mock
+from src.DSL import IT, ReturnAction
 
 class TestIT(unittest.TestCase):
 
-    class IF_COND:
-
-        def __init__(self, cond):
-            self.size = 1
-            self.cond = cond
-
-        def getSize(self):
-            return self.size
-
-        def interpret(self, env):
-            return env[self.cond]
-
-    class IF_BODY:
-
-        def __init__(self, body):
-            self.size = 1
-            self.body = body
-            self.__class__.__name__ = 'ReturnAction'
-
-        def getSize(self):
-            return self.size
-
-        def interpret(self, env):
-            return env[self.body]
-
-    def init_env(self):
+    def setUp(self):
         self.env = {}
         self.env['TRUE'] = True
         self.env['FALSE'] = False
         self.env['BODY'] = 100  
 
+        # Create mock object
+        self.if_cond = Mock()
+        self.if_body = Mock()
+        
+        type(self.if_body).__name__ = 'ReturnAction'
+
+        self.if_cond.getSize.return_value = 1
+        self.if_body.getSize.return_value = 1
+
     def init_IT(self, cond, body):
-        return IT(TestIT.IF_COND(cond), TestIT.IF_BODY(body))      
+        self.if_cond.interpret.return_value = self.env[cond]
+        self.if_body.interpret.return_value = self.env[body]
+        return IT(self.if_cond, self.if_body)      
 
     def test_size_three(self):
         it = self.init_IT('TRUE', 'BODY')
@@ -51,25 +38,20 @@ class TestIT(unittest.TestCase):
         self.assertEqual(it.getSize(), 100, 'IT object should have size 100')
 
     def test_size_change_arg_sizes(self):
-        cond = TestIT.IF_COND('TRUE')
-        body = TestIT.IF_BODY('BODY')
-
         # Manually change cond.size and body.size,
         # and re-instantiate an IT object
-        cond.size = 13
-        body.size = 2
-        it = IT(cond, body)
+        self.if_cond.getSize.return_value = 12
+        self.if_body.getSize.return_value = 3
+        it = IT(self.if_cond, self.if_body)
         self.assertEqual(it.getSize(), 16, 'IT object should have size 16')
 
     def test_interpret_false_cond(self):
         # Test interpret method for if-condition evaluating to false
-        self.init_env()
         it = self.init_IT('FALSE', 'BODY')
         self.assertEqual(it.interpret(self.env), None, 'interpret method of IT should return None')
 
     def test_interpret_true_cond(self):
         # Test interpret method for if-condition evaluating to True
-        self.init_env()
         it = self.init_IT('TRUE', 'BODY')
         self.assertEqual(it.interpret(self.env), 100, 'interpret method of IT should return 100')
 
