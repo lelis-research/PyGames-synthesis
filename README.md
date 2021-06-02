@@ -3,8 +3,6 @@ A synthesizer and DSL for generating strategies for playing Catcher game.
 
 ## Dependencies
 
-(Please note that python 3.9 was used for the implementation)
-
 ```
 numpy
 nose2
