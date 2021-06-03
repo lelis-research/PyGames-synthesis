@@ -480,7 +480,7 @@ This class implements the initial symbol of the DSL.
 """
 class Strategy(Node):
 
-    def __init__(self, statement, next_statements):
+    def __init__(self):
         super(Strategy, self).__init__()
         self.size = 0
         self.max_number_children = 2
