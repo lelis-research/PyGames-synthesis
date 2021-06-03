@@ -30,7 +30,7 @@ class Node:
         self.actionname = 'actions'
 
     def add_child(self, child):
-        assert len(self.children) + 1 < self.max_number_children
+        assert len(self.children) < self.max_number_children
         self.children.append(child)
         self.current_child_num += 1
         
