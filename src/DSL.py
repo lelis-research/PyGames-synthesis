@@ -21,7 +21,7 @@ classes in this module are derived from this Node class.
 class Node:
 
     def __init__(self):
-        self.size = 0
+        self.size = 1
         self.current_child_num = 0
         self.max_number_children = 0
         self.children = []
@@ -69,12 +69,12 @@ class Node:
         return self.valid_children_types
 
     @classmethod
-    def grow(plist, psize):
-        pass
-
-    @classmethod
     def className(cls):
         return cls.__name__
+
+    @staticmethod
+    def grow(plist, psize):
+        pass
 
 
 """
@@ -82,12 +82,17 @@ This class implements an AST node representing a constant.
 """
 class Constant(Node):
 
-    def __init__(self, value):
+    def __init__(self):
         super(Constant, self).__init__()
-        assert value in np.arange(0, 101, 0.01)
-        self.size = 1
-        self.value = value
         self.max_number_children = 0
+
+    @classmethod
+    def new(cls, value):
+        assert value in np.arange(0, 101, 0.01)
+        inst = cls()
+        inst.value = value
+        
+        return inst
 
     def toString(self, indent=0):
         return f"{self.value}"
@@ -102,28 +107,24 @@ choosing/returning an action among the available actions.
 """
 class ReturnAction(Node):
 
-    def __init__(self, action):
+    def __init__(self):
         super(ReturnAction, self).__init__()
-        self.size = 1 + action.getSize()
-        self.action = action
         self.max_number_children = 1
 
+    @classmethod
+    def new(cls, action):
+        inst = cls()
+        inst.add_child(action)
+
+        return inst
+
     def toString(self, indent=0):
-        return f"return {self.action.toString()}"
+        action = self.get_children()[0]
+        return f"return {action.toString()}"
 
     def interpret(self, env):
-        return self.action.interpret(env)
-
-    def grow(plist, psize):
-        nplist = []
-
-        programs = plist.get(psize-1, VarFromArray.className())
-        
-        if programs is not None:
-            for p in programs:
-                ra = ReturnAction(p)
-                nplist.append(ra)
-                yield ra
+        action = self.get_children()[0]
+        return action.interpret(env)
 
 
 """
@@ -133,55 +134,37 @@ languages
 """
 class IT(Node):
 
-    def __init__(self, condition, if_body):
+    def __init__(self):
         super(IT, self).__init__()
-        assert type(if_body).__name__ == ReturnAction.className()
-        self.size = 1 + condition.getSize() + if_body.getSize()
-        self.condition = condition
-        self.if_body = if_body
         self.max_number_children = 2
+
+    @classmethod
+    def new(cls, condition, if_body):
+        assert type(if_body).__name__ == ReturnAction.className()
+        inst = cls()
+        inst.add_child(condition)
+        inst.add_child(if_body)
+
+        return inst
 
     def toString(self, indent=0):
         tab = ""
         for i in range(indent):
             tab += "\t"
+
+        condition = self.get_children()[0]
+        if_body = self.get_children()[1]
         
-        it_string = f"""{tab}if {self.condition.toString()}:\n"""
-        it_string += f"""{tab}\t{self.if_body.toString()}"""
+        it_string = f"""{tab}if {condition.toString()}:\n"""
+        it_string += f"""{tab}\t{if_body.toString()}"""
         return it_string
 
     def interpret(self, env):
-        if self.condition.interpret(env):
-            return self.if_body.interpret(env)
+        condition = self.get_children()[0]
+        if_body = self.get_children()[1]
 
-    def grow(plist, psize):
-        nplist = []
-        valid_dsbs = [LessThan.className(), GreaterThan.className(), EqualTo.className()]
-        valid_return = [ReturnAction.className()]
-
-        cost_combinations = itertools.product(range(psize-1), repeat=2)
-
-        for cost in cost_combinations:
-
-            if cost[0] + cost[1] + 1 == psize:
-                program_set_1 = plist.get(cost[0])
-                program_set_2 = plist.get(cost[1])
-
-                if program_set_1 is not None and program_set_2 is not None:
-
-                    for t1, p1 in program_set_1.items():
-                        if t1 in valid_dsbs:    
-                            for if_cond in p1:
-                    
-                                for t2, p2 in program_set_2.items():
-                                    if t2 in valid_return:
-                                        for if_body in p2:
-                                            
-                                            it = IT(if_cond, if_body)
-                                            nplist.append(it)
-                                            yield it
-
-        return nplist
+        if condition.interpret(env):
+            return if_body.interpret(env)
     
 
 """
@@ -191,65 +174,45 @@ general-purpose programming languages.
 """
 class ITE(Node):
 
-    def __init__(self, condition, if_body, else_body):
+    def __init__(self):
         super(ITE, self).__init__()
+        self.max_number_children = 3
+
+    @classmethod
+    def new(cls, condition, if_body, else_body):
         assert type(if_body).__name__ == ReturnAction.className()
         assert type(else_body).__name__ == ReturnAction.className()
-        self.size = 1 + condition.getSize() + if_body.getSize() + else_body.getSize()
-        self.condition = condition
-        self.if_body = if_body
-        self.else_body = else_body
-        self.max_number_children = 3
+        inst = cls()
+        inst.add_child(condition)
+        inst.add_child(if_body)
+        inst.add_child(else_body)
+
+        return inst
 
     def toString(self, indent=0):
         tab = ""
         for i in range(indent):
             tab += "\t"
         
-        ite_string = f"""{tab}if {self.condition.toString()}:\n"""
-        ite_string += f"""{tab}\t{self.if_body.toString()}\n"""
+        condition = self.get_children()[0]
+        if_body = self.get_children()[1]
+        else_body = self.get_children()[2]
+
+        ite_string = f"""{tab}if {condition.toString()}:\n"""
+        ite_string += f"""{tab}\t{if_body.toString()}\n"""
         ite_string += f"""{tab}else:\n"""
-        ite_string += f"""{tab}\t{self.else_body.toString()}"""
+        ite_string += f"""{tab}\t{else_body.toString()}"""
         return ite_string
 
     def interpret(self, env):
-        if self.condition.interpret(env):
-            return self.if_body.interpret(env)
+        condition = self.get_children()[0]
+        if_body = self.get_children()[1]
+        else_body = self.get_children()[2]
+
+        if condition.interpret(env):
+            return if_body.interpret(env)
         else:
-            return self.else_body.interpret(env)
-
-    def grow(plist, psize):
-        nplist = []
-        valid_dsbs = [LessThan.className(), GreaterThan.className(), EqualTo.className()]
-        valid_return = [ReturnAction.className()]
-
-        cost_combinations = itertools.product(range(psize-1), repeat=3)
-        
-        for cost in cost_combinations:
-            if cost[0] + cost[1] + cost[2] + 1 == psize:
-                program_set_1 = plist.get(cost[0])
-                program_set_2 = plist.get(cost[1])
-                program_set_3 = plist.get(cost[2])
-
-                if program_set_1 is not None and program_set_2 is not None and program_set_3 is not None:
-                    
-                    for t1, p1 in program_set_1.items():
-                        if t1 in valid_dsbs:
-                            for if_cond in p1:
-
-                                for t2, p2 in program_set_2.items():
-                                    if t2 in valid_return:
-                                        for if_body in p2:
-
-                                            for t3, p3 in program_set_3.items():
-                                                if t3 in valid_return:
-                                                    for else_body in p3:
-
-                                                        ite = ITE(if_cond, if_body, else_body)
-                                                        nplist.append(ite)
-                                                        yield ite
-
-        return nplist
+            return else_body.interpret(env)
 
 
 """
@@ -260,7 +223,6 @@ class PlayerPosition(Node):
 
     def __init__(self):
         super(PlayerPosition, self).__init__()
-        self.size = 1
         self.max_number_children = 0
 
     def toString(self, indent=0):
@@ -278,7 +240,6 @@ class FallingFruitPosition(Node):
 
     def __init__(self):
         super(FallingFruitPosition, self).__init__()
-        self.size = 1
         self.max_number_children = 0
 
     def toString(self, indent=0):
@@ -294,11 +255,16 @@ For instance, the player's paddle width.
 """
 class VarScalar(Node):
 
-    def __init__(self, name):
+    def __init__(self):
         super(VarScalar, self).__init__()
-        self.size = 1
-        self.name = name
         self.max_number_children = 0
+
+    @classmethod
+    def new(cls, name):
+        inst = cls()
+        inst.name = name
+
+        return inst
 
     def toString(self, indent=0):
         return f"{self.name}"
@@ -313,19 +279,26 @@ an array. For example, actions[0]
 """
 class VarFromArray(Node):
 
-    def __init__(self, name, index):
+    def __init__(self):
         super(VarFromArray, self).__init__()
-        assert type(index).__name__ == Constant.className()
-        self.size = 1 + index.getSize()
-        self.name = name
-        self.index = index
         self.max_number_children = 1
+
+    @classmethod
+    def new(cls, name, index):
+        assert type(index).__name__ == Constant.className()
+        inst = cls()
+        inst.add_child(index)
+        inst.name = name
+
+        return inst
     
     def toString(self, indent=0):
-        return f"{self.name}[{self.index.toString()}]"
+        index = self.get_children()[0]
+        return f"{self.name}[{index.toString()}]"
 
     def interpret(self, env):
-        return env[self.name][self.index.interpret(env)]
+        index = self.get_children()[0]
+        return env[self.name][index.interpret(env)]
 
 
 """
@@ -335,46 +308,23 @@ method.
 """
 class LessThan(Node):
 
-    def __init__(self, left, right):
+    def __init__(self):
         super(LessThan, self).__init__()
-        self.size = 1 + left.getSize() + right.getSize()
-        self.left = left
-        self.right = right
         self.max_number_children = 2
 
+    @classmethod
+    def new(cls, left, right):
+        inst = cls()
+        inst.add_child(left)
+        inst.add_child(right)
+
+        return inst
+
     def toString(self, indent=0):
-        return f"{self.left.toString()} < {self.right.toString()}"
+        return f"{self.get_children()[0].toString()} < {self.get_children()[1].toString()}"
 
     def interpret(self, env):
-        return self.left.interpret(env) < self.right.interpret(env)
-
-    def grow(plist, psize):
-        nplist = []
-        valid_nodes = [PlayerPosition.className(), FallingFruitPosition.className(), Plus.className(),
-            Minus.className(), Divide.className(), Times.className(), Constant.className()]
-
-        cost_combinations = itertools.product(range(psize-1), repeat=2)
-        
-        for cost in cost_combinations:
-            if cost[0] + cost[1] + 1 == psize:
-                program_set_1 = plist.get(cost[0])
-                program_set_2 = plist.get(cost[1])
-
-                if program_set_1 is not None and program_set_2 is not None:
-                    for t1, p1 in program_set_1.items():
-                        if t1 in valid_nodes:
-                            for left in p1:
-
-                                for t2, p2 in program_set_2.items():
-                                    if t2 in valid_nodes:
-                                        for right in p2:
-
-                                            if left.toString() != right.toString():
-                                                lt = LessThan(left, right)
-                                                nplist.append(lt)
-                                                yield lt
-
-        return nplist
+        return self.get_children()[0].interpret(env) < self.get_children()[1].interpret(env)
 
 
 """
@@ -384,46 +334,23 @@ method.
 """
 class GreaterThan(Node):
 
-    def __init__(self, left, right):
+    def __init__(self):
         super(GreaterThan, self).__init__()
-        self.size = 1 + left.getSize() + right.getSize()
-        self.left = left
-        self.right = right
         self.max_number_children = 2
 
+    @classmethod
+    def new(cls, left, right):
+        inst = cls()
+        inst.add_child(left)
+        inst.add_child(right)
+
+        return inst
+
     def toString(self, indent=0):
-        return f"{self.left.toString()} > {self.right.toString()}"
+        return f"{self.get_children()[0].toString()} > {self.get_children()[1].toString()}"
 
     def interpret(self, env):
-        return self.left.interpret(env) > self.right.interpret(env)
-
-    def grow(plist, psize):
-        nplist = []
-        valid_nodes = [PlayerPosition.className(), FallingFruitPosition.className(), Plus.className(),
-            Minus.className(), Divide.className(), Times.className(), Constant.className()]
-
-        cost_combinations = itertools.product(range(psize-1), repeat=2)
-        
-        for cost in cost_combinations:
-            if cost[0] + cost[1] + 1 == psize:
-                program_set_1 = plist.get(cost[0])
-                program_set_2 = plist.get(cost[1])
-
-                if program_set_1 is not None and program_set_2 is not None:
-                    for t1, p1 in program_set_1.items():
-                        if t1 in valid_nodes:
-                            for left in p1:
-
-                                for t2, p2 in program_set_2.items():
-                                    if t2 in valid_nodes:
-                                        for right in p2:
-
-                                            if left.toString() != right.toString():
-                                                gt = GreaterThan(left, right)
-                                                nplist.append(gt)
-                                                yield gt
-
-        return nplist
+        return self.get_children()[0].interpret(env) > self.get_children()[1].interpret(env)
 
 
 """
@@ -432,46 +359,23 @@ operator
 """
 class EqualTo(Node):
 
-    def __init__(self, left, right):
+    def __init__(self):
         super(EqualTo, self).__init__()
-        self.size = 1 + left.getSize() + right.getSize()
-        self.left = left
-        self.right = right
         self.max_number_children = 2
 
+    @classmethod
+    def new(cls, left, right):
+        inst = cls()
+        inst.add_child(left)
+        inst.add_child(right)
+
+        return inst
+
     def toString(self, indent=0):
-        return f"{self.left.toString()} == {self.right.toString()}"
+        return f"{self.get_children()[0].toString()} == {self.get_children()[1].toString()}"
 
     def interpret(self, env):
-        return self.left.interpret(env) == self.right.interpret(env)
-
-    def grow(plist, psize):
-        nplist = []
-        valid_nodes = [PlayerPosition.className(), FallingFruitPosition.className(), Plus.className(),
-            Minus.className(), Divide.className(), Times.className(), Constant.className()]
-
-        cost_combinations = itertools.product(range(psize-1), repeat=2)
-        
-        for cost in cost_combinations:
-            if cost[0] + cost[1] + 1 == psize:
-                program_set_1 = plist.get(cost[0])
-                program_set_2 = plist.get(cost[1])
-
-                if program_set_1 is not None and program_set_2 is not None:
-                    for t1, p1 in program_set_1.items():
-                        if t1 in valid_nodes:
-                            for left in p1:
-
-                                for t2, p2 in program_set_2.items():
-                                    if t2 in valid_nodes:
-                                        for right in p2:
-
-                                            if left.toString() != right.toString():
-                                                eq = EqualTo(left, right)
-                                                nplist.append(eq)
-                                                yield eq
-
-        return nplist
+        return self.get_children()[0].interpret(env) == self.get_children()[1].interpret(env)
 
 
 """
@@ -479,45 +383,23 @@ This class implements an AST node representing the addition operator.
 """
 class Plus(Node):
 
-    def __init__(self, left, right):
+    def __init__(self):
         super(Plus, self).__init__()
-        self.size = 1 + left.getSize() + right.getSize()
-        self.left = left
-        self.right = right
         self.max_number_children = 2
 
+    @classmethod
+    def new(cls, left, right):
+        inst = cls()
+        inst.add_child(left)
+        inst.add_child(right)
+
+        return inst
+
     def toString(self, indent=0):
-        return f"({self.left.toString()} + {self.right.toString()})"
+        return f"({self.get_children()[0].toString()} + {self.get_children()[1].toString()})"
 
     def interpret(self, env):
-        return self.left.interpret(env) + self.right.interpret(env)
-
-    def grow(plist, psize):
-        nplist = []
-        valid_nodes = [VarScalar.className(), PlayerPosition.className(), FallingFruitPosition.className(),
-            Constant.className(), Times.className(), Minus.className(), Plus.className(), Divide.className()]
-
-        cost_combinations = itertools.product(range(psize-1), repeat=2)
-
-        for cost in cost_combinations:
-            if cost[0] + cost[1] + 1 == psize:
-                program_set_1 = plist.get(cost[0])
-                program_set_2 = plist.get(cost[1])
-
-                if program_set_1 is not None and program_set_2 is not None:
-                    for t1, p1 in program_set_1.items():
-                        if t1 in valid_nodes:
-                            for left in p1:
-                                
-                                for t2, p2 in program_set_2.items():
-                                    if t2 in valid_nodes:
-                                        for right in p2:
-                                            if left.toString() != '0' and right.toString() != '0':
-                                                plus = Plus(left, right)
-                                                nplist.append(plus)
-                                                yield plus
-            
-        return nplist
+        return self.get_children()[0].interpret(env) + self.get_children()[1].interpret(env)
 
 
 """
@@ -525,51 +407,23 @@ This class implements an AST node representing the multiplication operator
 """
 class Times(Node):
 
-    def __init__(self, left, right):
+    def __init__(self):
         super(Times, self).__init__()
-        self.size = 1 + left.getSize() + right.getSize()
-        self.left = left
-        self.right = right
         self.max_number_children = 2
 
+    @classmethod
+    def new(cls, left, right):
+        inst = cls()
+        inst.add_child(left)
+        inst.add_child(right)
+
+        return inst
+
     def toString(self, indent=0):
-        return f"({self.left.toString()} * {self.right.toString()})"
+        return f"({self.get_children()[0].toString()} * {self.get_children()[1].toString()})"
 
     def interpret(self, env):
-        return self.left.interpret(env) * self.right.interpret(env)
-
-    def grow(plist, psize):
-        nplist = []
-        valid_nodes = [VarScalar.className(), PlayerPosition.className(), FallingFruitPosition.className(),
-            Constant.className(), Times.className(), Minus.className(), Plus.className(), Divide.className()]
-
-        cost_combinations = itertools.product(range(psize-1), repeat=2)
-
-        for cost in cost_combinations:
-            if cost[0] + cost[1] + 1 == psize:
-                program_set_1 = plist.get(cost[0])
-                program_set_2 = plist.get(cost[1])
-
-                if program_set_1 is not None and program_set_2 is not None:
-                    for t1, p1 in program_set_1.items():
-                        if t1 in valid_nodes:
-                            for left in p1:
-                                
-                                for t2, p2 in program_set_2.items():
-                                    if t2 in valid_nodes:
-                                        for right in p2:
-                                            times = Times(left, right)
-                                            eq = Times(right, left)
-                                            is_equivalent = False
-                                            for p in nplist:
-                                                if p.toString() == eq.toString():
-                                                    is_equivalent = True
-
-                                            if not is_equivalent:
-                                                nplist.append(times)
-                                                yield times
-
-        return nplist
+        return self.get_children()[0].interpret(env) * self.get_children()[1].interpret(env)
 
 
 """
@@ -577,45 +431,23 @@ This class implements an AST node representing the minus operator
 """
 class Minus(Node):
 
-    def __init__(self, left, right):
+    def __init__(self):
         super(Minus, self).__init__()
-        self.size = 1 + left.getSize() + right.getSize()
-        self.left = left
-        self.right = right
         self.max_number_children = 2
 
+    @classmethod
+    def new(cls, left, right):
+        inst = cls()
+        inst.add_child(left)
+        inst.add_child(right)
+
+        return inst
+
     def toString(self, indent=0):
-        return f"({self.left.toString()} - {self.right.toString()})"
+        return f"({self.get_children()[0].toString()} - {self.get_children()[1].toString()})"
 
     def interpret(self, env):
-        return self.left.interpret(env) - self.right.interpret(env)
-
-    def grow(plist, psize):
-        nplist = []
-        valid_nodes = [VarScalar.className(), PlayerPosition.className(), FallingFruitPosition.className(),
-            Constant.className(), Times.className(), Minus.className(), Plus.className(), Divide.className()]
-
-        cost_combinations = itertools.product(range(psize-1), repeat=2)
-
-        for cost in cost_combinations:
-            if cost[0] + cost[1] + 1 == psize:
-                program_set_1 = plist.get(cost[0])
-                program_set_2 = plist.get(cost[1])
-
-                if program_set_1 is not None and program_set_2 is not None:
-                    for t1, p1 in program_set_1.items():
-                        if t1 in valid_nodes:
-                            for left in p1:
-                                
-                                for t2, p2 in program_set_2.items():
-                                    if t2 in valid_nodes:
-                                        for right in p2:
-                                            minus = Minus(left, right)
-                                            if left.toString() != right.toString() and right.toString() != '0':
-                                                nplist.append(minus)
-                                                yield minus
-
-        return nplist
+        return self.get_children()[0].interpret(env) - self.get_children()[1].interpret(env)
 
 
 """
@@ -623,47 +455,24 @@ This class implements an AST node representing the integer division operator
 """
 class Divide(Node):
 
-    def __init__(self, left, right):
+    def __init__(self):
         super(Divide, self).__init__()
-        self.size = 1 + left.getSize() + right.getSize()
-        self.left = left
-        self.right = right
         self.max_number_children = 2
 
+    @classmethod
+    def new(cls, left, right):
+        inst = cls()
+        inst.add_child(left)
+        inst.add_child(right)
+
+        return inst
+
     def toString(self, indent=0):
-        return f"({self.left.toString()} // {self.right.toString()})"
+        return f"({self.get_children()[0].toString()} // {self.get_children()[1].toString()})"
 
     
     def interpret(self, env):
-        return self.left.interpret(env) // self.right.interpret(env)
-
-    def grow(plist, psize):
-        nplist = []
-        valid_nodes = [VarScalar.className(), PlayerPosition.className(), FallingFruitPosition.className(),
-            Constant.className(), Times.className(), Minus.className(), Plus.className(), Divide.className()]
-
-        cost_combinations = itertools.product(range(psize-1), repeat=2)
-
-        for cost in cost_combinations:
-            if cost[0] + cost[1] + 1 == psize:
-                program_set_1 = plist.get(cost[0])
-                program_set_2 = plist.get(cost[1])
-
-                if program_set_1 is not None and program_set_2 is not None:
-                    for t1, p1 in program_set_1.items():
-                        if t1 in valid_nodes:
-                            for left in p1:
-                                
-                                for t2, p2 in program_set_2.items():
-                                    if t2 in valid_nodes:
-                                        for right in p2:
-                                            if right.toString() != '0' and left.toString() != '0':
-                                                if left.toString() != right.toString():
-                                                    divide = Divide(left, right)
-                                                    nplist.append(divide)
-                                                    yield divide
-        
-        return nplist
+        return self.get_children()[0].interpret(env) // self.get_children()[1].interpret(env)
 
 
 """
@@ -673,54 +482,35 @@ class Strategy(Node):
 
     def __init__(self, statement, next_statements):
         super(Strategy, self).__init__()
-        assert type(statement).__name__ in [IT.className(), ITE.className()]
-        assert type(next_statements).__name__ in [Strategy.className(), ReturnAction.className(), type(None).__name__]
-        self.size = statement.getSize()
-        if next_statements is not None:
-            self.size += next_statements.getSize()
-        self.statement = statement
-        self.next_statements = next_statements
+        self.size = 0
         self.max_number_children = 2
 
+    @classmethod
+    def new(cls, statement, next_statements):
+        assert type(statement).__name__ in [IT.className(), ITE.className()]
+        assert type(next_statements).__name__ in [Strategy.className(), ReturnAction.className(), type(None).__name__]
+        inst = cls()
+        inst.add_child(statement)
+        inst.add_child(next_statements)
+
+        return inst
+
     def toString(self, indent=0):
-        strategy_string = f"{self.statement.toString(0)}\n"
-        if self.next_statements is not None:
-            strategy_string += f"{self.next_statements.toString()}"
+        statement = self.get_children()[0]
+        next_statements = self.get_children()[1]
+
+        strategy_string = f"{statement.toString(0)}\n"
+        if next_statements is not None:
+            strategy_string += f"{next_statements.toString()}"
 
         return strategy_string
 
     def interpret(self, env):
-        res = self.statement.interpret(env)
-        if res is None and self.next_statements is not None:
-            return self.next_statements.interpret(env)
+        statement = self.get_children()[0]
+        next_statements = self.get_children()[1]
+
+        res = statement.interpret(env)
+        if res is None and next_statements is not None:
+            return next_statements.interpret(env)
 
         return res
-
-    def grow(plist, psize):
-        nplist = []
-        valid_first_statement = [IT.className(), ITE.className()]
-        valid_next_statements = [Strategy.className(), ReturnAction.className(), type(None).__name__]
-
-        cost_combinations = itertools.product(range(psize+1), repeat=2)
-
-        for cost in cost_combinations:
-            if cost[0] + cost[1] == psize:
-                program_set_1 = plist.get(cost[0])
-                program_set_2 = plist.get(cost[1])
-                if cost[1] == 0 and program_set_2 is None:
-                    program_set_2 = {}
-                    program_set_2[type(None).__name__] = [None]
-
-                if program_set_1 is not None and program_set_2 is not None:
-                    for t1, p1 in program_set_1.items():
-                        if t1 in valid_first_statement:
-                            for statement in p1:
-
-                                for t2, p2 in program_set_2.items():
-                                    if t2 in valid_next_statements:
-                                        for next_statements in p2:
-                                            p = Strategy(statement, next_statements)
-                                            nplist.append(p)
-                                            yield p
-        
-        return nplist
