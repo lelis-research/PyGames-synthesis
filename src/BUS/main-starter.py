@@ -1,0 +1,36 @@
+"""
+main-starter.py 
+
+Author: Olivier Vadiavaloo
+
+Description:
+This module implements the driver code of the synthesizer.
+
+It declares the operators, dsfs, constants and scalars to be used during
+the synthesis process, and calls the synthesizer with the desired arguments.
+
+"""
+
+from src.BUS import BUS
+from src.DSL import *
+from src.Evaluation import *
+
+if __name__ == '__main__':
+
+    bus = BUS()
+
+    # Initialize the evaluation object
+    eval_funct = Evaluation(0)
+    
+    # Initialize the arguments to the synthesizer
+    operators = [IT, ITE, Strategy, ReturnAction, Plus, Times, Divide, Minus, 
+        GreaterThan, LessThan, EqualTo]
+    dsfs = [FallingFruitPosition, PlayerPosition]
+    constants = [Constant(0), Constant(1), Constant(2), Constant(0.5), Constant(0.3)]
+    scalars = [VarScalar('paddle_width'), VarFromArray('actions', Constant(0)), 
+        VarFromArray('actions', Constant(1)), VarFromArray('actions', Constant(2))]
+
+    time, program = bus.synthesize(20, operators, constants, scalars, dsfs, eval_funct)
+    print("Ran BUS for", time, "seconds\n")
+    print("BUS returned the following strategy:\n")
+    print(program.toString())
