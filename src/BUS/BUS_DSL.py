@@ -1,118 +1,36 @@
 """
-DSL.py 
+DSL_BUS.py 
 
 Author: Olivier Vadiavaloo
 
 Description:
-This module implements the nodes used to create Abstract-Syntax Trees (ASTs)
-that represent programs written in the DSL designed for playing the Catcher game.
+This module implements sub-classes derived from src/DSL.py.
+These sub-classes implement the grow methods of the base classes
+so that the BUS algorithm can grow the programs accordingly.
 
 """
 from random import choice
 from pygame.constants import K_w, K_s, K_a, K_d
 import numpy as np
 import itertools
-
-"""
-This is a base class representing the Node of an abstract-
-syntax tree for the DSL implemented in this module. All other
-classes in this module are derived from this Node class.
-"""
-class Node:
-
-    def __init__(self):
-        self.size = 0
-        self.current_child_num = 0
-        self.max_number_children = 0
-        self.children = []
-
-        self.statename = 'state'
-        self.actionname = 'actions'
-
-    def add_child(self, child):
-        assert len(self.children) + 1 < self.max_number_children
-        self.children.append(child)
-        self.current_child_num += 1
-        
-        if child is not None:
-            self.size += child.getSize()
-
-    def replace_child(self, child, i):
-        if self.children[i] is not None:
-            self.size -= self.children[i].getSize()
-
-        if child is not None:
-            self.size += child.getSize()
-
-        self.children[i] = child
-
-    def getSize(self):
-        return self.size
-
-    def toString(self, indent=0):
-        raise Exception("Unimplemented method: toStrng")
-
-    def interpret(self):
-        raise Exception("Unimplemented method: interpret")
-
-    def get_children(self):
-        return self.children.copy()
-
-    def get_current_child_num(self):
-        return self.current_child_num
-
-    def get_max_number_children(self):
-        return self.max_number_children
-
-    @classmethod
-    def get_valid_children_types(self):
-        return self.valid_children_types
-
-    @classmethod
-    def grow(plist, psize):
-        pass
-
-    @classmethod
-    def className(cls):
-        return cls.__name__
-
+import src.DSL as baseDSL
 
 """
 This class implements an AST node representing a constant.
 """
-class Constant(Node):
+class Constant(baseDSL.Constant):
 
-    def __init__(self, value):
+    def __init__(self):
         super(Constant, self).__init__()
-        assert value in np.arange(0, 101, 0.01)
-        self.size = 1
-        self.value = value
-        self.max_number_children = 0
-
-    def toString(self, indent=0):
-        return f"{self.value}"
-
-    def interpret(self, env):
-        return self.value
-
 
 """
 This is a class derived from the Node clas. It is interpreted as
 choosing/returning an action among the available actions.
 """
-class ReturnAction(Node):
+class ReturnAction(baseDSL.ReturnAction):
 
-    def __init__(self, action):
+    def __init__(self):
         super(ReturnAction, self).__init__()
-        self.size = 1 + action.getSize()
-        self.action = action
-        self.max_number_children = 1
-
-    def toString(self, indent=0):
-        return f"return {self.action.toString()}"
-
-    def interpret(self, env):
-        return self.action.interpret(env)
 
     def grow(plist, psize):
         nplist = []
@@ -121,7 +39,7 @@ class ReturnAction(Node):
         
         if programs is not None:
             for p in programs:
-                ra = ReturnAction(p)
+                ra = ReturnAction.new(p)
                 nplist.append(ra)
                 yield ra
 
@@ -131,28 +49,10 @@ This class represents an if-then conditional statement in the DSL. It is
 interpreted as the if-then conditional statements in general-purpose programming
 languages
 """
-class IT(Node):
+class IT(baseDSL.IT):
 
-    def __init__(self, condition, if_body):
+    def __init__(self):
         super(IT, self).__init__()
-        assert type(if_body).__name__ == ReturnAction.className()
-        self.size = 1 + condition.getSize() + if_body.getSize()
-        self.condition = condition
-        self.if_body = if_body
-        self.max_number_children = 2
-
-    def toString(self, indent=0):
-        tab = ""
-        for i in range(indent):
-            tab += "\t"
-        
-        it_string = f"""{tab}if {self.condition.toString()}:\n"""
-        it_string += f"""{tab}\t{self.if_body.toString()}"""
-        return it_string
-
-    def interpret(self, env):
-        if self.condition.interpret(env):
-            return self.if_body.interpret(env)
 
     def grow(plist, psize):
         nplist = []
@@ -177,7 +77,7 @@ class IT(Node):
                                     if t2 in valid_return:
                                         for if_body in p2:
                                             
-                                            it = IT(if_cond, if_body)
+                                            it = IT.new(if_cond, if_body)
                                             nplist.append(it)
                                             yield it
 
@@ -189,34 +89,10 @@ This class represents an if-then-else conditional statement in the
 DSL. It is interpreted as the if-then-else conditional statements in
 general-purpose programming languages.
 """
-class ITE(Node):
+class ITE(baseDSL.ITE):
 
-    def __init__(self, condition, if_body, else_body):
+    def __init__(self):
         super(ITE, self).__init__()
-        assert type(if_body).__name__ == ReturnAction.className()
-        assert type(else_body).__name__ == ReturnAction.className()
-        self.size = 1 + condition.getSize() + if_body.getSize() + else_body.getSize()
-        self.condition = condition
-        self.if_body = if_body
-        self.else_body = else_body
-        self.max_number_children = 3
-
-    def toString(self, indent=0):
-        tab = ""
-        for i in range(indent):
-            tab += "\t"
-        
-        ite_string = f"""{tab}if {self.condition.toString()}:\n"""
-        ite_string += f"""{tab}\t{self.if_body.toString()}\n"""
-        ite_string += f"""{tab}else:\n"""
-        ite_string += f"""{tab}\t{self.else_body.toString()}"""
-        return ite_string
-
-    def interpret(self, env):
-        if self.condition.interpret(env):
-            return self.if_body.interpret(env)
-        else:
-            return self.else_body.interpret(env)
 
     def grow(plist, psize):
         nplist = []
@@ -245,7 +121,7 @@ class ITE(Node):
                                                 if t3 in valid_return:
                                                     for else_body in p3:
 
-                                                        ite = ITE(if_cond, if_body, else_body)
+                                                        ite = ITE.new(if_cond, if_body, else_body)
                                                         nplist.append(ite)
                                                         yield ite
 
@@ -256,76 +132,39 @@ class ITE(Node):
 This class implements a domain-specific function that returns
 the x-position of the player on the screen.
 """
-class PlayerPosition(Node):
+class PlayerPosition(baseDSL.PlayerPosition):
 
     def __init__(self):
         super(PlayerPosition, self).__init__()
-        self.size = 1
-        self.max_number_children = 0
-
-    def toString(self, indent=0):
-        return PlayerPosition.className()
-
-    def interpret(self, env):
-        return env[self.statename]['player_position']
-
 
 """
 This class implements a domain-specific function that returns
 the y-position of the falling fruit to be caught by the player.
 """
-class FallingFruitPosition(Node):
+class FallingFruitPosition(baseDSL.FallingFruitPosition):
 
     def __init__(self):
         super(FallingFruitPosition, self).__init__()
-        self.size = 1
-        self.max_number_children = 0
-
-    def toString(self, indent=0):
-        return FallingFruitPosition.className()
-
-    def interpret(self, env):
-        return env[self.statename]['fruit_position']
 
 
 """
 This class implements an AST node representing a domain-specific scalar variable.
 For instance, the player's paddle width.
 """
-class VarScalar(Node):
+class VarScalar(baseDSL.VarScalar):
 
-    def __init__(self, name):
+    def __init__(self):
         super(VarScalar, self).__init__()
-        self.size = 1
-        self.name = name
-        self.max_number_children = 0
-
-    def toString(self, indent=0):
-        return f"{self.name}"
-
-    def interpret(self, env):
-        return env[self.name]
 
 
 """
 This class implements an AST node representing a domain-specific variable from
 an array. For example, actions[0]
 """
-class VarFromArray(Node):
+class VarFromArray(baseDSL.VarFromArray):
 
-    def __init__(self, name, index):
+    def __init__(self):
         super(VarFromArray, self).__init__()
-        assert type(index).__name__ == Constant.className()
-        self.size = 1 + index.getSize()
-        self.name = name
-        self.index = index
-        self.max_number_children = 1
-    
-    def toString(self, indent=0):
-        return f"{self.name}[{self.index.toString()}]"
-
-    def interpret(self, env):
-        return env[self.name][self.index.interpret(env)]
 
 
 """
@@ -333,20 +172,10 @@ This class implements an AST node representing the '<' comparison
 operator. It returns either True or False on calling its interpret
 method.
 """
-class LessThan(Node):
+class LessThan(baseDSL.LessThan):
 
-    def __init__(self, left, right):
+    def __init__(self):
         super(LessThan, self).__init__()
-        self.size = 1 + left.getSize() + right.getSize()
-        self.left = left
-        self.right = right
-        self.max_number_children = 2
-
-    def toString(self, indent=0):
-        return f"{self.left.toString()} < {self.right.toString()}"
-
-    def interpret(self, env):
-        return self.left.interpret(env) < self.right.interpret(env)
 
     def grow(plist, psize):
         nplist = []
@@ -370,7 +199,7 @@ class LessThan(Node):
                                         for right in p2:
 
                                             if left.toString() != right.toString():
-                                                lt = LessThan(left, right)
+                                                lt = LessThan.new(left, right)
                                                 nplist.append(lt)
                                                 yield lt
 
@@ -382,20 +211,10 @@ This class implements an AST node representing the '>' comparison
 operator. It returns either True or False on calling its interpret
 method.
 """
-class GreaterThan(Node):
+class GreaterThan(baseDSL.GreaterThan):
 
-    def __init__(self, left, right):
+    def __init__(self):
         super(GreaterThan, self).__init__()
-        self.size = 1 + left.getSize() + right.getSize()
-        self.left = left
-        self.right = right
-        self.max_number_children = 2
-
-    def toString(self, indent=0):
-        return f"{self.left.toString()} > {self.right.toString()}"
-
-    def interpret(self, env):
-        return self.left.interpret(env) > self.right.interpret(env)
 
     def grow(plist, psize):
         nplist = []
@@ -419,7 +238,7 @@ class GreaterThan(Node):
                                         for right in p2:
 
                                             if left.toString() != right.toString():
-                                                gt = GreaterThan(left, right)
+                                                gt = GreaterThan.new(left, right)
                                                 nplist.append(gt)
                                                 yield gt
 
@@ -430,20 +249,10 @@ class GreaterThan(Node):
 This class implements an AST node representing the '==' comparison
 operator
 """
-class EqualTo(Node):
+class EqualTo(baseDSL.EqualTo):
 
-    def __init__(self, left, right):
+    def __init__(self):
         super(EqualTo, self).__init__()
-        self.size = 1 + left.getSize() + right.getSize()
-        self.left = left
-        self.right = right
-        self.max_number_children = 2
-
-    def toString(self, indent=0):
-        return f"{self.left.toString()} == {self.right.toString()}"
-
-    def interpret(self, env):
-        return self.left.interpret(env) == self.right.interpret(env)
 
     def grow(plist, psize):
         nplist = []
@@ -467,7 +276,7 @@ class EqualTo(Node):
                                         for right in p2:
 
                                             if left.toString() != right.toString():
-                                                eq = EqualTo(left, right)
+                                                eq = EqualTo.new(left, right)
                                                 nplist.append(eq)
                                                 yield eq
 
@@ -477,20 +286,10 @@ class EqualTo(Node):
 """
 This class implements an AST node representing the addition operator.
 """
-class Plus(Node):
+class Plus(baseDSL.Plus):
 
-    def __init__(self, left, right):
+    def __init__(self):
         super(Plus, self).__init__()
-        self.size = 1 + left.getSize() + right.getSize()
-        self.left = left
-        self.right = right
-        self.max_number_children = 2
-
-    def toString(self, indent=0):
-        return f"({self.left.toString()} + {self.right.toString()})"
-
-    def interpret(self, env):
-        return self.left.interpret(env) + self.right.interpret(env)
 
     def grow(plist, psize):
         nplist = []
@@ -513,7 +312,7 @@ class Plus(Node):
                                     if t2 in valid_nodes:
                                         for right in p2:
                                             if left.toString() != '0' and right.toString() != '0':
-                                                plus = Plus(left, right)
+                                                plus = Plus.new(left, right)
                                                 nplist.append(plus)
                                                 yield plus
             
@@ -523,20 +322,10 @@ class Plus(Node):
 """
 This class implements an AST node representing the multiplication operator
 """
-class Times(Node):
+class Times(baseDSL.Times):
 
-    def __init__(self, left, right):
+    def __init__(self):
         super(Times, self).__init__()
-        self.size = 1 + left.getSize() + right.getSize()
-        self.left = left
-        self.right = right
-        self.max_number_children = 2
-
-    def toString(self, indent=0):
-        return f"({self.left.toString()} * {self.right.toString()})"
-
-    def interpret(self, env):
-        return self.left.interpret(env) * self.right.interpret(env)
 
     def grow(plist, psize):
         nplist = []
@@ -558,8 +347,8 @@ class Times(Node):
                                 for t2, p2 in program_set_2.items():
                                     if t2 in valid_nodes:
                                         for right in p2:
-                                            times = Times(left, right)
-                                            eq = Times(right, left)
+                                            times = Times.new(left, right)
+                                            eq = Times.new(right, left)
                                             is_equivalent = False
                                             for p in nplist:
                                                 if p.toString() == eq.toString():
@@ -575,20 +364,10 @@ class Times(Node):
 """
 This class implements an AST node representing the minus operator
 """
-class Minus(Node):
+class Minus(baseDSL.Minus):
 
-    def __init__(self, left, right):
+    def __init__(self):
         super(Minus, self).__init__()
-        self.size = 1 + left.getSize() + right.getSize()
-        self.left = left
-        self.right = right
-        self.max_number_children = 2
-
-    def toString(self, indent=0):
-        return f"({self.left.toString()} - {self.right.toString()})"
-
-    def interpret(self, env):
-        return self.left.interpret(env) - self.right.interpret(env)
 
     def grow(plist, psize):
         nplist = []
@@ -610,7 +389,7 @@ class Minus(Node):
                                 for t2, p2 in program_set_2.items():
                                     if t2 in valid_nodes:
                                         for right in p2:
-                                            minus = Minus(left, right)
+                                            minus = Minus.new(left, right)
                                             if left.toString() != right.toString() and right.toString() != '0':
                                                 nplist.append(minus)
                                                 yield minus
@@ -621,21 +400,10 @@ class Minus(Node):
 """
 This class implements an AST node representing the integer division operator
 """
-class Divide(Node):
+class Divide(baseDSL.Divide):
 
-    def __init__(self, left, right):
+    def __init__(self):
         super(Divide, self).__init__()
-        self.size = 1 + left.getSize() + right.getSize()
-        self.left = left
-        self.right = right
-        self.max_number_children = 2
-
-    def toString(self, indent=0):
-        return f"({self.left.toString()} // {self.right.toString()})"
-
-    
-    def interpret(self, env):
-        return self.left.interpret(env) // self.right.interpret(env)
 
     def grow(plist, psize):
         nplist = []
@@ -659,7 +427,7 @@ class Divide(Node):
                                         for right in p2:
                                             if right.toString() != '0' and left.toString() != '0':
                                                 if left.toString() != right.toString():
-                                                    divide = Divide(left, right)
+                                                    divide = Divide.new(left, right)
                                                     nplist.append(divide)
                                                     yield divide
         
@@ -669,32 +437,10 @@ class Divide(Node):
 """
 This class implements the initial symbol of the DSL.
 """
-class Strategy(Node):
+class Strategy(baseDSL.Strategy):
 
-    def __init__(self, statement, next_statements):
+    def __init__(self):
         super(Strategy, self).__init__()
-        assert type(statement).__name__ in [IT.className(), ITE.className()]
-        assert type(next_statements).__name__ in [Strategy.className(), ReturnAction.className(), type(None).__name__]
-        self.size = statement.getSize()
-        if next_statements is not None:
-            self.size += next_statements.getSize()
-        self.statement = statement
-        self.next_statements = next_statements
-        self.max_number_children = 2
-
-    def toString(self, indent=0):
-        strategy_string = f"{self.statement.toString(0)}\n"
-        if self.next_statements is not None:
-            strategy_string += f"{self.next_statements.toString()}"
-
-        return strategy_string
-
-    def interpret(self, env):
-        res = self.statement.interpret(env)
-        if res is None and self.next_statements is not None:
-            return self.next_statements.interpret(env)
-
-        return res
 
     def grow(plist, psize):
         nplist = []
@@ -719,7 +465,7 @@ class Strategy(Node):
                                 for t2, p2 in program_set_2.items():
                                     if t2 in valid_next_statements:
                                         for next_statements in p2:
-                                            p = Strategy(statement, next_statements)
+                                            p = Strategy.new(statement, next_statements)
                                             nplist.append(p)
                                             yield p
         
