@@ -8,6 +8,7 @@ This module implements the nodes used to create Abstract-Syntax Trees (ASTs)
 that represent programs written in the DSL designed for playing the Catcher game.
 
 """
+from random import choice
 from pygame.constants import K_w, K_s, K_a, K_d
 import numpy as np
 import itertools
@@ -21,8 +22,29 @@ class Node:
 
     def __init__(self):
         self.size = 0
+        self.current_child_num = 0
+        self.max_number_children = 0
+        self.children = []
+
         self.statename = 'state'
         self.actionname = 'actions'
+
+    def add_child(self, child):
+        assert len(self.children) + 1 < self.max_number_children
+        self.children.append(child)
+        self.current_child_num += 1
+        
+        if child is not None:
+            self.size += child.getSize()
+
+    def replace_child(self, child, i):
+        if self.children[i] is not None:
+            self.size -= self.children[i].getSize()
+
+        if child is not None:
+            self.size += child.getSize()
+
+        self.children[i] = child
 
     def getSize(self):
         return self.size
@@ -32,6 +54,19 @@ class Node:
 
     def interpret(self):
         raise Exception("Unimplemented method: interpret")
+
+    def get_children(self):
+        return self.children.copy()
+
+    def get_current_child_num(self):
+        return self.current_child_num
+
+    def get_max_number_children(self):
+        return self.max_number_children
+
+    @classmethod
+    def get_valid_children_types(self):
+        return self.valid_children_types
 
     @classmethod
     def grow(plist, psize):
@@ -52,6 +87,7 @@ class Constant(Node):
         assert value in np.arange(0, 101, 0.01)
         self.size = 1
         self.value = value
+        self.max_number_children = 0
 
     def toString(self, indent=0):
         return f"{self.value}"
@@ -70,6 +106,7 @@ class ReturnAction(Node):
         super(ReturnAction, self).__init__()
         self.size = 1 + action.getSize()
         self.action = action
+        self.max_number_children = 1
 
     def toString(self, indent=0):
         return f"return {self.action.toString()}"
@@ -102,6 +139,7 @@ class IT(Node):
         self.size = 1 + condition.getSize() + if_body.getSize()
         self.condition = condition
         self.if_body = if_body
+        self.max_number_children = 2
 
     def toString(self, indent=0):
         tab = ""
@@ -161,6 +199,7 @@ class ITE(Node):
         self.condition = condition
         self.if_body = if_body
         self.else_body = else_body
+        self.max_number_children = 3
 
     def toString(self, indent=0):
         tab = ""
@@ -222,6 +261,7 @@ class PlayerPosition(Node):
     def __init__(self):
         super(PlayerPosition, self).__init__()
         self.size = 1
+        self.max_number_children = 0
 
     def toString(self, indent=0):
         return PlayerPosition.className()
@@ -239,6 +279,7 @@ class FallingFruitPosition(Node):
     def __init__(self):
         super(FallingFruitPosition, self).__init__()
         self.size = 1
+        self.max_number_children = 0
 
     def toString(self, indent=0):
         return FallingFruitPosition.className()
@@ -257,6 +298,7 @@ class VarScalar(Node):
         super(VarScalar, self).__init__()
         self.size = 1
         self.name = name
+        self.max_number_children = 0
 
     def toString(self, indent=0):
         return f"{self.name}"
@@ -277,6 +319,7 @@ class VarFromArray(Node):
         self.size = 1 + index.getSize()
         self.name = name
         self.index = index
+        self.max_number_children = 1
     
     def toString(self, indent=0):
         return f"{self.name}[{self.index.toString()}]"
@@ -297,6 +340,7 @@ class LessThan(Node):
         self.size = 1 + left.getSize() + right.getSize()
         self.left = left
         self.right = right
+        self.max_number_children = 2
 
     def toString(self, indent=0):
         return f"{self.left.toString()} < {self.right.toString()}"
@@ -345,6 +389,7 @@ class GreaterThan(Node):
         self.size = 1 + left.getSize() + right.getSize()
         self.left = left
         self.right = right
+        self.max_number_children = 2
 
     def toString(self, indent=0):
         return f"{self.left.toString()} > {self.right.toString()}"
@@ -392,6 +437,7 @@ class EqualTo(Node):
         self.size = 1 + left.getSize() + right.getSize()
         self.left = left
         self.right = right
+        self.max_number_children = 2
 
     def toString(self, indent=0):
         return f"{self.left.toString()} == {self.right.toString()}"
@@ -438,6 +484,7 @@ class Plus(Node):
         self.size = 1 + left.getSize() + right.getSize()
         self.left = left
         self.right = right
+        self.max_number_children = 2
 
     def toString(self, indent=0):
         return f"({self.left.toString()} + {self.right.toString()})"
@@ -483,6 +530,7 @@ class Times(Node):
         self.size = 1 + left.getSize() + right.getSize()
         self.left = left
         self.right = right
+        self.max_number_children = 2
 
     def toString(self, indent=0):
         return f"({self.left.toString()} * {self.right.toString()})"
@@ -534,6 +582,7 @@ class Minus(Node):
         self.size = 1 + left.getSize() + right.getSize()
         self.left = left
         self.right = right
+        self.max_number_children = 2
 
     def toString(self, indent=0):
         return f"({self.left.toString()} - {self.right.toString()})"
@@ -579,6 +628,7 @@ class Divide(Node):
         self.size = 1 + left.getSize() + right.getSize()
         self.left = left
         self.right = right
+        self.max_number_children = 2
 
     def toString(self, indent=0):
         return f"({self.left.toString()} // {self.right.toString()})"
@@ -630,6 +680,7 @@ class Strategy(Node):
             self.size += next_statements.getSize()
         self.statement = statement
         self.next_statements = next_statements
+        self.max_number_children = 2
 
     def toString(self, indent=0):
         strategy_string = f"{self.statement.toString(0)}\n"
