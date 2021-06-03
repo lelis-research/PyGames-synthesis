@@ -23,17 +23,17 @@ class TestOwnStrategy(unittest.TestCase):
         self.str_representation += "if FallingFruitPosition < (PlayerPosition - (paddle_width * 0.5)):\n\t"
         self.str_representation += "return action[0]\n"
         self.str_representation += "return action[2]"
-        self.program = Strategy(
-            IT( 
-                GreaterThan( FallingFruitPosition(), Plus( PlayerPosition(), Times( VarScalar('paddle_width'), Constant(0.5) ) ) ),
-                    ReturnAction( VarFromArray('action', Constant(1)) )
+        self.program = Strategy.new(
+            IT.new( 
+                GreaterThan.new( FallingFruitPosition(), Plus.new( PlayerPosition(), Times.new( VarScalar.new('paddle_width'), Constant.new(0.5) ) ) ),
+                    ReturnAction.new( VarFromArray.new('action', Constant.new(1)) )
             ),
-            Strategy( 
-                IT( 
-                    LessThan( FallingFruitPosition(), Minus( PlayerPosition(), Times( VarScalar('paddle_width'), Constant(0.5) ) ) ), 
-                        ReturnAction( VarFromArray('action', Constant(0)) )
+            Strategy.new( 
+                IT.new( 
+                    LessThan.new( FallingFruitPosition(), Minus.new( PlayerPosition(), Times.new( VarScalar.new('paddle_width'), Constant.new(0.5) ) ) ), 
+                        ReturnAction.new( VarFromArray.new('action', Constant.new(0)) )
                 ),
-                ReturnAction( VarFromArray('action', Constant(2)) )
+                ReturnAction.new( VarFromArray.new('action', Constant.new(2)) )
             ),
         )
 
