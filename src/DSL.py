@@ -532,10 +532,10 @@ class Strategy(Node):
 Node.valid_children_types = [set([Strategy.className()])]
 
 Strategy.valid_first_statement = set([IT.className(), ITE.className()])
-Strategy.valid_next_statements = set([IT.className(), ITE.className(), ReturnAction.className(), None])
+Strategy.valid_next_statements = set([Strategy.className(), ReturnAction.className(), None])
 Strategy.valid_children_types = [Strategy.valid_first_statement, Strategy.valid_next_statements]
 
-IT.valid_if_cond = set([LessThan.className(), GreaterThan.className(), ITE.className()])
+IT.valid_if_cond = set([LessThan.className(), GreaterThan.className(), EqualTo.className()])
 IT.valid_if_body = set([ReturnAction.className()])
 IT.valid_children_types = [IT.valid_if_cond, IT.valid_if_body]
 
@@ -549,9 +549,12 @@ ReturnAction.valid_children_types = [ReturnAction.valid_action]
 
 Plus.valid_operands = set([Constant.className(),
                         VarScalar.className(),
-                        VarFromArray.className(),
                         FallingFruitPosition.className(),
-                        PlayerPosition.className()
+                        PlayerPosition.className(),
+                        Plus.className(),
+                        Minus.className(),
+                        Divide.className(),
+                        Times.className()
                     ])
 Plus.valid_children_types = [Plus.valid_operands, Plus.valid_operands]
 
@@ -566,12 +569,12 @@ Divide.valid_children_types = [Divide.valid_operands, Divide.valid_operands]
 
 LessThan.valid_operands = set([Constant.className(),
                             VarScalar.className(),
-                            VarFromArray.className(),
                             FallingFruitPosition.className(),
                             PlayerPosition.className(),
-                            LessThan.className(),
-                            GreaterThan.className(),
-                            EqualTo.className()
+                            Plus.className(),
+                            Minus.className(),
+                            Times.className(),
+                            Divide.className()
                         ])
 LessThan.valid_children_types = [LessThan.valid_operands, LessThan.valid_operands]
 
