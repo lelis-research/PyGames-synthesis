@@ -11,9 +11,9 @@ the synthesis process, and calls the synthesizer with the desired arguments.
 
 """
 
-from src.BUS import BUS
-from src.DSL import *
-from src.Evaluation import *
+from src.BUS.bus import BUS
+from src.BUS.bus_dsl import *
+from src.evaluation import *
 
 if __name__ == '__main__':
 
@@ -26,9 +26,9 @@ if __name__ == '__main__':
     operators = [IT, ITE, Strategy, ReturnAction, Plus, Times, Divide, Minus, 
         GreaterThan, LessThan, EqualTo]
     dsfs = [FallingFruitPosition, PlayerPosition]
-    constants = [Constant(0), Constant(1), Constant(2), Constant(0.5), Constant(0.3)]
-    scalars = [VarScalar('paddle_width'), VarFromArray('actions', Constant(0)), 
-        VarFromArray('actions', Constant(1)), VarFromArray('actions', Constant(2))]
+    constants = [Constant.new(0), Constant.new(1), Constant.new(2), Constant.new(0.5), Constant.new(0.3)]
+    scalars = [VarScalar.new('paddle_width'), VarFromArray.new('actions', Constant.new(0)), 
+        VarFromArray.new('actions', Constant.new(1)), VarFromArray.new('actions', Constant.new(2))]
 
     time, program = bus.synthesize(20, operators, constants, scalars, dsfs, eval_funct)
     print("Ran BUS for", time, "seconds\n")

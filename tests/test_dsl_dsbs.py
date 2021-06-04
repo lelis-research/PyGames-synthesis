@@ -1,5 +1,5 @@
 import unittest
-from src.DSL import LessThan, GreaterThan, EqualTo
+from src.dsl import LessThan, GreaterThan, EqualTo
 from unittest.mock import Mock
 
 def mockOperand(value):

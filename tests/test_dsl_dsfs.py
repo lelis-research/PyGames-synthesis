@@ -1,6 +1,6 @@
 import unittest
 from unittest.loader import makeSuite
-from src.DSL import PlayerPosition, FallingFruitPosition
+from src.dsl import PlayerPosition, FallingFruitPosition
 
 class TestPlayerPosition(unittest.TestCase):
 

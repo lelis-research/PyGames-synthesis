@@ -1,5 +1,5 @@
 import unittest
-from src.DSL import VarScalar, VarFromArray, Constant
+from src.dsl import VarScalar, VarFromArray, Constant
 from unittest.mock import Mock
 
 def Const(value):

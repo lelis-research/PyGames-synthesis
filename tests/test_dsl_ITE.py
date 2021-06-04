@@ -1,5 +1,5 @@
 import unittest
-from src.DSL import ITE, ReturnAction
+from src.dsl import ITE, ReturnAction
 from unittest.mock import Mock
 
 class TestITE(unittest.TestCase):

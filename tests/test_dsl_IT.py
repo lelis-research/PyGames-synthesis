@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import Mock
-from src.DSL import IT, ReturnAction
+from src.dsl import IT, ReturnAction
 
 class TestIT(unittest.TestCase):
 

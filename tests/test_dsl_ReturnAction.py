@@ -1,5 +1,5 @@
 import unittest
-from src.DSL import *
+from src.dsl import *
 from unittest.mock import Mock
 
 class TestReturnAction(unittest.TestCase):

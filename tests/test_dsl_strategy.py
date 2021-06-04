@@ -1,5 +1,5 @@
 import unittest
-from src.DSL import Strategy, IT
+from src.dsl import Strategy, IT
 from unittest.mock import Mock
 
 def FirstStatement(value):

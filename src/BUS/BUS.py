@@ -12,8 +12,8 @@ The evaluation object is defined in the Evaluation module.
 
 """
 from concurrent.futures import ProcessPoolExecutor
-from DSL import *
-from Evaluation import *
+from src.BUS.bus_dsl import *
+from src.evaluation import *
 import time
 
 class Plist:

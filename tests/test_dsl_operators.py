@@ -1,5 +1,5 @@
 import unittest
-from src.DSL import Minus, Times, Plus, Divide
+from src.dsl import Minus, Times, Plus, Divide
 from unittest.mock import Mock
 
 def mockOperand(value):

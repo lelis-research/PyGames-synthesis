@@ -13,7 +13,7 @@ from random import choice
 from pygame.constants import K_w, K_s, K_a, K_d
 import numpy as np
 import itertools
-import src.DSL as baseDSL
+import src.dsl as baseDSL
 
 """
 This class implements an AST node representing a constant.
