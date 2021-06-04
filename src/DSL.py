@@ -1,5 +1,5 @@
 """
-DSL.py 
+dsl.py 
 
 Author: Olivier Vadiavaloo
 
@@ -67,8 +67,8 @@ class Node:
         return self.max_number_children
 
     @classmethod
-    def get_valid_children_types(self):
-        return self.valid_children_types
+    def get_valid_children_types(cls):
+        return cls.valid_children_types.copy()
 
     @classmethod
     def className(cls):
@@ -292,20 +292,18 @@ class VarFromArray(Node):
     def new(cls, name, index):
         assert type(index).__name__ == Constant.className()
         inst = cls()
-        inst.add_child(name)
+        inst.name = name
         inst.add_child(index)
 
         return inst
     
     def to_string(self, indent=0):
-        name = self.get_children()[0]
-        index = self.get_children()[1]
-        return f"{name}[{index.to_string()}]"
+        index = self.get_children()[0]
+        return f"{self.name}[{index.to_string()}]"
 
     def interpret(self, env):
-        name = self.get_children()[0]
-        index = self.get_children()[1]
-        return env[name][index.interpret(env)]
+        index = self.get_children()[0]
+        return env[self.name][index.interpret(env)]
 
 
 """
@@ -521,3 +519,58 @@ class Strategy(Node):
             return next_statements.interpret(env)
 
         return res
+
+
+Node.valid_children_types = [set([Strategy.className()])]
+
+Strategy.valid_first_statement = set([IT.className(), ITE.className()])
+Strategy.valid_next_statements = set([IT.className(), ITE.className(), ReturnAction.className(), None])
+Strategy.valid_children_types = [Strategy.valid_first_statement, Strategy.valid_next_statements]
+
+IT.valid_if_cond = set([LessThan.className(), GreaterThan.className(), ITE.className()])
+IT.valid_if_body = set([ReturnAction.className()])
+IT.valid_children_types = [IT.valid_if_cond, IT.valid_if_body]
+
+ITE.valid_if_cond = IT.valid_if_cond
+ITE.valid_if_body = IT.valid_if_body
+ITE.valid_else_body = IT.valid_if_body
+ITE.valid_children_types = [ITE.valid_if_cond, ITE.valid_if_body, ITE.valid_else_body]
+
+ReturnAction.valid_action = set([VarFromArray.className()])
+ReturnAction.valid_children_types = [ReturnAction.valid_action]
+
+Plus.valid_operands = set([Constant.className(),
+                        VarScalar.className(),
+                        VarFromArray.className(),
+                        FallingFruitPosition.className(),
+                        PlayerPosition.className()
+                    ])
+Plus.valid_children_types = [Plus.valid_operands]
+
+Minus.valid_operands = Plus.valid_operands.copy()
+Minus.valid_children_types = [Minus.valid_operands]
+
+Times.valid_operands = Plus.valid_operands.copy()
+Times.valid_children_types = [Times.valid_operands]
+
+Divide.valid_operands = Plus.valid_operands.copy()
+Divide.valid_children_types = [Divide.valid_operands]
+
+LessThan.valid_operands = set([Constant.className(),
+                            VarScalar.className(),
+                            VarFromArray.className(),
+                            FallingFruitPosition.className(),
+                            PlayerPosition.className(),
+                            LessThan.className(),
+                            GreaterThan.className(),
+                            EqualTo.className()
+                        ])
+LessThan.valid_children_types = [LessThan.valid_operands]
+
+GreaterThan.valid_operands = LessThan.valid_operands.copy()
+GreaterThan.valid_children_types = [GreaterThan.valid_operands]
+
+EqualTo.valid_operands = LessThan.valid_operands.copy()
+EqualTo.valid_children_types = [EqualTo.valid_operands]
+
+VarFromArray.valid_children_types = [set()]
