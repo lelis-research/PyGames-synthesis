@@ -4,7 +4,7 @@ from unittest.mock import Mock
 
 def FirstStatement(value):
     statement = Mock()
-    statement.getSize.return_value = 1
+    statement.get_size.return_value = 1
     statement.interpret.return_value = value
     type(statement).__name__ = IT.className()
     return statement
@@ -12,7 +12,7 @@ def FirstStatement(value):
 
 def NextStatement(value):
     statement = Mock()
-    statement.getSize.return_value = 1
+    statement.get_size.return_value = 1
     statement.interpret.return_value = value
     type(statement).__name__ = Strategy.className()
     return statement
@@ -22,16 +22,16 @@ class TestStrategy(unittest.TestCase):
 
     def test_size_three(self):
         s = Strategy.new(FirstStatement(90), NextStatement(100))
-        self.assertEqual(s.getSize(), 2, 'Strategy object should have size 3')
+        self.assertEqual(s.get_size(), 2, 'Strategy object should have size 3')
 
     def test_size_none_next_statement(self):
         s = Strategy.new(FirstStatement(90), None)
-        self.assertEqual(s.getSize(), 1, 'Strategy object should have size 2')
+        self.assertEqual(s.get_size(), 1, 'Strategy object should have size 2')
 
     def test_size_change_strategy_size(self):
         s = Strategy.new(FirstStatement(10), NextStatement(6))
         s.size = 90
-        self.assertEqual(s.getSize(), 90, 'Strategy object should have size 90')
+        self.assertEqual(s.get_size(), 90, 'Strategy object should have size 90')
 
     def test_raises_assertion_error(self):
         first_statement = FirstStatement(10)

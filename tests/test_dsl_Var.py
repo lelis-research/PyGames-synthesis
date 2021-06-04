@@ -4,7 +4,7 @@ from unittest.mock import Mock
 
 def Const(value):
     const = Mock()
-    const.getSize.return_value = 1
+    const.get_size.return_value = 1
     const.interpret.return_value = value
     type(const).__name__ = Constant.className()
     return const
@@ -18,12 +18,12 @@ class TestVarScalar(unittest.TestCase):
 
     def test_size_one(self):
         var_scalar = VarScalar.new('SCALAR')
-        self.assertEqual(var_scalar.getSize(), 1, 'VarScalar object should have size 1')
+        self.assertEqual(var_scalar.get_size(), 1, 'VarScalar object should have size 1')
 
     def test_size_change_var_size(self):
         var_scalar = VarScalar.new('SCALAR')
         var_scalar.size = 191
-        self.assertEqual(var_scalar.getSize(), 191, 'VarScalar object should have size 191')
+        self.assertEqual(var_scalar.get_size(), 191, 'VarScalar object should have size 191')
 
     def test_interpret(self):
         var_scalar = VarScalar.new('SCALAR')
@@ -38,12 +38,12 @@ class TestVarFromArray(unittest.TestCase):
 
     def test_size_one(self):
         var_from_arr = VarFromArray.new('action', Const(0))
-        self.assertEqual(var_from_arr.getSize(), 2, 'VarFromArray object should have size 1')
+        self.assertEqual(var_from_arr.get_size(), 2, 'VarFromArray object should have size 1')
 
     def test_size_change_var_size(self):
         var_from_arr = VarFromArray.new('action', Const(0))
         var_from_arr.size = 45
-        self.assertEqual(var_from_arr.getSize(), 45, 'VarFromArray object should have size 45')
+        self.assertEqual(var_from_arr.get_size(), 45, 'VarFromArray object should have size 45')
 
     def test_interpret_index_zero(self):
         var_from_arr = VarFromArray.new('action', Const(0))

@@ -16,8 +16,8 @@ class TestIT(unittest.TestCase):
         
         type(self.if_body).__name__ = 'ReturnAction'
 
-        self.if_cond.getSize.return_value = 1
-        self.if_body.getSize.return_value = 1
+        self.if_cond.get_size.return_value = 1
+        self.if_body.get_size.return_value = 1
 
     def init_IT(self, cond, body):
         self.if_cond.interpret.return_value = self.env[cond]
@@ -28,22 +28,22 @@ class TestIT(unittest.TestCase):
         it = self.init_IT('TRUE', 'BODY')
 
         # cond and body both have size 1
-        self.assertEqual(it.getSize(), 3, 'IT object should have size 3')
+        self.assertEqual(it.get_size(), 3, 'IT object should have size 3')
         
     def test_size_change_it_size(self):
         it = self.init_IT('TRUE', 'BODY')
 
         # Manually change it.size to 100
         it.size = 100
-        self.assertEqual(it.getSize(), 100, 'IT object should have size 100')
+        self.assertEqual(it.get_size(), 100, 'IT object should have size 100')
 
     def test_size_change_arg_sizes(self):
         # Manually change cond.size and body.size,
         # and re-instantiate an IT object
         it = IT.new(self.if_cond, self.if_body)
-        it.get_children()[0].getSize.return_value = 12
-        it.get_children()[1].getSize.return_value = 3
-        self.assertEqual(it.getSize(), 3, 'IT object should have size 3')
+        it.get_children()[0].get_size.return_value = 12
+        it.get_children()[1].get_size.return_value = 3
+        self.assertEqual(it.get_size(), 3, 'IT object should have size 3')
 
     def test_interpret_false_cond(self):
         # Test interpret method for if-condition evaluating to false

@@ -18,9 +18,9 @@ class TestITE(unittest.TestCase):
         type(self.if_body).__name__ = 'ReturnAction'
         type(self.else_body).__name__ = 'ReturnAction'
 
-        self.if_cond.getSize.return_value = 1
-        self.if_body.getSize.return_value = 1
-        self.else_body.getSize.return_value = 1
+        self.if_cond.get_size.return_value = 1
+        self.if_body.get_size.return_value = 1
+        self.else_body.get_size.return_value = 1
 
     def init_ITE(self, if_cond, if_body, else_body):
         self.if_cond.interpret.return_value = self.env[if_cond]
@@ -30,22 +30,22 @@ class TestITE(unittest.TestCase):
 
     def test_size_four(self):
         ite = self.init_ITE('TRUE', 'IF_BODY', 'ELSE_BODY')
-        self.assertEqual(ite.getSize(), 4, 'ITE object should have size 4')
+        self.assertEqual(ite.get_size(), 4, 'ITE object should have size 4')
 
     def test_size_change_it_size(self):
         ite = self.init_ITE('TRUE', 'IF_BODY', 'ELSE_BODY')
 
         # Manually change the size of the ite instance
         ite.size = 100
-        self.assertEqual(ite.getSize(), 100, 'ITE object should have size 100')
+        self.assertEqual(ite.get_size(), 100, 'ITE object should have size 100')
 
     def test_size_change_arg_size(self):
         # Manually change the size of the arguments to the ITE constructor
         ite = ITE.new(self.if_cond, self.if_body, self.else_body)
-        ite.get_children()[0].getSize.return_value = 10
-        ite.get_children()[1].getSize.return_value = 10
-        ite.get_children()[2].getSize.return_value = 10
-        self.assertEqual(ite.getSize(), 4, 'ITE object should have size 4')
+        ite.get_children()[0].get_size.return_value = 10
+        ite.get_children()[1].get_size.return_value = 10
+        ite.get_children()[2].get_size.return_value = 10
+        self.assertEqual(ite.get_size(), 4, 'ITE object should have size 4')
 
     def test_interpret_false(self):
         # Test the interpret method with the if-condition evaluating to False

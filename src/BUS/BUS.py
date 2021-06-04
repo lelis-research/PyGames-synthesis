@@ -32,16 +32,16 @@ class Plist:
             self.insert(p)
         
     def insert(self, item):
-        if self.plist.get(item.getSize()) is None:
-            self.plist[item.getSize()] = {}
-            self.plist[item.getSize()][type(item).__name__] = []
-            self.plist[item.getSize()][type(item).__name__].append(item)
+        if self.plist.get(item.get_size()) is None:
+            self.plist[item.get_size()] = {}
+            self.plist[item.get_size()][type(item).__name__] = []
+            self.plist[item.get_size()][type(item).__name__].append(item)
             return
         
-        if self.plist[item.getSize()].get(type(item).__name__) is None:
-            self.plist[item.getSize()][type(item).__name__] = []
+        if self.plist[item.get_size()].get(type(item).__name__) is None:
+            self.plist[item.get_size()][type(item).__name__] = []
         
-        self.plist[item.getSize()][type(item).__name__].append(item)
+        self.plist[item.get_size()][type(item).__name__].append(item)
 
     def get(self, size, ptype=None):
         if ptype is None:
@@ -103,7 +103,7 @@ class BUS:
 
                 with ProcessPoolExecutor() as executor:
                     for arg, res in zip(ppool, executor.map(eval_funct.is_correct, ppool, chunksize=5)):
-                        print(f"{arg.toString()}, {res}")
+                        print(f"{arg.to_string()}, {res}")
                         if res:
                             return time.time() - start, arg
 
@@ -121,8 +121,8 @@ class BUS:
         nplist = []
         for op in self.grammar['operators']:
             for p in op.grow(self.plist.copy(), psize):
-                if p.toString() not in self.closed_list:
-                    self.closed_list.add(p.toString())
+                if p.to_string() not in self.closed_list:
+                    self.closed_list.add(p.to_string())
                     nplist.append(p)
                     yield p
         

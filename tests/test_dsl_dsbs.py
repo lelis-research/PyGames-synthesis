@@ -4,7 +4,7 @@ from unittest.mock import Mock
 
 def mockOperand(value):
     op = Mock()
-    op.getSize.return_value = 1
+    op.get_size.return_value = 1
     op.interpret.return_value = value
     return op
 
@@ -13,22 +13,22 @@ class TestLessThan(unittest.TestCase):
 
     def test_size_three(self):
         lt = LessThan.new(mockOperand(5), mockOperand(3))
-        self.assertEqual(lt.getSize(), 3, 'LessThan object should have size 3')
+        self.assertEqual(lt.get_size(), 3, 'LessThan object should have size 3')
 
     def test_size_change_lessThan_size(self):
         # Manually change lt.size to 100
         lt = LessThan.new(mockOperand(5), mockOperand(5))
         lt.size = 100
-        self.assertEqual(lt.getSize(), 100, 'LessThan object should have size 100')
+        self.assertEqual(lt.get_size(), 100, 'LessThan object should have size 100')
 
     def test_size_change_args_size(self):
         # Manually change the Operand sizes
         left = mockOperand(5)
         right = mockOperand(14)
         lt = LessThan.new(left, right)
-        left.getSize.return_value = 10
-        right.getSize.return_value = 10
-        self.assertEqual(lt.getSize(), 3, 'LessThan object should have size 3')
+        left.get_size.return_value = 10
+        right.get_size.return_value = 10
+        self.assertEqual(lt.get_size(), 3, 'LessThan object should have size 3')
 
     def test_interpret_true(self):
         lt = LessThan.new(mockOperand(3), mockOperand(10))
@@ -48,22 +48,22 @@ class TestGreaterThan(unittest.TestCase):
 
     def test_size_three(self):
         gt = GreaterThan.new(mockOperand(5), mockOperand(3))
-        self.assertEqual(gt.getSize(), 3, 'GreaterThan object should have size 3')
+        self.assertEqual(gt.get_size(), 3, 'GreaterThan object should have size 3')
 
     def test_size_change_lessThan_size(self):
         # Manually change gt.size to 100
         gt = GreaterThan.new(mockOperand(5), mockOperand(5))
         gt.size = 100
-        self.assertEqual(gt.getSize(), 100, 'GreaterThan object should have size 100')
+        self.assertEqual(gt.get_size(), 100, 'GreaterThan object should have size 100')
 
     def test_size_change_args_size(self):
         # Manually change the Operand sizes
         left = mockOperand(5)
         right = mockOperand(14)
         gt = GreaterThan.new(left, right)
-        left.getSize.return_value = 10
-        right.getSize.return_value = 14
-        self.assertEqual(gt.getSize(), 3, 'GreaterThan object should have size 3')
+        left.get_size.return_value = 10
+        right.get_size.return_value = 14
+        self.assertEqual(gt.get_size(), 3, 'GreaterThan object should have size 3')
 
     def test_interpret_true(self):
         gt = GreaterThan.new(mockOperand(10), mockOperand(3))
@@ -83,22 +83,22 @@ class TestEqualTo(unittest.TestCase):
 
     def test_size_three(self):
         eq = EqualTo.new(mockOperand(5), mockOperand(3))
-        self.assertEqual(eq.getSize(), 3, 'EqualTo object should have size 3')
+        self.assertEqual(eq.get_size(), 3, 'EqualTo object should have size 3')
 
     def test_size_change_lessThan_size(self):
         # Manually change eq.size to 100
         eq = EqualTo.new(mockOperand(5), mockOperand(5))
         eq.size = 100
-        self.assertEqual(eq.getSize(), 100, 'EqualTo object should have size 100')
+        self.assertEqual(eq.get_size(), 100, 'EqualTo object should have size 100')
 
     def test_size_change_args_size(self):
         # Manually change the mockOperand sizes
         left = mockOperand(5)
         right = mockOperand(14)
         eq = EqualTo.new(left, right)
-        left.getSize.return_value = 50
-        right.getSize.return_value = 10
-        self.assertEqual(eq.getSize(), 3, 'EqualTo object should have size 3')
+        left.get_size.return_value = 50
+        right.get_size.return_value = 10
+        self.assertEqual(eq.get_size(), 3, 'EqualTo object should have size 3')
 
     def test_interpret_true(self):
         eq = EqualTo.new(mockOperand(60), mockOperand(60))

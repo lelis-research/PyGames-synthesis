@@ -38,8 +38,8 @@ class TestOwnStrategy(unittest.TestCase):
         )
 
     def test_to_string(self):
-        print('\n' + self.program.toString())
-        self.assertEqual(self.program.toString(), self.str_representation, "Invalid string representation")
+        print('\n' + self.program.to_string())
+        self.assertEqual(self.program.to_string(), self.str_representation, "Invalid string representation")
 
     def test_action_right(self):
         self.env['paddle_width'] = 100

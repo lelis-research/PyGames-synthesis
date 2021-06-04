@@ -198,7 +198,7 @@ class LessThan(baseDSL.LessThan):
                                     if t2 in valid_nodes:
                                         for right in p2:
 
-                                            if left.toString() != right.toString():
+                                            if left.to_string() != right.to_string():
                                                 lt = LessThan.new(left, right)
                                                 nplist.append(lt)
                                                 yield lt
@@ -237,7 +237,7 @@ class GreaterThan(baseDSL.GreaterThan):
                                     if t2 in valid_nodes:
                                         for right in p2:
 
-                                            if left.toString() != right.toString():
+                                            if left.to_string() != right.to_string():
                                                 gt = GreaterThan.new(left, right)
                                                 nplist.append(gt)
                                                 yield gt
@@ -275,7 +275,7 @@ class EqualTo(baseDSL.EqualTo):
                                     if t2 in valid_nodes:
                                         for right in p2:
 
-                                            if left.toString() != right.toString():
+                                            if left.to_string() != right.to_string():
                                                 eq = EqualTo.new(left, right)
                                                 nplist.append(eq)
                                                 yield eq
@@ -311,7 +311,7 @@ class Plus(baseDSL.Plus):
                                 for t2, p2 in program_set_2.items():
                                     if t2 in valid_nodes:
                                         for right in p2:
-                                            if left.toString() != '0' and right.toString() != '0':
+                                            if left.to_string() != '0' and right.to_string() != '0':
                                                 plus = Plus.new(left, right)
                                                 nplist.append(plus)
                                                 yield plus
@@ -351,7 +351,7 @@ class Times(baseDSL.Times):
                                             eq = Times.new(right, left)
                                             is_equivalent = False
                                             for p in nplist:
-                                                if p.toString() == eq.toString():
+                                                if p.to_string() == eq.to_string():
                                                     is_equivalent = True
 
                                             if not is_equivalent:
@@ -390,7 +390,7 @@ class Minus(baseDSL.Minus):
                                     if t2 in valid_nodes:
                                         for right in p2:
                                             minus = Minus.new(left, right)
-                                            if left.toString() != right.toString() and right.toString() != '0':
+                                            if left.to_string() != right.to_string() and right.to_string() != '0':
                                                 nplist.append(minus)
                                                 yield minus
 
@@ -425,8 +425,8 @@ class Divide(baseDSL.Divide):
                                 for t2, p2 in program_set_2.items():
                                     if t2 in valid_nodes:
                                         for right in p2:
-                                            if right.toString() != '0' and left.toString() != '0':
-                                                if left.toString() != right.toString():
+                                            if right.to_string() != '0' and left.to_string() != '0':
+                                                if left.to_string() != right.to_string():
                                                     divide = Divide.new(left, right)
                                                     nplist.append(divide)
                                                     yield divide

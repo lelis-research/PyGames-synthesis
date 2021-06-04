@@ -12,30 +12,30 @@ class TestReturnAction(unittest.TestCase):
 
     def mockAction(self, value):
         action = Mock()
-        action.getSize.return_value = 1
+        action.get_size.return_value = 1
         action.interpret.return_value = self.env['action'][value]
         return action
 
     def test_size_two(self):
         # Test with action object of size 1
-        # ret_action should return 1 + action.getSize() = 1 + 1 = 2
+        # ret_action should return 1 + action.get_size() = 1 + 1 = 2
         action = self.mockAction('LEFT')
         ret_action = ReturnAction.new(action)
-        self.assertEqual(ret_action.getSize(), 2, 'ReturnAction object should have size 2')
+        self.assertEqual(ret_action.get_size(), 2, 'ReturnAction object should have size 2')
         
     def test_size_change_arg_size(self):
         # Manually change the mock action's size
         action = self.mockAction('LEFT')
         ret_action = ReturnAction.new(action)
-        ret_action.get_children()[0].getSize.return_value = 100
-        self.assertEqual(ret_action.getSize(), 2, 'ReturnAction object should have size 2')
+        ret_action.get_children()[0].get_size.return_value = 100
+        self.assertEqual(ret_action.get_size(), 2, 'ReturnAction object should have size 2')
 
     def test_size_change_action_size(self):
         # set action size to 1000
-        # action.getSize should still return 5 because getSize was changed to lambda x : 5
+        # action.get_size should still return 5 because get_size was changed to lambda x : 5
         ret_action = ReturnAction.new(self.mockAction('LEFT'))
         ret_action.size = 1000
-        self.assertEqual(ret_action.getSize(), 1000, 'ReturnAction object should size 1000')
+        self.assertEqual(ret_action.get_size(), 1000, 'ReturnAction object should size 1000')
 
     def test_interpret_left(self):
         # Test with action object with action string equal to 'LEFT'

@@ -33,4 +33,4 @@ if __name__ == '__main__':
     time, program = bus.synthesize(20, operators, constants, scalars, dsfs, eval_funct)
     print("Ran BUS for", time, "seconds\n")
     print("BUS returned the following strategy:\n")
-    print(program.toString())
+    print(program.to_string())
