@@ -66,6 +66,12 @@ class Node:
     def get_max_number_children(self):
         return self.max_number_children
 
+    @staticmethod
+    def instance(classname):
+        if classname in globals():
+            return globals()[classname]()
+        return classname
+
     @classmethod
     def get_valid_children_types(cls):
         return cls.valid_children_types.copy()
@@ -547,16 +553,16 @@ Plus.valid_operands = set([Constant.className(),
                         FallingFruitPosition.className(),
                         PlayerPosition.className()
                     ])
-Plus.valid_children_types = [Plus.valid_operands]
+Plus.valid_children_types = [Plus.valid_operands, Plus.valid_operands]
 
 Minus.valid_operands = Plus.valid_operands.copy()
-Minus.valid_children_types = [Minus.valid_operands]
+Minus.valid_children_types = [Minus.valid_operands, Minus.valid_operands]
 
 Times.valid_operands = Plus.valid_operands.copy()
-Times.valid_children_types = [Times.valid_operands]
+Times.valid_children_types = [Times.valid_operands, Times.valid_operands]
 
 Divide.valid_operands = Plus.valid_operands.copy()
-Divide.valid_children_types = [Divide.valid_operands]
+Divide.valid_children_types = [Divide.valid_operands, Divide.valid_operands]
 
 LessThan.valid_operands = set([Constant.className(),
                             VarScalar.className(),
@@ -567,10 +573,10 @@ LessThan.valid_operands = set([Constant.className(),
                             GreaterThan.className(),
                             EqualTo.className()
                         ])
-LessThan.valid_children_types = [LessThan.valid_operands]
+LessThan.valid_children_types = [LessThan.valid_operands, LessThan.valid_operands]
 
 GreaterThan.valid_operands = LessThan.valid_operands.copy()
-GreaterThan.valid_children_types = [GreaterThan.valid_operands]
+GreaterThan.valid_children_types = [GreaterThan.valid_operands, LessThan.valid_operands]
 
 EqualTo.valid_operands = LessThan.valid_operands.copy()
-EqualTo.valid_children_types = [EqualTo.valid_operands]
+EqualTo.valid_children_types = [EqualTo.valid_operands, EqualTo.valid_operands]
