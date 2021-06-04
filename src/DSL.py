@@ -84,21 +84,22 @@ class Constant(Node):
 
     def __init__(self):
         super(Constant, self).__init__()
-        self.max_number_children = 0
+        self.max_number_children = 1
+        self.size = 0
 
     @classmethod
     def new(cls, value):
         assert value in np.arange(0, 101, 0.01)
         inst = cls()
-        inst.value = value
+        inst.add_child(value)
         
         return inst
 
     def toString(self, indent=0):
-        return f"{self.value}"
+        return f"{self.get_children()[0]}"
 
     def interpret(self, env):
-        return self.value
+        return self.get_children()[0]
 
 
 """
@@ -257,20 +258,21 @@ class VarScalar(Node):
 
     def __init__(self):
         super(VarScalar, self).__init__()
-        self.max_number_children = 0
+        self.max_number_children = 1
+        self.size = 0
 
     @classmethod
     def new(cls, name):
         inst = cls()
-        inst.name = name
+        inst.add_child(name)
 
         return inst
 
     def toString(self, indent=0):
-        return f"{self.name}"
+        return f"{self.get_children()[0]}"
 
     def interpret(self, env):
-        return env[self.name]
+        return env[self.get_children()[0]]
 
 
 """
@@ -281,24 +283,27 @@ class VarFromArray(Node):
 
     def __init__(self):
         super(VarFromArray, self).__init__()
-        self.max_number_children = 1
+        self.max_number_children = 2
+        self.size = 0
 
     @classmethod
     def new(cls, name, index):
         assert type(index).__name__ == Constant.className()
         inst = cls()
+        inst.add_child(name)
         inst.add_child(index)
-        inst.name = name
 
         return inst
     
     def toString(self, indent=0):
-        index = self.get_children()[0]
-        return f"{self.name}[{index.toString()}]"
+        name = self.get_children()[0]
+        index = self.get_children()[1]
+        return f"{name}[{index.toString()}]"
 
     def interpret(self, env):
-        index = self.get_children()[0]
-        return env[self.name][index.interpret(env)]
+        name = self.get_children()[0]
+        index = self.get_children()[1]
+        return env[name][index.interpret(env)]
 
 
 """
