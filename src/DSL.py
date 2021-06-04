@@ -292,18 +292,20 @@ class VarFromArray(Node):
     def new(cls, name, index):
         assert type(index).__name__ == Constant.className()
         inst = cls()
-        inst.name = name
+        inst.add_child(name)
         inst.add_child(index)
 
         return inst
     
     def to_string(self, indent=0):
-        index = self.get_children()[0]
-        return f"{self.name}[{index.to_string()}]"
+        name = self.get_children()[0]
+        index = self.get_children()[1]
+        return f"{name}[{index.to_string()}]"
 
     def interpret(self, env):
-        index = self.get_children()[0]
-        return env[self.name][index.interpret(env)]
+        name = self.get_children()[0]
+        index = self.get_children()[1]
+        return env[name][index.interpret(env)]
 
 
 """
