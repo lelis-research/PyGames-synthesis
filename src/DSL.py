@@ -572,5 +572,3 @@ GreaterThan.valid_children_types = [GreaterThan.valid_operands]
 
 EqualTo.valid_operands = LessThan.valid_operands.copy()
 EqualTo.valid_children_types = [EqualTo.valid_operands]
-
-VarFromArray.valid_children_types = [set()]
