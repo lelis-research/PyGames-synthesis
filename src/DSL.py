@@ -306,12 +306,12 @@ class VarFromArray(Node):
     def to_string(self, indent=0):
         name = self.get_children()[0]
         index = self.get_children()[1]
-        return f"{name}[{index.to_string()}]"
+        return f"{name}[{index}]"
 
     def interpret(self, env):
         name = self.get_children()[0]
         index = self.get_children()[1]
-        return env[name][index.interpret(env)]
+        return env[name][index]
 
 
 """
