@@ -38,7 +38,7 @@ class TestVarFromArray(unittest.TestCase):
 
     def test_size_one(self):
         var_from_arr = VarFromArray.new('action', Const(0))
-        self.assertEqual(var_from_arr.get_size(), 1, 'VarFromArray object should have size 1')
+        self.assertEqual(var_from_arr.get_size(), 2, 'VarFromArray object should have size 1')
 
     def test_size_change_var_size(self):
         var_from_arr = VarFromArray.new('action', Const(0))
