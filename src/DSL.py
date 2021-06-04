@@ -34,23 +34,25 @@ class Node:
         self.children.append(child)
         self.current_child_num += 1
         
-        if child is not None:
-            self.size += child.getSize()
+        if isinstance(child, Node):
+            self.size += child.get_size()
+        elif child is not None:
+            self.size += 1
 
     def replace_child(self, child, i):
         if self.children[i] is not None:
-            self.size -= self.children[i].getSize()
+            self.size -= self.children[i].get_size()
 
         if child is not None:
-            self.size += child.getSize()
+            self.size += child.get_size()
 
         self.children[i] = child
 
-    def getSize(self):
+    def get_size(self):
         return self.size
 
-    def toString(self, indent=0):
-        raise Exception("Unimplemented method: toStrng")
+    def to_string(self, indent=0):
+        raise Exception("Unimplemented method: to_string")
 
     def interpret(self):
         raise Exception("Unimplemented method: interpret")
@@ -95,7 +97,7 @@ class Constant(Node):
         
         return inst
 
-    def toString(self, indent=0):
+    def to_string(self, indent=0):
         return f"{self.get_children()[0]}"
 
     def interpret(self, env):
@@ -119,9 +121,9 @@ class ReturnAction(Node):
 
         return inst
 
-    def toString(self, indent=0):
+    def to_string(self, indent=0):
         action = self.get_children()[0]
-        return f"return {action.toString()}"
+        return f"return {action.to_string()}"
 
     def interpret(self, env):
         action = self.get_children()[0]
@@ -148,7 +150,7 @@ class IT(Node):
 
         return inst
 
-    def toString(self, indent=0):
+    def to_string(self, indent=0):
         tab = ""
         for i in range(indent):
             tab += "\t"
@@ -156,8 +158,8 @@ class IT(Node):
         condition = self.get_children()[0]
         if_body = self.get_children()[1]
         
-        it_string = f"""{tab}if {condition.toString()}:\n"""
-        it_string += f"""{tab}\t{if_body.toString()}"""
+        it_string = f"""{tab}if {condition.to_string()}:\n"""
+        it_string += f"""{tab}\t{if_body.to_string()}"""
         return it_string
 
     def interpret(self, env):
@@ -190,7 +192,7 @@ class ITE(Node):
 
         return inst
 
-    def toString(self, indent=0):
+    def to_string(self, indent=0):
         tab = ""
         for i in range(indent):
             tab += "\t"
@@ -199,10 +201,10 @@ class ITE(Node):
         if_body = self.get_children()[1]
         else_body = self.get_children()[2]
 
-        ite_string = f"""{tab}if {condition.toString()}:\n"""
-        ite_string += f"""{tab}\t{if_body.toString()}\n"""
+        ite_string = f"""{tab}if {condition.to_string()}:\n"""
+        ite_string += f"""{tab}\t{if_body.to_string()}\n"""
         ite_string += f"""{tab}else:\n"""
-        ite_string += f"""{tab}\t{else_body.toString()}"""
+        ite_string += f"""{tab}\t{else_body.to_string()}"""
         return ite_string
 
     def interpret(self, env):
@@ -226,7 +228,7 @@ class PlayerPosition(Node):
         super(PlayerPosition, self).__init__()
         self.max_number_children = 0
 
-    def toString(self, indent=0):
+    def to_string(self, indent=0):
         return PlayerPosition.className()
 
     def interpret(self, env):
@@ -243,7 +245,7 @@ class FallingFruitPosition(Node):
         super(FallingFruitPosition, self).__init__()
         self.max_number_children = 0
 
-    def toString(self, indent=0):
+    def to_string(self, indent=0):
         return FallingFruitPosition.className()
 
     def interpret(self, env):
@@ -268,7 +270,7 @@ class VarScalar(Node):
 
         return inst
 
-    def toString(self, indent=0):
+    def to_string(self, indent=0):
         return f"{self.get_children()[0]}"
 
     def interpret(self, env):
@@ -295,10 +297,10 @@ class VarFromArray(Node):
 
         return inst
     
-    def toString(self, indent=0):
+    def to_string(self, indent=0):
         name = self.get_children()[0]
         index = self.get_children()[1]
-        return f"{name}[{index.toString()}]"
+        return f"{name}[{index.to_string()}]"
 
     def interpret(self, env):
         name = self.get_children()[0]
@@ -325,8 +327,8 @@ class LessThan(Node):
 
         return inst
 
-    def toString(self, indent=0):
-        return f"{self.get_children()[0].toString()} < {self.get_children()[1].toString()}"
+    def to_string(self, indent=0):
+        return f"{self.get_children()[0].to_string()} < {self.get_children()[1].to_string()}"
 
     def interpret(self, env):
         return self.get_children()[0].interpret(env) < self.get_children()[1].interpret(env)
@@ -351,8 +353,8 @@ class GreaterThan(Node):
 
         return inst
 
-    def toString(self, indent=0):
-        return f"{self.get_children()[0].toString()} > {self.get_children()[1].toString()}"
+    def to_string(self, indent=0):
+        return f"{self.get_children()[0].to_string()} > {self.get_children()[1].to_string()}"
 
     def interpret(self, env):
         return self.get_children()[0].interpret(env) > self.get_children()[1].interpret(env)
@@ -376,8 +378,8 @@ class EqualTo(Node):
 
         return inst
 
-    def toString(self, indent=0):
-        return f"{self.get_children()[0].toString()} == {self.get_children()[1].toString()}"
+    def to_string(self, indent=0):
+        return f"{self.get_children()[0].to_string()} == {self.get_children()[1].to_string()}"
 
     def interpret(self, env):
         return self.get_children()[0].interpret(env) == self.get_children()[1].interpret(env)
@@ -400,8 +402,8 @@ class Plus(Node):
 
         return inst
 
-    def toString(self, indent=0):
-        return f"({self.get_children()[0].toString()} + {self.get_children()[1].toString()})"
+    def to_string(self, indent=0):
+        return f"({self.get_children()[0].to_string()} + {self.get_children()[1].to_string()})"
 
     def interpret(self, env):
         return self.get_children()[0].interpret(env) + self.get_children()[1].interpret(env)
@@ -424,8 +426,8 @@ class Times(Node):
 
         return inst
 
-    def toString(self, indent=0):
-        return f"({self.get_children()[0].toString()} * {self.get_children()[1].toString()})"
+    def to_string(self, indent=0):
+        return f"({self.get_children()[0].to_string()} * {self.get_children()[1].to_string()})"
 
     def interpret(self, env):
         return self.get_children()[0].interpret(env) * self.get_children()[1].interpret(env)
@@ -448,8 +450,8 @@ class Minus(Node):
 
         return inst
 
-    def toString(self, indent=0):
-        return f"({self.get_children()[0].toString()} - {self.get_children()[1].toString()})"
+    def to_string(self, indent=0):
+        return f"({self.get_children()[0].to_string()} - {self.get_children()[1].to_string()})"
 
     def interpret(self, env):
         return self.get_children()[0].interpret(env) - self.get_children()[1].interpret(env)
@@ -472,8 +474,8 @@ class Divide(Node):
 
         return inst
 
-    def toString(self, indent=0):
-        return f"({self.get_children()[0].toString()} // {self.get_children()[1].toString()})"
+    def to_string(self, indent=0):
+        return f"({self.get_children()[0].to_string()} // {self.get_children()[1].to_string()})"
 
     
     def interpret(self, env):
@@ -500,13 +502,13 @@ class Strategy(Node):
 
         return inst
 
-    def toString(self, indent=0):
+    def to_string(self, indent=0):
         statement = self.get_children()[0]
         next_statements = self.get_children()[1]
 
-        strategy_string = f"{statement.toString(0)}\n"
+        strategy_string = f"{statement.to_string(0)}\n"
         if next_statements is not None:
-            strategy_string += f"{next_statements.toString()}"
+            strategy_string += f"{next_statements.to_string()}"
 
         return strategy_string
 
