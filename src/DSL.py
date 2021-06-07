@@ -40,13 +40,42 @@ class Node:
             self.size += 1
 
     def replace_child(self, child, i):
-        if self.children[i] is not None:
+        if isinstance(self.children[i], Node):
             self.size -= self.children[i].get_size()
+        elif child is not None:
+            self.size -= 1
 
-        if child is not None:
+        if isinstance(child, Node):
             self.size += child.get_size()
+        elif child is not None:
+            self.size += 1
 
         self.children[i] = child
+
+    def check_correct_size(self):
+        size_zero_nodes = set([
+                            Strategy.className(),
+                            Constant.className(),
+                            VarScalar.className(),
+                            VarFromArray.className()
+        ])
+        
+        if type(self).__name__ in size_zero_nodes:
+            size = 0
+        else:
+            size = 1
+        
+        for child in self.get_children():
+            if isinstance(child, Node):
+                child_size = child.check_correct_size()
+            else:
+                child_size = 1
+            size += child_size
+
+        if size != self.get_size():
+            self.size = size
+        
+        return self.size
 
     def get_size(self):
         return self.size
