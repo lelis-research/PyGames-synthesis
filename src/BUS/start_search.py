@@ -4,7 +4,7 @@ start_search.py
 Author: Olivier Vadiavaloo
 
 Description:
-This module implements the driver code of the synthesizer.
+This module implements the driver code of the BUS synthesizer.
 
 It declares the operators, dsfs, constants and scalars to be used during
 the synthesis process, and calls the synthesizer with the desired arguments.
