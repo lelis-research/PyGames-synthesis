@@ -10,6 +10,7 @@ algorithm.
 """
 import numpy as np
 import copy as cp
+import time
 import random
 from math import exp
 from numpy.random import beta, rand
@@ -22,81 +23,100 @@ class SimulatedAnnealing:
         terminal_nodes = []
 
         for child_type in valid_ith_child_types:
-            child = child_type()
-            if child_type.className() in [VarFromArray.className(), VarScalar.className(), Constant.className()] \
-                or child.get_max_children_number() == 0:
+            if child_type is None:
+                terminal_nodes.append(child_type)
+                continue
+
+            child = Node.instance(child_type)
+            if child_type in [VarFromArray.className(), VarScalar.className(), Constant.className()] \
+                or child.get_max_number_children() == 0:
                 terminal_nodes.append(child)
 
         if terminal_nodes == 0:
             for child_type in valid_ith_child_types:
-                child = child_type()
+                child = Node.instance(child_type)
+
                 if child.get_max_children_number() == 1:
                     terminal_nodes.append(child)
 
         if len(terminal_nodes) > 0:
             return random.choice(terminal_nodes)
 
-        return random.choice(list(valid_ith_child_types))
+        return Node.instance(random.choice(list(valid_ith_child_types)))
 
-    def complete_program(self, p, depth, max_depth): 
+    def complete_program(self, p, depth, max_depth):
+        if p is None:
+            return
+
         for i in range(p.get_max_number_children()):
             valid_ith_child_types = p.get_valid_children_types()[i]
 
             # if p is a scalar or constant, no need to call complete_program on child
             if isinstance(p, VarScalar) or isinstance(p, VarFromArray) or isinstance(p, Constant):
-                child = random.choice(list(valid_ith_child_types))()
+                child = random.choice(list(valid_ith_child_types))
                 p.add_child(child)
 
             # if max depth is exceeded, get a terminal node
             elif depth >= max_depth:
                 child = self.get_terminal_node(p, valid_ith_child_types)
                 p.add_child(child)
+                self.complete_program(child, depth+1, max_depth)
 
             # else choose a random child node
             else:
-                child = random.choice(list(valid_ith_child_types))
+                child = Node.instance(random.choice(list(valid_ith_child_types)))
                 p.add_child(child)
                 self.complete_program(child, depth+1, max_depth)
 
-    def generate_random(self, grammar):
+    def generate_random(self):
         initial_nodes = Node.get_valid_children_types()[0]
-        random_p_class = random.choice(list(initial_nodes))
-        random_p = random_p_class()
+        random_p = Node.instance(random.choice(list(initial_nodes)))
         self.complete_program(random_p, self.initial_depth, self.max_depth)
+        random_p.check_correct_size()
         return random_p
 
     def mutate_inner_nodes(self, p, index):
         self.processed_nodes += 1
+
+        if not isinstance(p, Node):
+            return False
 
         for i in range(p.get_max_number_children()):
 
             if index == self.processed_nodes:
                 valid_ith_child_types = p.get_valid_children_types()[i]
                 
-                child = random.choice(list(valid_ith_child_types))
-                self.complete_program(child, 0, 4)
+                child = Node.instance(random.choice(list(valid_ith_child_types)))
+
+                if isinstance(child, Node):
+                    self.complete_program(child, 0, 4)
                 p.replace_child(child, i)
 
                 return True
 
-            return self.mutate_inner_nodes(p.get_children()[i], index)
+            if self.mutate_inner_nodes(p.get_children()[i], index):
+                return True
 
         return False
 
-
     def mutate(self, p):
-        index = random.randrange(p.getSize())
+        # print('p.get_size()', p.get_size())
+        index = random.randint(0, p.get_size())
+        # print('index', index)
+        # print()
 
         # root will be mutated
         if index == 0:
             ptypes = Node.get_valid_children_types()[0]
-            p = random.choice(list(ptypes))()
+            p = Node.instance(random.choice(list(ptypes)))
             self.complete_program(p, 0, 4)
+            p.check_correct_size()
 
             return p
 
         self.processed_nodes = 0
         self.mutate_inner_nodes(p, index)
+        p.check_correct_size()
 
         return p
 
@@ -104,37 +124,56 @@ class SimulatedAnnealing:
         return current_t / (1 + self.alpha * epoch)
 
     def is_accept(self, j_diff, temp):
-        rand = random.random()
-        if rand < exp(j_diff * (self.beta / temp)):
+        rand = random.uniform(0, 1)
+        if rand < min(1, exp(j_diff * (self.beta / temp))):
             return True
         return False
 
+    def init_var_child_types(self, grammar):
+        VarFromArray.valid_children_types = [set(grammar['arrays']), set(grammar['array_indexes'])]
+        VarScalar.valid_children_types = [set(grammar['scalars'])]
+        Constant.valid_children_types = [set(grammar['constants'])]
+
     def synthesize(self, grammar, current_t, final_t, eval_funct):
-        best = self.generate_random(grammar)
-        best_eval = eval_funct.evaluate(best)
-        current, current_eval = best, best_eval
+        start = time.time()
 
         self.alpha = 0.9
         self.beta = 100
         self.initial_depth = 0
         self.max_depth = 4
+        self.initial_t = current_t
 
-        epoch = 0
-        while current_t > final_t:
-            candidate = self.mutate(cp.deepcopy(current))
-            candidate_eval = eval_funct.evaluate(current)
-            if candidate_eval < best_eval:
-                best, best_eval = candidate, candidate_eval
-                print("New best:")
-                print(best.toString())
-                print("-" * 50)
+        self.init_var_child_types(grammar)
 
-            j_diff = current_eval - candidate_eval
-            
-            if j_diff < 0 or self.is_accept(j_diff, current_t):
-                current, current_eval = candidate, candidate_eval
-            
-            current_t = self.reduce_temp(current_t, epoch)
-            epoch += 1
+        best = None
+        best_eval = None
 
+        while time.time() - start < 1200:
+            current_t = self.initial_t
+
+            current = self.generate_random()
+            current_eval = eval_funct.evaluate(best)
+
+            if best is None or current_eval > best_eval:
+                best, best_eval = current, current_eval
+
+            epoch = 0
+            while current_t > final_t:
+                candidate = self.mutate(cp.deepcopy(current))
+                candidate_eval = eval_funct.evaluate(candidate)
+
+                if candidate_eval > best_eval:
+                    best, best_eval = candidate, candidate_eval
+                    with open('log_sa.txt', 'a') as best_p_file:
+                        best_p_file.write(f"new best:\n{candidate.to_string()}\nscore: {candidate_eval}\n\n")
+
+                j_diff = candidate_eval - current_eval
+                
+                if j_diff > 0 or self.is_accept(j_diff, current_t):
+                    current, current_eval = candidate, candidate_eval
+                
+                current_t = self.reduce_temp(current_t, epoch)
+                epoch += 1
+
+        print(time.time() - start)
         return best, best_eval
