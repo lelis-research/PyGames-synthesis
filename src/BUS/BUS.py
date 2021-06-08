@@ -14,7 +14,10 @@ The evaluation object is defined in the Evaluation module.
 from concurrent.futures import ProcessPoolExecutor
 from src.BUS.bus_dsl import *
 from src.evaluation import *
+from os.path import join
 import time
+import os
+import datetime
 
 class Plist:
 
@@ -60,6 +63,17 @@ class Plist:
 
 class BUS:
 
+    def __init__(self, time_limit, log_file):
+        self.time_limit = time_limit
+        self.log_file = log_file
+        self.log_dir = 'logs/'
+
+        if not os.path.exists(self.log_dir):
+            os.makedirs(self.log_dir)
+
+        now = datetime.datetime.now()
+        self.log_file += "-" + now.strftime("%d-%b-%Y--%H:%M")
+
     def synthesize(self, bound, operators, constants, scalars, 
                 dsfs, eval_funct):
         """
@@ -81,9 +95,9 @@ class BUS:
         number_of_evaluations = 0
         START_PROGRAM_EVAL = 1000
         for i in range(1, bound):
-            print('-' * 10)         # print horizontal line
-            print('psize', i)
-            print('-' * 10)
+            with open(join(self.log_dir + self.log_file), "a") as p_file:
+                p_file.write(f'psize {i}')
+                p_file.write('_' * 100)
 
             for p in self.grow(i):
                 number_of_evaluations += 1
@@ -103,15 +117,21 @@ class BUS:
 
                 with ProcessPoolExecutor() as executor:
                     for arg, res in zip(ppool, executor.map(eval_funct.is_correct, ppool, chunksize=5)):
-                        print(f"{arg.to_string()}, {res}")
+                        
+                        with open(join(self.log_dir + self.log_file), "a") as p_file:
+                            p_file.write('=' * 100)
+                            p_file.write(f'psize: {arg.get_size()}, is_correct: {res}')
+                            p_file.write('=' * 100)
+                            p_file.write(arg.to_string())
+
                         if res:
                             return time.time() - start, arg
 
                 ppool = []
 
                 end = time.time()
-                if (end - start) > 1800:
-                    print('timeout: 30 mins has elapsed\n')
+                if (end - start) > self.time_limit:
+                    print(f'timeout: {self.time_limit // 3600} hours have elapsed\n')
                     return end, None
         print()
 
