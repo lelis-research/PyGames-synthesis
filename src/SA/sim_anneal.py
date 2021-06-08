@@ -12,12 +12,26 @@ import numpy as np
 import copy as cp
 import time
 import random
+import os
+import datetime
 from math import exp
 from numpy.random import beta, rand
 from src.dsl import *
 from src.evaluation import *
+from os.path import join
 
 class SimulatedAnnealing:
+
+    def __init__(self, time_limit, log_file):
+        self.time_limit = time_limit
+        self.log_file = log_file
+        self.log_dir = 'logs/'
+
+        if not os.path.exists(self.log_dir):
+            os.makedirs(self.log_dir)
+
+        now = datetime.datetime.now()
+        self.log_file += '-' + now.strftime("%d-%b-%Y--%H:%M")
 
     def get_terminal_node(self, p, valid_ith_child_types):
         terminal_nodes = []
@@ -148,7 +162,7 @@ class SimulatedAnnealing:
         best = None
         best_eval = None
 
-        while time.time() - start < 1200:
+        while time.time() - start < self.time_limit:
             current_t = self.initial_t
 
             current = self.generate_random()
@@ -164,8 +178,12 @@ class SimulatedAnnealing:
 
                 if candidate_eval > best_eval:
                     best, best_eval = candidate, candidate_eval
-                    with open('log_sa.txt', 'a') as best_p_file:
-                        best_p_file.write(f"new best:\n{candidate.to_string()}\nscore: {candidate_eval}\n\n")
+                    with open(join(self.log_dir + self.log_file), 'a') as best_p_file:
+                        best_p_file.write('=' * 100)
+                        best_p_file.write('New Best')
+                        best_p_file.write('=' * 100)
+                        best_p_file.write(f'psize: {candidate.get_size()}, pscore: {candidate_eval}')
+                        best_p_file.write(f'\n{candidate.to_string()}')
 
                 j_diff = candidate_eval - current_eval
                 
