@@ -78,7 +78,7 @@ class BUS:
                 dsfs, eval_funct):
         """
         Implementation of Bottom-Up Search to synthesize program_decide_columns for
-        the Can't Stop game
+        the Catcher game
         """
         
         start = time.time()
