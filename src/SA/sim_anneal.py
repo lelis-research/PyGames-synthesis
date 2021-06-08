@@ -31,7 +31,7 @@ class SimulatedAnnealing:
             os.makedirs(self.log_dir)
 
         now = datetime.datetime.now()
-        self.log_file += '-' + now.strftime("%d-%b-%Y--%H:%M")
+        self.log_file += '-' + now.strftime("%d-%b-%Y--%H-%M")
 
     def get_terminal_node(self, p, valid_ith_child_types):
         terminal_nodes = []
@@ -180,9 +180,11 @@ class SimulatedAnnealing:
                     best, best_eval = candidate, candidate_eval
                     with open(join(self.log_dir + self.log_file), 'a') as best_p_file:
                         best_p_file.write('=' * 100)
-                        best_p_file.write('New Best')
+                        best_p_file.write('\n')
+                        best_p_file.write('New Best\n')
                         best_p_file.write('=' * 100)
-                        best_p_file.write(f'psize: {candidate.get_size()}, pscore: {candidate_eval}')
+                        best_p_file.write('\n')
+                        best_p_file.write(f'psize: {candidate.get_size()}, pscore: {candidate_eval}\n')
                         best_p_file.write(f'\n{candidate.to_string()}')
 
                 j_diff = candidate_eval - current_eval
