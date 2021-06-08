@@ -15,12 +15,12 @@ from src.BUS.bus import BUS
 from src.BUS.bus_dsl import *
 from src.evaluation import *
 
-if __name__ == '__main__':
+def start_bus(time_limit, log_file, score_threshold):
 
     bus = BUS()
 
     # Initialize the evaluation object
-    eval_funct = Evaluation(0)
+    eval_funct = Evaluation(score_threshold)
     
     # Initialize the arguments to the synthesizer
     operators = [IT, ITE, Strategy, ReturnAction, Plus, Times, Divide, Minus, 
