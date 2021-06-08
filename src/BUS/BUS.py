@@ -120,12 +120,17 @@ class BUS:
                         
                         with open(join(self.log_dir + self.log_file), "a") as p_file:
                             p_file.write('=' * 100)
-                            p_file.write(f'psize: {arg.get_size()}, is_correct: {res}')
-                            p_file.write('=' * 100)
-                            p_file.write(arg.to_string())
+                            p_file.write('\n')
+                            p_file.write(f'psize: {arg.get_size()}, new best strategy: {res}')
+                            
+                            if res:
+                                p_file.write(f' time: {time.time() - start}\n')
+                            else:
+                                p_file.write('\n')
 
-                        if res:
-                            return time.time() - start, arg
+                            p_file.write('=' * 100)
+                            p_file.write('\n')
+                            p_file.write(arg.to_string())
 
                 ppool = []
 
