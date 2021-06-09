@@ -31,7 +31,7 @@ class Optimizer:
         original_values = []
         i = 1
         queue = []
-        queue.append(self.tree)
+        queue.append(self.ast)
         while len(queue) > 0:
             node = queue.pop(0)
             if isinstance(node, VarFromArray) or isinstance(node, VarScalar):
@@ -41,19 +41,20 @@ class Optimizer:
                 node_name = 'Const' + str(i)
                 i += 1
                 original_values.append(node)
-                interval = (node.get_children()[0] - 0.1, node.get_children()[0] + 0.1)
+                interval = (node.get_children()[0] - 10, node.get_children()[0] + 10)
                 pbounds[node_name] = interval
             
             else:
-                for child in node.get_children():
-                    queue.append(child)
+                if isinstance(node, Node):
+                    for child in node.get_children():
+                        queue.append(child)
 
         return pbounds, original_values
 
     def set_const_value(self, values):
         queue = []
         i = 1
-        queue.append(self.tree)
+        queue.append(self.ast)
         while len(queue) > 0:
             node = queue.pop(0)
 
@@ -67,8 +68,9 @@ class Optimizer:
                     node.replace_child(values[node_name], 0)
             
             else:
-                for child in node.get_children():
-                    queue.append(child)
+                if isinstance(node, Node):
+                    for child in node.get_children():
+                        queue.append(child)
         return
 
     def evaluation_fun(self, **kwargs):
@@ -82,7 +84,7 @@ class Optimizer:
 
         const_range_list, original_values = self.get_const_range()
         if len(original_values) == 0:
-            return original_values, False
+            return original_values, 0, False
 
         if os.path.exists(self.log_file):
             os.remove(self.log_file)
@@ -105,12 +107,14 @@ class Optimizer:
                 for n in [5, 10, 25, 60, 100]:
                     bayesOpt.maximize(init_points=20, n_iter=n)
                     assert bayesOpt.max['target'] < current_score
+                    current_score = bayesOpt.max['target']
                     load_logs(bayesOpt, logs=[self.log_file])
             else:
                 bayesOpt.maximize(init_points=20, n_iter=200)
+                current_score = bayesOpt.max['target']
             
             self.set_const_value(bayesOpt.max['params'])
-            return bayesOpt.max['params'], True
+            return bayesOpt.max['params'], current_score, True
         except:
             self.set_const_value(original_values)
-            return original_values, False
+            return original_values, initial_ast_score, False
