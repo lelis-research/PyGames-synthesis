@@ -23,8 +23,12 @@ from src.Optimizer.optimizer import *
 
 class SimulatedAnnealing:
 
-    def __init__(self, time_limit, log_file):
+    def __init__(self, time_limit, log_file, run_optimizer):
         self.time_limit = time_limit
+        self.is_triage = run_optimizer['triage']
+        self.run_optimizer = run_optimizer['run_optimizer']
+        self.n_iter = run_optimizer['iterations']
+        self.kappa = run_optimizer['kappa']
         self.log_file = log_file
         self.log_dir = 'logs/'
 
@@ -163,7 +167,8 @@ class SimulatedAnnealing:
         best = None
         best_eval = None
 
-        self.optimizer = Optimizer(eval_funct, False)
+        if self.run_optimizer:
+            self.optimizer = Optimizer(eval_funct, self.is_triage, self.n_iter, self.kappa)
 
         while time.time() - start < self.time_limit:
             current_t = self.initial_t
