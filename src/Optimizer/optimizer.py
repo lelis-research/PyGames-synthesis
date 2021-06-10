@@ -16,10 +16,11 @@ import os
 
 class Optimizer:
 
-    def __init__(self, eval_funct, is_triage, iterations):
+    def __init__(self, eval_funct, is_triage, iterations, kappa):
         self.eval_funct = eval_funct
         self.is_triage = is_triage
         self.iterations = iterations
+        self.kappa = kappa
         if is_triage:
             self.iter_breakdown = self.break_down(iterations)
 
@@ -92,7 +93,7 @@ class Optimizer:
             verbose=0
         )
 
-        utility = UtilityFunction(kind='ucb', kappa=2.5, xi=0.0)
+        utility = UtilityFunction(kind='ucb', kappa=self.kappa, xi=0.0)
 
         current_max_score = self.initial_score
         current_argmax_params = self.original_values
@@ -123,7 +124,7 @@ class Optimizer:
             verbose=0
         )
 
-        bayesOpt.maximize(init_points=20, n_iter=self.iterations)
+        bayesOpt.maximize(init_points=20, n_iter=self.iterations, kappa=self.kappa)
         target, params = bayesOpt.max['target'], bayesOpt.max['params']
         if target < self.initial_score:
             is_optimized = False
