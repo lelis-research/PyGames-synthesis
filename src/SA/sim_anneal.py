@@ -19,6 +19,7 @@ from numpy.random import beta, rand
 from src.dsl import *
 from src.evaluation import *
 from os.path import join
+from src.Optimizer.optimizer import *
 
 class SimulatedAnnealing:
 
@@ -162,6 +163,8 @@ class SimulatedAnnealing:
         best = None
         best_eval = None
 
+        self.optimizer = Optimizer(eval_funct, False)
+
         while time.time() - start < self.time_limit:
             current_t = self.initial_t
 
@@ -177,6 +180,11 @@ class SimulatedAnnealing:
                 candidate_eval = eval_funct.evaluate(candidate)
 
                 if candidate_eval > best_eval:
+                    optimized_const_values, new_score, is_optimized = self.optimizer.optimize(candidate, candidate_eval)
+
+                    if is_optimized:
+                        candidate_eval = new_score
+
                     best, best_eval = candidate, candidate_eval
                     with open(join(self.log_dir + self.log_file), 'a') as best_p_file:
                         best_p_file.write('=' * 100)
@@ -185,7 +193,7 @@ class SimulatedAnnealing:
                         best_p_file.write('=' * 100)
                         best_p_file.write('\n')
                         best_p_file.write(f'psize: {candidate.get_size()}, pscore: {candidate_eval}\n')
-                        best_p_file.write(f'\n{candidate.to_string()}')
+                        best_p_file.write(f'\n{candidate.to_string()}\n')
 
                 j_diff = candidate_eval - current_eval
                 
