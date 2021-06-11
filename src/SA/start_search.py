@@ -12,6 +12,7 @@ the synthesis process, and calls the synthesizer with the desired arguments.
 """
 from src.SA.sim_anneal import *
 from src.evaluation import *
+from src.Utils.logger import *
 
 def start_sa(time_limit, log_file, run_optimizer):
     grammar = {}
@@ -34,7 +35,12 @@ def start_sa(time_limit, log_file, run_optimizer):
     grammar['arrays'] = ['actions']
     grammar['array_indexes'] = [0, 1, 2]
 
-    sa = SimulatedAnnealing(time_limit, log_file, run_optimizer)
+    logger = Logger(
+        log_file,
+        'Simulated Annealing',
+        {**run_optimizer, **{'time': time_limit}}
+    )
+    sa = SimulatedAnnealing(time_limit, logger, run_optimizer)
 
     eval_funct = Evaluation(0)
     sa.synthesize(grammar, 2000, 1, eval_funct)
