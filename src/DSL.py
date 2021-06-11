@@ -324,7 +324,6 @@ class VarFromArray(Node):
 
     @classmethod
     def new(cls, name, index):
-        assert type(index).__name__ == Constant.className()
         inst = cls()
         inst.add_child(name)
         inst.add_child(index)
@@ -334,7 +333,7 @@ class VarFromArray(Node):
     def to_string(self, indent=0):
         name = self.get_children()[0]
         index = self.get_children()[1]
-        if isinstance(index, Node):
+        if isinstance(index, Node) or type(index).__name__ == Constant.className():
             index = index.to_string()
         
         return f"{name}[{index}]"
