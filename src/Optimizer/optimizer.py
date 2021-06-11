@@ -12,7 +12,6 @@ from src.dsl import *
 from src.evaluation import Evaluation
 from bayes_opt import BayesianOptimization, UtilityFunction
 import numpy as np
-import os
 
 class Optimizer:
 
@@ -23,8 +22,6 @@ class Optimizer:
         self.kappa = kappa
         if is_triage:
             self.iter_breakdown = self.break_down(iterations)
-
-        self.log_file = './logs.json'
 
     def get_const_range(self):
         pbounds = {}
@@ -141,11 +138,6 @@ class Optimizer:
         self.const_range_list, self.original_values = self.get_const_range()
         if len(self.original_values) == 0:
             return self.original_values, 0, False
-
-        if os.path.exists(self.log_file):
-            os.remove(self.log_file)
-        else:
-            print(f'{self.log_file} does not exist')
 
         try:
             if self.is_triage:
