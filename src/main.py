@@ -87,7 +87,7 @@ def main():
         print('log', log_file)
         print('time_limit', time_limit)
         print('score', score_threshold)
-        input()
+        input('Press Enter to start search')
     
     if algorithm == 'SimulatedAnnealing':
         start_sa(time_limit, log_file, run_optimizer)
