@@ -11,7 +11,6 @@ that represent programs written in the DSL designed for playing the Catcher game
 from random import choice
 from pygame.constants import K_w, K_s, K_a, K_d
 import numpy as np
-import itertools
 
 """
 This is a base class representing the Node of an abstract-
@@ -537,6 +536,10 @@ class Strategy(Node):
     def new(cls, statement, next_statements):
         assert type(statement).__name__ in [IT.className(), ITE.className()]
         assert type(next_statements).__name__ in [Strategy.className(), ReturnAction.className(), type(None).__name__]
+
+        if type(statement).__name__ == ITE.className():
+            assert type(next_statements) is None
+        
         inst = cls()
         inst.add_child(statement)
         inst.add_child(next_statements)
