@@ -8,35 +8,23 @@ This file contains the code implementing the simulated annealing
 algorithm.
 
 """
-import numpy as np
 import copy as cp
 import time
 import random
-import os
-import datetime
 from math import exp
-from numpy.random import beta, rand
 from src.dsl import *
 from src.evaluation import *
-from os.path import join
 from src.Optimizer.optimizer import *
 
 class SimulatedAnnealing:
 
-    def __init__(self, time_limit, log_file, run_optimizer):
+    def __init__(self, time_limit, logger, run_optimizer):
         self.time_limit = time_limit
         self.is_triage = run_optimizer['triage']
         self.run_optimizer = run_optimizer['run_optimizer']
         self.n_iter = run_optimizer['iterations']
         self.kappa = run_optimizer['kappa']
-        self.log_file = log_file
-        self.log_dir = 'logs/'
-
-        if not os.path.exists(self.log_dir):
-            os.makedirs(self.log_dir)
-
-        now = datetime.datetime.now()
-        self.log_file += '-' + now.strftime("%d-%b-%Y--%H-%M")
+        self.logger = logger
 
     def get_terminal_node(self, p, valid_ith_child_types):
         terminal_nodes = []
@@ -63,7 +51,7 @@ class SimulatedAnnealing:
 
         return Node.instance(random.choice(list(valid_ith_child_types)))
 
-    def complete_program(self, p, depth, max_depth):
+    def complete_program(self, p, depth, max_depth, max_size):
         if p is None:
             return
 
@@ -76,21 +64,21 @@ class SimulatedAnnealing:
                 p.add_child(child)
 
             # if max depth is exceeded, get a terminal node
-            elif depth >= max_depth:
+            elif depth >= max_depth or p.get_size() >= max_size:
                 child = self.get_terminal_node(p, valid_ith_child_types)
                 p.add_child(child)
-                self.complete_program(child, depth+1, max_depth)
+                self.complete_program(child, depth+1, max_depth, max_size)
 
             # else choose a random child node
             else:
                 child = Node.instance(random.choice(list(valid_ith_child_types)))
                 p.add_child(child)
-                self.complete_program(child, depth+1, max_depth)
+                self.complete_program(child, depth+1, max_depth, max_size)
 
     def generate_random(self):
         initial_nodes = Node.get_valid_children_types()[0]
         random_p = Node.instance(random.choice(list(initial_nodes)))
-        self.complete_program(random_p, self.initial_depth, self.max_depth)
+        self.complete_program(random_p, self.initial_depth, self.max_depth, self.max_size)
         random_p.check_correct_size()
         return random_p
 
@@ -108,7 +96,7 @@ class SimulatedAnnealing:
                 child = Node.instance(random.choice(list(valid_ith_child_types)))
 
                 if isinstance(child, Node):
-                    self.complete_program(child, 0, 4)
+                    self.complete_program(child, self.initial_depth, self.max_depth, self.max_size-p.get_size())
                 p.replace_child(child, i)
 
                 return True
@@ -128,7 +116,7 @@ class SimulatedAnnealing:
         if index == 0:
             ptypes = Node.get_valid_children_types()[0]
             p = Node.instance(random.choice(list(ptypes)))
-            self.complete_program(p, 0, 4)
+            self.complete_program(p, self.initial_depth, self.max_depth, self.max_size)
             p.check_correct_size()
 
             return p
@@ -155,11 +143,13 @@ class SimulatedAnnealing:
 
     def synthesize(self, grammar, current_t, final_t, eval_funct):
         start = time.time()
+        self.logger.set_start(start)
 
         self.alpha = 0.9
         self.beta = 100
         self.initial_depth = 0
         self.max_depth = 4
+        self.max_size = 50
         self.initial_t = current_t
 
         self.init_var_child_types(grammar)
@@ -170,6 +160,7 @@ class SimulatedAnnealing:
         if self.run_optimizer:
             self.optimizer = Optimizer(eval_funct, self.is_triage, self.n_iter, self.kappa)
 
+        iterations = 0
         while time.time() - start < self.time_limit:
             current_t = self.initial_t
 
@@ -180,25 +171,25 @@ class SimulatedAnnealing:
                 best, best_eval = current, current_eval
 
             epoch = 0
+            mutations = 0
             while current_t > final_t:
                 candidate = self.mutate(cp.deepcopy(current))
+                mutations += 1
                 candidate_eval = eval_funct.evaluate(candidate)
 
                 if candidate_eval > best_eval:
+                    pdescr = {'header': 'New Best Program', 'psize': candidate.get_size(), 'score': candidate_eval}
+                    self.logger.log_program(candidate.to_string(), pdescr)
+
                     optimized_const_values, new_score, is_optimized = self.optimizer.optimize(candidate, candidate_eval)
 
                     if is_optimized:
+                        pdescr = {'header': 'Optimized Program', 'psize': candidate.get_size(), 'score': candidate_eval}
+                        self.logger.log_program(candidate.to_string(indent=1), pdescr)
                         candidate_eval = new_score
 
+                    self.logger.log('Mutations: ' + str(mutations), end='\n\n')
                     best, best_eval = candidate, candidate_eval
-                    with open(join(self.log_dir + self.log_file), 'a') as best_p_file:
-                        best_p_file.write('=' * 100)
-                        best_p_file.write('\n')
-                        best_p_file.write('New Best\n')
-                        best_p_file.write('=' * 100)
-                        best_p_file.write('\n')
-                        best_p_file.write(f'psize: {candidate.get_size()}, pscore: {candidate_eval}\n')
-                        best_p_file.write(f'\n{candidate.to_string()}\n')
 
                 j_diff = candidate_eval - current_eval
                 
@@ -208,5 +199,8 @@ class SimulatedAnnealing:
                 current_t = self.reduce_temp(current_t, epoch)
                 epoch += 1
 
-        print(time.time() - start)
+            iterations += 1
+
+        self.logger.log('Total iterations: ' + str(iterations), end='\n\n')
+        self.logger.log('Running Time: ' + str(time.time() - start) + 'seconds')
         return best, best_eval
