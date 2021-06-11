@@ -14,17 +14,16 @@ The evaluation object is defined in the Evaluation module.
 from concurrent.futures import ProcessPoolExecutor
 from src.BUS.bus_dsl import *
 from src.evaluation import *
-from os.path import join
+from src.Optimizer.optimizer import *
 import time
-import os
-import datetime
 
 class Plist:
 
     def __init__(self, constants=[], scalars=[], dsfs=[]):
         self.plist = {}
         
-        for const in constants:
+        for value in constants:
+            const = Constant.new(value)
             self.insert(const)
 
         for scalar in scalars:
@@ -63,16 +62,13 @@ class Plist:
 
 class BUS:
 
-    def __init__(self, time_limit, log_file):
+    def __init__(self, time_limit, logger, run_optimizer):
         self.time_limit = time_limit
-        self.log_file = log_file
-        self.log_dir = 'logs/'
-
-        if not os.path.exists(self.log_dir):
-            os.makedirs(self.log_dir)
-
-        now = datetime.datetime.now()
-        self.log_file += "-" + now.strftime("%d-%b-%Y--%H:%M")
+        self.logger = logger
+        self.run_optimizer = run_optimizer['run_optimizer']
+        self.is_triage = run_optimizer['triage']
+        self.kappa = run_optimizer['kappa']
+        self.n_iter = run_optimizer['iterations']
 
     def synthesize(self, bound, operators, constants, scalars, 
                 dsfs, eval_funct):
@@ -82,6 +78,7 @@ class BUS:
         """
         
         start = time.time()
+        self.logger.set_start(start)
         self.closed_list = set()
         self.grammar = {}         
         
@@ -92,12 +89,13 @@ class BUS:
         
         self.plist = Plist(constants, scalars, dsfs)
 
+        if self.run_optimizer:
+            optimizer = Optimizer(eval_funct, self.is_triage, self.n_iter, self.kappa)
+
         number_of_evaluations = 0
         START_PROGRAM_EVAL = 1000
         for i in range(1, bound):
-            with open(join(self.log_dir + self.log_file), "a") as p_file:
-                p_file.write(f'psize {i}')
-                p_file.write('_' * 100)
+            self.logger.log('Exploring Programs of Size: ' + str(i))
 
             for p in self.grow(i):
                 number_of_evaluations += 1
@@ -117,30 +115,24 @@ class BUS:
 
                 with ProcessPoolExecutor() as executor:
                     for arg, res in zip(ppool, executor.map(eval_funct.is_correct, ppool, chunksize=5)):
-                        
-                        with open(join(self.log_dir + self.log_file), "a") as p_file:
-                            p_file.write('=' * 100)
-                            p_file.write('\n')
-                            p_file.write(f'psize: {arg.get_size()}, new best strategy: {res}')
-                            
-                            if res:
-                                p_file.write(f' time: {time.time() - start}\n')
-                            else:
-                                p_file.write('\n')
+                        pdescr = {'header': 'Evaluated Program', 'psize': arg.get_size(), 'score': res[1]}
+                        self.logger.log_program(arg.to_string(), pdescr)
+                        self.logger.log('Correct: ' + str(res[1]))
 
-                            p_file.write('=' * 100)
-                            p_file.write('\n')
-                            p_file.write(arg.to_string())
+                        if res[1]:
+                            const_param_values, score, is_optimized = optimizer.optimize(arg, res[0])
+                            if is_optimized:
+                                pdescr = {'header': 'Optimized Program', 'psize': arg.get_size(), 'score': score}
+                                self.logger.log_program(arg.to_string(indent=1), pdescr)
 
                 ppool = []
 
                 end = time.time()
                 if (end - start) > self.time_limit:
-                    print(f'timeout: {self.time_limit // 3600} hours have elapsed\n')
-                    return end, None
-        print()
+                    self.logger.log('Running Time: ' + str(round(end, 2)) + 'seconds')
+                    return
 
-        return time.time() - start, None
+            self.logger.log('Finished Exploring Programs of Size: ' + str(i))
             
     def grow(self, psize):
         nplist = []
