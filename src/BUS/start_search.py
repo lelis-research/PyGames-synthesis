@@ -14,10 +14,18 @@ the synthesis process, and calls the synthesizer with the desired arguments.
 from src.BUS.bus import BUS
 from src.BUS.bus_dsl import *
 from src.evaluation import *
+from src.Utils.logger import *
+import random
 
-def start_bus(time_limit, log_file, score_threshold):
+def start_bus(time_limit, log_file, score_threshold, run_optimizer):
 
-    bus = BUS()
+    logger = Logger(
+        log_file,
+        'Bottom-Up Search (BUS)',
+        {**run_optimizer, **{'time': time_limit}}
+    )
+
+    bus = BUS(time_limit, logger, run_optimizer)
 
     # Initialize the evaluation object
     eval_funct = Evaluation(score_threshold)
@@ -26,11 +34,9 @@ def start_bus(time_limit, log_file, score_threshold):
     operators = [IT, ITE, Strategy, ReturnAction, Plus, Times, Divide, Minus, 
         GreaterThan, LessThan, EqualTo]
     dsfs = [FallingFruitPosition, PlayerPosition]
-    constants = [Constant.new(0), Constant.new(1), Constant.new(2), Constant.new(0.5), Constant.new(0.3)]
-    scalars = [VarScalar.new('paddle_width'), VarFromArray.new('actions', Constant.new(0)), 
-        VarFromArray.new('actions', Constant.new(1)), VarFromArray.new('actions', Constant.new(2))]
+    # constants = np.arange(0, 101, 0.01).tolist()
+    constants = [round(random.uniform(0, 101), 2), round(random.uniform(0, 101), 2)]
+    scalars = [VarScalar.new('paddle_width'), VarFromArray.new('actions', 0), 
+        VarFromArray.new('actions', 1), VarFromArray.new('actions', 2)]
 
-    time, program = bus.synthesize(20, operators, constants, scalars, dsfs, eval_funct)
-    print("Ran BUS for", time, "seconds\n")
-    print("BUS returned the following strategy:\n")
-    print(program.to_string())
+    bus.synthesize(30, operators, constants, scalars, dsfs, eval_funct)
