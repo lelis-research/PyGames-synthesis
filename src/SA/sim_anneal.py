@@ -202,5 +202,5 @@ class SimulatedAnnealing:
             iterations += 1
 
         self.logger.log('Total iterations: ' + str(iterations), end='\n\n')
-        self.logger.log('Running Time: ' + str(time.time() - start) + 'seconds')
+        self.logger.log('Running Time: ' + str(round(time.time() - start, 2)) + 'seconds')
         return best, best_eval
