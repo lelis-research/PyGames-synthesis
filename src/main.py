@@ -10,27 +10,59 @@ to run the synthesizer with. For example, the score_threshold, paths
 to log files to store the results of the synthesis and an optional
 running time limit.
 """
-import argparse
+import argparse, warnings
 from src.BUS.start_search import start_bus
 from src.SA.start_search import start_sa
 from src.evaluation import *
 from src.BUS.bus import *
 from src.SA.sim_anneal import *
 
-def main():
-    parser = argparse.ArgumentParser()
+def kappa_float(string):
+    try:
+        return float(string)
+    except:
+        raise argparse.ArgumentTypeError('Kappa value has to be between 1 and 10 with 3 decimal places only')
 
-    parser.add_argument('-search', action='store', dest='search_algorithm',
+
+def main():
+
+    parser = argparse.ArgumentParser(
+            prog='catcher-synthesizer',
+            usage='%(prog)s [OPTIONS]',
+            description='Synthesize strategies for Catcher',
+            epilog='Happy Synthesizing! :-)'
+    )
+
+    parser.add_argument('-l', '--log', action='store', dest='log_file', default='log',
+                        help='Name of log file in which results of search will be stored')
+
+    parser.add_argument('--no-warn', action='store_true', dest='hide_warning',
+                        help='Hide warning messages')
+
+    parser.add_argument('-o', '--optimize', action='store_true', dest='optimize',
+                        help='Run Bayesian Optimizer on top of synthesizer')
+
+    parser.add_argument('--optimizer-iter', type=int, dest='n_iter', default=200,
+                        help='Number of iterations that the optimization process is run. Must be used with --optimize option')
+
+    parser.add_argument('--optimizer-kappa', type=kappa_float, dest='kappa', default=2.5,
+                        choices=np.arange(1, 10.001, 0.001).tolist(), metavar='KAPPA',
+                        help='Kappa value to use with Bayesian Optimizer. Must be used with --optimize option')
+
+    parser.add_argument('--optimizer-triage', action='store_true', dest='triage',
+                        help='Run Bayesian Optimizer with triage. Must be used with --optimize option')
+    
+    parser.add_argument('--score', type=float, action='store', dest='score_threshold', default=200.00,
+                        help='Initial score threshold to be achieved by programs synthesized with BUS')
+
+    parser.add_argument('-s', '-S','--search', action='store', dest='search_algorithm',
                         default='SimulatedAnnealing',
                         help='Search Algorithm (Simulated Annealing or Bottom-Up Search)')
 
-    parser.add_argument('-log', action='store', dest='log_file',
-                        help='Name of log file in which results of search will be stored')
+    parser.add_argument('--show-args', action='store_true', dest='show_args',
+                        help='Show arguments passed in to synthesizer')
 
-    parser.add_argument('-score', action='store', dest='score_threshold', default=200,
-                        help='Score threshold to be attained by synthesized program by BUS')
-
-    parser.add_argument('-time', action='store', dest='time_limit', default=300,
+    parser.add_argument('-t', '--time', action='store', dest='time_limit', default=300,
                         help='Running time limit in seconds')
 
     parameters = parser.parse_args()
@@ -39,12 +71,29 @@ def main():
     time_limit = int(parameters.time_limit)
     log_file = parameters.log_file
     score_threshold = int(parameters.score_threshold)
+    is_triage = parameters.triage
+    is_optimize_true = parameters.optimize
+    iterations = parameters.n_iter
+    kappa = parameters.kappa
 
+    if parameters.hide_warning:
+        warnings.filterwarnings('ignore')
+
+    run_optimizer = {'run_optimizer': is_optimize_true, 'iterations': iterations, 'kappa': kappa, 'triage': is_triage}
+
+    if parameters.show_args:
+        print('optimizer', run_optimizer)
+        print('algorithm', algorithm)
+        print('log', log_file)
+        print('time_limit', time_limit)
+        print('score', score_threshold)
+        input()
+    
     if algorithm == 'SimulatedAnnealing':
-        start_sa(time_limit, log_file)
+        start_sa(time_limit, log_file, run_optimizer)
 
     if algorithm == 'BUS':
-        start_bus(time_limit, log_file, score_threshold)
+        start_bus(time_limit, log_file, score_threshold, run_optimizer)
 
 
 if __name__ == '__main__':
