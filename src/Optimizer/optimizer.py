@@ -38,7 +38,7 @@ class Optimizer:
                 node_name = 'Const' + str(i)
                 i += 1
                 original_values.append(node.get_children()[0])
-                interval = (node.get_children()[0] - 10, node.get_children()[0] + 10)
+                interval = (0.001, 100.001)
                 pbounds[node_name] = interval
             
             else:
@@ -121,6 +121,7 @@ class Optimizer:
             verbose=0
         )
 
+        is_optimized = True
         bayesOpt.maximize(init_points=20, n_iter=self.iterations, kappa=self.kappa)
         target, params = bayesOpt.max['target'], bayesOpt.max['params']
         if target < self.initial_score:
