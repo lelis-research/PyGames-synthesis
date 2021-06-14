@@ -19,7 +19,9 @@ from src.SA.sim_anneal import *
 
 def kappa_float(string):
     try:
-        return float(string)
+        value = float(string)
+        assert value in np.arange(0, 10, 0.001).tolist()
+        return value
     except:
         raise argparse.ArgumentTypeError('Kappa value has to be between 1 and 10 with 3 decimal places only')
 
@@ -45,8 +47,7 @@ def main():
     parser.add_argument('--optimizer-iter', type=int, dest='n_iter', default=200,
                         help='Number of iterations that the optimization process is run. Must be used with --optimize option')
 
-    parser.add_argument('--optimizer-kappa', type=kappa_float, dest='kappa', default=2.5,
-                        choices=np.arange(1, 10.001, 0.001).tolist(), metavar='KAPPA',
+    parser.add_argument('--optimizer-kappa', type=kappa_float, dest='kappa', default=2.5, metavar='KAPPA',
                         help='Kappa value to use with Bayesian Optimizer. Must be used with --optimize option')
 
     parser.add_argument('--optimizer-triage', action='store_true', dest='triage',
