@@ -37,7 +37,7 @@ class Optimizer:
             if isinstance(node, Constant):
                 node_name = 'Const' + str(i)
                 i += 1
-                original_values.append(node)
+                original_values.append(node.get_children()[0])
                 interval = (node.get_children()[0] - 10, node.get_children()[0] + 10)
                 pbounds[node_name] = interval
             
