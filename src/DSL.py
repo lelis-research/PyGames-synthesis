@@ -29,6 +29,9 @@ class Node:
         self.actionname = 'actions'
 
     def add_child(self, child):
+        if type(self).__name__ == Constant.className():
+            assert type(child).__name__ != Constant.className()
+
         assert len(self.children) < self.max_number_children
         self.children.append(child)
         self.current_child_num += 1
@@ -39,9 +42,12 @@ class Node:
             self.size += 1
 
     def replace_child(self, child, i):
+        if type(self).__name__ == Constant.className():
+            assert type(child).__name__ != Constant.className()
+        
         if isinstance(self.children[i], Node):
             self.size -= self.children[i].get_size()
-        elif child is not None:
+        elif self.children[i] is not None:
             self.size -= 1
 
         if isinstance(child, Node):
