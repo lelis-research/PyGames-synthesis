@@ -1,7 +1,7 @@
 from src.dsl import Constant, FallingFruitPosition, GreaterThan, IT, PlayerPosition, ReturnAction, Strategy
-import unittest
 from src.Optimizer.optimizer import Optimizer
-from unittest.mock import patch, Mock
+from unittest.mock import DEFAULT, patch, Mock
+import unittest
 
 class TestOptimizer(unittest.TestCase):
 
@@ -13,7 +13,6 @@ class TestOptimizer(unittest.TestCase):
         if 10 > 0:
             return actions[0]
         """
-
         self.mock_const_1 = Mock()
         self.mock_const_1.__class__ = Constant
         self.mock_const_1.get_children.return_value = [10]
@@ -62,6 +61,56 @@ class TestOptimizer(unittest.TestCase):
         optimizer.set_const_value(values)
         self.assertEqual(self.mock_const_1.get_children()[0], 70, 'const_1 should have value 70')
         self.assertEqual(self.mock_const_2.get_children()[0], 80, 'const_2 should have value 80')
+
+    def test_triage_optimize_called(self):
+        triage_optimizer = Optimizer(None, True, 200, 2.5)
+        triage_optimizer.triage_optimize = Mock()
+        triage_optimizer.optimize(self.mock_ast, 0)
+        triage_optimizer.triage_optimize.assert_called_once()
+
+    def test_non_triage_optimize_called(self):
+        nontriage_optimizer = Optimizer(None, False, 200, 2.5)
+        nontriage_optimizer.non_triage_optimize = Mock()
+        nontriage_optimizer.optimize(self.mock_ast, 0)
+        nontriage_optimizer.non_triage_optimize.assert_called_once()
+
+    def test_triage_optimize_true(self):
+        self.score = 100
+        def increase_score(x):
+            self.score += 100
+            return self.score - 100
+        
+        eval_funct = Mock()
+        eval_funct.evaluate.side_effect = increase_score
+        optimizer = Optimizer(eval_funct, True, 200, 2.5)
+        results = optimizer.optimize(self.mock_ast, 0)
+        self.assertTrue(results[2])
+
+    def test_triage_optimize_false(self):
+        eval_funct = Mock()
+        eval_funct.evaluate.return_value = 100
+        optimizer = Optimizer(eval_funct, True, 200, 2.5)
+        results = optimizer.optimize(self.mock_ast, 0)
+        self.assertFalse(results[2])
+
+    def test_nontriage_optimize_true(self):
+        self.score = 100
+        def increase_score(x):
+            self.score += 100
+            return self.score - 100
+        
+        eval_funct = Mock()
+        eval_funct.evaluate.side_effect = increase_score
+        optimizer = Optimizer(eval_funct, False, 200, 2.5)
+        results = optimizer.optimize(self.mock_ast, 0)
+        self.assertTrue(results[2])
+
+    def test_nontriage_optimize_false(self):
+        eval_funct = Mock()
+        eval_funct.evaluate.return_value = 0
+        optimizer = Optimizer(eval_funct, False, 200, 2.5)
+        results = optimizer.optimize(self.mock_ast, 0)
+        self.assertFalse(results[2])
         
 
 if __name__ == '__main__':
