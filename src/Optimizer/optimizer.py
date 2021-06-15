@@ -99,12 +99,13 @@ class Optimizer:
             # Run Bayesian Optimization
             for _ in range(i):
                 next_point = bayesOpt.suggest(utility)
-                target = self.evaluation_fun(next_point)
+                self.set_const_value(next_point)
+                target = self.eval_funct.evaluate(self.ast)
                 bayesOpt.register(params=next_point, target=target)
 
             # Compare results with previous runs of the optimizer
             target, params = bayesOpt.max['target'], bayesOpt.max['params']
-            if target < current_max_score:
+            if target <= current_max_score:
                 is_optimized = False
                 break
 
@@ -124,7 +125,7 @@ class Optimizer:
         is_optimized = True
         bayesOpt.maximize(init_points=20, n_iter=self.iterations, kappa=self.kappa)
         target, params = bayesOpt.max['target'], bayesOpt.max['params']
-        if target < self.initial_score:
+        if target <= self.initial_score:
             is_optimized = False
             params = self.original_values
             target = self.initial_score
