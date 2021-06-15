@@ -167,6 +167,10 @@ class SimulatedAnnealing:
             current = self.generate_random()
             current_eval = eval_funct.evaluate(best)
 
+            if iterations == 0:
+                pdescr = {'header': 'Initial Program', 'psize': current.get_size(), 'score': current_eval}
+                self.logger.log_program(current.to_string(), pdescr)
+
             if best is None or current_eval > best_eval:
                 best, best_eval = current, current_eval
 
@@ -177,16 +181,18 @@ class SimulatedAnnealing:
                 mutations += 1
                 candidate_eval = eval_funct.evaluate(candidate)
 
-                if candidate_eval > best_eval:
-                    pdescr = {'header': 'New Best Program', 'psize': candidate.get_size(), 'score': candidate_eval}
-                    self.logger.log_program(candidate.to_string(), pdescr)
-
+                if self.run_optimizer:
                     optimized_const_values, new_score, is_optimized = self.optimizer.optimize(candidate, candidate_eval)
 
                     if is_optimized:
-                        pdescr = {'header': 'Optimized Program', 'psize': candidate.get_size(), 'score': candidate_eval}
+                        pdescr = {'header': 'Optimized Program', 'psize': candidate.get_size(), 'score': new_score}
                         self.logger.log_program(candidate.to_string(indent=1), pdescr)
+                        self.logger.log('Previous Score: ' + str(candidate_eval), end='\n\n')
                         candidate_eval = new_score
+
+                if candidate_eval > best_eval:
+                    pdescr = {'header': 'New Best Program', 'psize': candidate.get_size(), 'score': candidate_eval}
+                    self.logger.log_program(candidate.to_string(), pdescr)
 
                     self.logger.log('Mutations: ' + str(mutations), end='\n\n')
                     best, best_eval = candidate, candidate_eval
