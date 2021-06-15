@@ -11,6 +11,8 @@ https://pygame-learning-environment.readthedocs.io/en/latest/user/games/catcher.
 
 """
 ### import game from Pygame-Learning-Environment ###
+from pygame_games.ple.games.catcher import Catcher
+from pygame_games.ple.ple import PLE
 
 class Evaluation:
 
