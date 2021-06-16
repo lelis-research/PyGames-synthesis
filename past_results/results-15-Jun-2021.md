@@ -35,45 +35,79 @@ The results of each experiment is stored in the user-specified log file in a log
 
 | Experiment # |     Synthesizer     |  Optimizer  | Triage | Kappa | Iterations | Running Time | Best Score |
 |:------------:|:-------------------:| :---------: |:------:|:-----:|:----------:|:------------:|:----------:|
-|      1       | Simulated Annealing |      No     |   No   |  2.5  |    200     |    4 days    |
-|      2       | Simulated Annealing |     Yes     |   No   |  2.5  |    200     |    4 days    |
-|      3       | Simulated Annealing |     Yes     |  Yes   |  2.5  |    200     |    4 days    |
-|      4       | Simulated Annealing |     Yes     |   No   |  5.0  |   1000     |    4 days    |
-|      5       | Simulated Annealing |     Yes     |  Yes   |  5.0  |   1000     |    4 days    |
+|      1       | Simulated Annealing |      No     |   No   |  2.5  |    200     |    4 days    |   1569.0   |
+|      2       | Simulated Annealing |     Yes     |   No   |  2.5  |    200     |    4 days    | **1662.0** |
+|      3       | Simulated Annealing |     Yes     |  Yes   |  2.5  |    200     |    4 days    |   1428.0   |
+|      4       | Simulated Annealing |     Yes     |   No   |  5.0  |   1000     |    4 days    |   1110.0   |
+|      5       | Simulated Annealing |     Yes     |  Yes   |  5.0  |   1000     |    4 days    |   1428.0   |
 
 ```python
 # Best Program found by synthesizer in experiment #1
-# psize: 
-# score: 
-# Elapsed Time: 
+# Simulated Annealing, No optimizer, Hide Warnings
+# psize: 17
+# score: 1569.0
+# Elapsed Time: 50 mins
+if PlayerPosition < ((FallingFruitPosition - PlayerPosition) * 59.620000000000005):
+        return actions[1]
+else:
+        return actions[2]
+return actions[0] 
 ```
 
 ```python
 # Best Program found by synthesizer in experiment #2
-# psize:
-# score:
-# Elapsed Time:
+# Simulated Annealing, Optimizer, No triage, Hide Warnings
+# psize: 35
+# score: 1662.0
+# Elapsed Time: 6hrs 12 mins
+if (PlayerPosition + 2.2058418999301765) > FallingFruitPosition:
+        return actions[0]
+if (PlayerPosition // ((FallingFruitPosition - (paddle_width - PlayerPosition)) + 7.22)) < FallingFruitPosition:
+        return actions[1]
+if paddle_width > 18.345999244646677:
+        return actions[0]
+else:
+        return actions[2]
+
 ```
 
 ```python
 # Best Program found by synthesizer in experiment #3
-# psize: 
-# score:
-# Elapsed Time:
+# Simulated Annealing, Optimizer, Triage, Hide Warnings
+# psize: 28
+# score: 1428.0
+# Elapsed Time: 39 mins
+if paddle_width < 92.35000000000001:
+        return actions[1]
+if (FallingFruitPosition + FallingFruitPosition) < (88.0 + ((FallingFruitPosition + 11.36) * (FallingFruitPosition - PlayerPosition))):
+        return actions[1]
+else:
+        return actions[0]
 ```
 
 ```python
 # Best Program found by synthesizer in experiment #4
-# psize:
-# score:
-# Elapsed Time:
+# Simulated Annealing, Optimizer, No Triage, Kappa=5.0, Iterations=1000, Hide Warnings
+# psize: 13
+# score: 1110.0
+# Elapsed Time: 6hrs 48 mins
+if PlayerPosition > FallingFruitPosition:
+        return actions[0]
+else:
+        return actions[1]
+return actions[1]
 ```
 
 ```python
 # Best Program found by synthesizer in experiment #5
-# psize:
-# score:
-# Elapsed Time:
+# Simulated Annealing, Optimizer, No Triage, Kappa=5.0, Iterations=1000, Hide Warnings
+# psize: 13
+# score: 1428.0
+# Elapsed Time: 9hrs 35 mins
+if FallingFruitPosition > (PlayerPosition + 5.21):
+        return actions[1]
+else:
+        return actions[0]
 ```
 
 ## Discussion
