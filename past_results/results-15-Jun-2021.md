@@ -163,7 +163,7 @@ if FallingFruitPosition < (PlayerPosition - (paddle_width // 2)):
 
 - In the third experiment, the bayesian optimizer was used with **triage**, a kappa value of **2.5** and **200** optimization steps. The best solution, with a size of 28 and a score of 1428.0, was obtained after 39 mins only.
 
-    - The program achieves a strong score again, but is not able to beat the previous two solutions.
+    - The program achieves a strong score again, but is not able to beat the programs in experiments 1 and 2.
     
     - The optimization does not seem to perform as well as in experiment 2 here and the reason is likely because the number of optimization steps is too small, which makes it more likely for the optimize method to return after the first batch of optimization steps. This is because the local space of parameters hasn't been explored enough to improve the score of the solution.
 
