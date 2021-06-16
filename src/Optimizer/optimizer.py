@@ -94,7 +94,7 @@ class Optimizer:
 
         current_max_score = self.initial_score
         current_argmax_params = self.original_values
-        is_optimized = True
+        is_optimized = False
         for i in self.iter_breakdown:
             # Run Bayesian Optimization
             for _ in range(i):
@@ -105,12 +105,12 @@ class Optimizer:
 
             # Compare results with previous runs of the optimizer
             target, params = bayesOpt.max['target'], bayesOpt.max['params']
-            if target <= current_max_score:
-                is_optimized = False
+            if target > current_max_score:
+                is_optimized = True
+                current_max_score = target
+                current_argmax_params = params
+            else:
                 break
-
-            current_max_score = target
-            current_argmax_params = params
 
         self.set_const_value(current_argmax_params)
         return current_argmax_params, current_max_score, is_optimized
