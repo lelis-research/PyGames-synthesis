@@ -113,7 +113,7 @@ class Optimizer:
                 break
 
         self.set_const_value(current_argmax_params)
-        return current_argmax_params, current_max_score, is_optimized
+        return self.ast, current_argmax_params, current_max_score, is_optimized
 
     def non_triage_optimize(self):
         bayesOpt = BayesianOptimization(
@@ -131,7 +131,7 @@ class Optimizer:
             target = self.initial_score
 
         self.set_const_value(params)
-        return bayesOpt.max['params'], bayesOpt.max['target'], is_optimized
+        return self.ast, bayesOpt.max['params'], bayesOpt.max['target'], is_optimized
 
     def optimize(self, ast, initial_ast_score):
         self.ast = ast
@@ -139,7 +139,7 @@ class Optimizer:
 
         self.const_range_list, self.original_values = self.get_const_range()
         if len(self.original_values) == 0:
-            return self.original_values, 0, False
+            return self.ast, self.original_values, 0, False
 
         try:
             if self.is_triage:
@@ -148,4 +148,4 @@ class Optimizer:
                 return self.non_triage_optimize()
         except:
             self.set_const_value(self.original_values)
-            return self.original_values, self.initial_score, False
+            return self.ast, self.original_values, self.initial_score, False
