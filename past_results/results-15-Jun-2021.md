@@ -33,14 +33,15 @@ The results of each experiment is stored in the user-specified log file in a log
 
 ## Results
 
-| Experiment # |     Synthesizer     |  Optimizer  | Triage | Kappa | Iterations | Running Time | Best Score |
+|  Experiment  |     Synthesizer     |  Optimizer  | Triage | Kappa | Iterations | Running Time | Best Score |
 |:------------:|:-------------------:| :---------: |:------:|:-----:|:----------:|:------------:|:----------:|
-|      1       | Simulated Annealing |      No     |   No   |  2.5  |    200     |    4 days    |   1569.0   |
+|      1       | Simulated Annealing |      No     |  N/A   |  2.5  |    200     |    4 days    |   1569.0   |
 |      2       | Simulated Annealing |     Yes     |   No   |  2.5  |    200     |    4 days    | **1662.0** |
 |      3       | Simulated Annealing |     Yes     |  Yes   |  2.5  |    200     |    4 days    |   1428.0   |
 |      4       | Simulated Annealing |     Yes     |   No   |  5.0  |   1000     |    4 days    |   1110.0   |
 |      5       | Simulated Annealing |     Yes     |  Yes   |  5.0  |   1000     |    4 days    |   1428.0   |
 
+### Experiment 1
 ```python
 # Best Program found by synthesizer in experiment #1
 # Simulated Annealing, No optimizer, Hide Warnings
@@ -54,6 +55,7 @@ else:
 return actions[0] 
 ```
 
+### Experiment 2
 ```python
 # Best Program found by synthesizer in experiment #2
 # Simulated Annealing, Optimizer, No triage, Hide Warnings
@@ -71,6 +73,7 @@ else:
 
 ```
 
+### Experiment 3
 ```python
 # Best Program found by synthesizer in experiment #3
 # Simulated Annealing, Optimizer, Triage, Hide Warnings
@@ -85,6 +88,7 @@ else:
         return actions[0]
 ```
 
+### Experiment 4
 ```python
 # Best Program found by synthesizer in experiment #4
 # Simulated Annealing, Optimizer, No Triage, Kappa=5.0, Iterations=1000, Hide Warnings
@@ -98,6 +102,7 @@ else:
 return actions[1]
 ```
 
+### Experiment 5
 ```python
 # Best Program found by synthesizer in experiment #5
 # Simulated Annealing, Optimizer, No Triage, Kappa=5.0, Iterations=1000, Hide Warnings
