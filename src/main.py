@@ -52,6 +52,9 @@ def main():
 
     parser.add_argument('--optimizer-triage', action='store_true', dest='triage',
                         help='Run Bayesian Optimizer with triage. Must be used with --optimize option')
+
+    parser.add_argument('-p', '--parallel', action='store_true', dest='is_parallel',
+                        help='Run the optimizer with parallel processing features')
     
     parser.add_argument('--score', type=float, action='store', dest='score_threshold', default=200.00,
                         help='Initial score threshold to be achieved by programs synthesized with BUS')
@@ -74,13 +77,19 @@ def main():
     score_threshold = int(parameters.score_threshold)
     is_triage = parameters.triage
     is_optimize_true = parameters.optimize
+    is_parallel = parameters.is_parallel
     iterations = parameters.n_iter
     kappa = parameters.kappa
 
     if parameters.hide_warning:
         warnings.filterwarnings('ignore')
 
-    run_optimizer = {'run_optimizer': is_optimize_true, 'iterations': iterations, 'kappa': kappa, 'triage': is_triage}
+    run_optimizer = {
+        'run_optimizer': is_optimize_true,
+        'iterations': iterations,
+        'kappa': kappa, 'triage':is_triage,
+        'parallel': is_parallel
+        }
 
     if parameters.show_args:
         print('optimizer', run_optimizer)
