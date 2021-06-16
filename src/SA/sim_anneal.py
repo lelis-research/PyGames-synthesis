@@ -11,6 +11,7 @@ algorithm.
 import copy as cp
 import time
 import random
+import multiprocessing as mp
 from math import exp
 from src.dsl import *
 from src.evaluation import *
@@ -24,6 +25,7 @@ class SimulatedAnnealing:
         self.run_optimizer = run_optimizer['run_optimizer']
         self.n_iter = run_optimizer['iterations']
         self.kappa = run_optimizer['kappa']
+        self.is_parallel = run_optimizer['parallel']
         self.logger = logger
 
     def get_terminal_node(self, p, valid_ith_child_types):
@@ -141,6 +143,41 @@ class SimulatedAnnealing:
         VarScalar.valid_children_types = [set(grammar['scalars'])]
         Constant.valid_children_types = [set(grammar['constants'])]
 
+    def start_optimizer(self, ppool):
+        if self.is_parallel:
+            with mp.Pool() as pool:
+                current_best = None
+                current_best_score = -1000000
+                for arg, res in zip(ppool, pool.starmap(self.optimizer.optimize, ppool, chunksize=20)):
+                    optimized_p, optimized_const_values, new_score, is_optimized = res
+                    arg_p, arg_pscore = arg
+
+                    print('done')
+
+                    if is_optimized:
+                        pdescr = {'header': 'Optimized Program', 'psize': optimized_p.get_size(), 'score': new_score}
+                        self.logger.log('Constant Values: ' + str(optimized_const_values))
+                        self.logger.log_program(optimized_p.to_string(indent=1), pdescr)
+                        self.logger.log('Previous Score: ' + str(arg_pscore), end='\n\n')
+                        
+                    if new_score > current_best_score:
+                        current_best_score = new_score
+                        current_best = optimized_p
+
+                return current_best, current_best_score
+
+        else:
+            p, pscore = ppool[0]
+            optimized_p, optimized_const_values, new_score, is_optimized = self.optimizer.optimize(p, pscore)
+            
+            if is_optimized:
+                pdescr = {'header': 'Optimized Program', 'psize': optimized_p.get_size(), 'score': new_score}
+                self.logger.log('Constant Values: ' + str(optimized_const_values))
+                self.logger.log_program(optimized_p.to_string(indent=1), pdescr)
+                self.logger.log('Previous Score: ' + str(pscore), end='\n\n')
+            
+            return optimized_p, new_score
+
     def synthesize(self, grammar, current_t, final_t, eval_funct):
         start = time.time()
         self.logger.set_start(start)
@@ -161,6 +198,13 @@ class SimulatedAnnealing:
             self.optimizer = Optimizer(eval_funct, self.is_triage, self.n_iter, self.kappa)
 
         iterations = 0
+        ppool = []
+
+        if self.is_parallel:
+                ppool_max_size = 10
+        else:
+            ppool_max_size = 1
+
         while time.time() - start < self.time_limit:
             current_t = self.initial_t
 
@@ -175,20 +219,22 @@ class SimulatedAnnealing:
                 best, best_eval = current, current_eval
 
             epoch = 0
-            mutations = 0
+            mutations = 0            
             while current_t > final_t:
                 candidate = self.mutate(cp.deepcopy(current))
                 mutations += 1
                 candidate_eval = eval_funct.evaluate(candidate)
 
                 if self.run_optimizer:
-                    optimized_const_values, new_score, is_optimized = self.optimizer.optimize(candidate, candidate_eval)
+                    ppool.append((candidate, candidate_eval))
+                    print('ppool_len', len(ppool))
+                    if len(ppool) >= ppool_max_size:
+                        candidate, candidate_eval = self.start_optimizer(ppool)
+                        ppool = []
 
-                    if is_optimized:
-                        pdescr = {'header': 'Optimized Program', 'psize': candidate.get_size(), 'score': new_score}
-                        self.logger.log_program(candidate.to_string(indent=1), pdescr)
-                        self.logger.log('Previous Score: ' + str(candidate_eval), end='\n\n')
-                        candidate_eval = new_score
+                        # if optimized_candidate_eval > candidate_eval:
+                        #     candidate = optimized_candidate
+                        #     candidate_eval = optimized_candidate_eval
 
                 if candidate_eval > best_eval:
                     pdescr = {'header': 'New Best Program', 'psize': candidate.get_size(), 'score': candidate_eval}
