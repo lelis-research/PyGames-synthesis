@@ -152,8 +152,6 @@ class SimulatedAnnealing:
                     optimized_p, optimized_const_values, new_score, is_optimized = res
                     arg_p, arg_pscore = arg
 
-                    print('done')
-
                     if is_optimized:
                         pdescr = {'header': 'Optimized Program', 'psize': optimized_p.get_size(), 'score': new_score}
                         self.logger.log('Constant Values: ' + str(optimized_const_values))
@@ -201,7 +199,7 @@ class SimulatedAnnealing:
         ppool = []
 
         if self.is_parallel:
-                ppool_max_size = 10
+                ppool_max_size = 5
         else:
             ppool_max_size = 1
 
@@ -227,7 +225,7 @@ class SimulatedAnnealing:
 
                 if self.run_optimizer:
                     ppool.append((candidate, candidate_eval))
-                    print('ppool_len', len(ppool))
+                    # print('ppool_len', len(ppool))
                     if len(ppool) >= ppool_max_size:
                         candidate, candidate_eval = self.start_optimizer(ppool)
                         ppool = []
