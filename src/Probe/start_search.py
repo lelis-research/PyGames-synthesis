@@ -15,7 +15,7 @@ from src.PROBE.probe import *
 from src.Utils.logger import Logger
 from src.evaluation import Evaluation
 
-def start_probe(time_limit, log_file):
+def start_probe(time_limit, log_file, is_parallel):
 
     rules = [
         const_rule,
@@ -62,4 +62,4 @@ def start_probe(time_limit, log_file):
     )
 
     synthesizer = Probe()
-    synthesizer.probe(pcfg, rules, eval_funct, time_limit, logger)
+    synthesizer.probe(pcfg, rules, eval_funct, time_limit, logger, is_parallel)
