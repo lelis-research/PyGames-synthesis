@@ -13,6 +13,7 @@ from src.dsl import *
 from src.PROBE.rule import *
 import itertools
 import time
+import multiprocessing as mp
 
 probability_key = 'probability'
 cost_key = 'cost'
@@ -107,10 +108,11 @@ class Probe:
             cost = floor(-1 * log10(self.pcfg[rule][probability_key]))
             self.pcfg[rule][cost_key] = max(1, cost)
 
-    def probe(self, pcfg, rules, eval_funct, time_limit, logger):
+    def probe(self, pcfg, rules, eval_funct, time_limit, logger, is_parallel):
         start = time.time()
         self.logger = logger
         self.logger.set_start(start)
+        self.is_parallel = is_parallel
 
         self.pcfg = pcfg
         self.rules = rules
@@ -149,41 +151,71 @@ class Probe:
         partial_solutions = []
         self.eval = {}
 
+        ppool = {}
+        ppool_max_len = 200
+        evaluated_pool = {}
+
         while cost <= self.cost_limit:
             for p in self.new_programs(cost):
-                print(p.to_string())
-
                 pstring = p.to_string()
+                print(pstring)
+
                 if self.eval.get(pstring) is not None:
                     continue
+                
+                self.plist.insert(p, cost)
+                self.eval[pstring] = None
 
                 if isinstance(p, (IT, ITE, Strategy, ReturnAction)):
-                    pscore = self.eval_funct.evaluate(p)
+                    # Decide if evaluation step should done in parallel
+                    if self.is_parallel:
+                        ppool[p] = cost
+                        if len(ppool) >= ppool_max_len:
+                            ppool_keys = list(ppool.keys())
+                            with mp.Pool() as pool:
+                                for p, res in zip(ppool_keys, pool.map(self.eval_funct.evaluate, ppool_keys, chunksize=5)):
+                                    pcost = ppool[p]
+                                    evaluated_pool[p] = (res, pcost)
+                                    self.eval[p.to_string()] = res
+                            
+                            ppool = {}
+
+                        else:
+                            continue
+
+                    else:
+                        pscore = self.eval_funct.evaluate(p)
+                        evaluated_pool[p] = (pscore, cost)
+                        self.eval[pstring] = pscore
                 else:
-                    pscore = -1_000_000
-                psize = p.get_size()
+                    evaluated_pool[p] = (-1_000_000, cost)
+                    self.eval[pstring] = -1_000_000
 
-                if pscore > current_best_score:
-                    current_best = p
-                    current_best_cost = cost
-                    current_best_score = pscore
+                for p, p_attributes in evaluated_pool.items():
+                    pscore, pcost = p_attributes
+                    pstring = p.to_string()
+                    psize = p.get_size()
 
-                    # Log new best program to file
-                    pdescr = {'header': 'New Best Program', 'psize': psize, 'score': pscore}
-                    self.logger.log_program(pstring, pdescr)
-                    self.logger.log('Program Cost: ' + str(cost), end='\n\n')
+                    if pscore > current_best_score:
+                        current_best = p
+                        current_best_cost = cost
+                        current_best_score = pscore
 
-                elif pscore > 0:
-                    # A program is a partial solution if it has a positive score 
-                    partial_solutions.append(p)
+                        # Log new best program to file
+                        pdescr = {'header': 'New Best Program', 'psize': psize, 'score': pscore}
+                        self.logger.log_program(pstring, pdescr)
+                        self.logger.log('Program Cost: ' + str(cost), end='\n\n')
 
-                    # Log partial solution to file
-                    pdescr = {'header': 'Partial Solution', 'psize': psize, 'score': pscore}
-                    self.logger.log_program(pstring, pdescr)
-                    self.logger.log('Program Cost: ' + str(cost), end='\n\n')
+                    elif pscore > 0:
+                        # A program is a partial solution if it has a positive score 
+                        partial_solutions.append(p)
 
-                self.plist.insert(p, cost)
-                self.eval[pstring] = pscore
+                        # Log partial solution to file
+                        pdescr = {'header': 'Partial Solution', 'psize': psize, 'score': pscore}
+                        self.logger.log_program(pstring, pdescr)
+                        self.logger.log('Program Cost: ' + str(cost), end='\n\n')
+                
+                evaluated_pool = {}
 
             cost += 1
 
