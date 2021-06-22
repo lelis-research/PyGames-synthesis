@@ -13,9 +13,9 @@ running time limit.
 import argparse, warnings
 from src.BUS.start_search import start_bus
 from src.SA.start_search import start_sa
+from src.PROBE.start_search import start_probe
 from src.evaluation import *
-from src.BUS.bus import *
-from src.SA.sim_anneal import *
+import numpy as np
 
 def kappa_float(string):
     try:
@@ -104,6 +104,9 @@ def main():
 
     if algorithm == 'BUS':
         start_bus(time_limit, log_file, score_threshold, run_optimizer)
+
+    if algorithm == 'Probe':
+        start_probe(time_limit, log_file)
 
 
 if __name__ == '__main__':
