@@ -97,6 +97,7 @@ def main():
         print('log', log_file)
         print('time_limit', time_limit)
         print('score', score_threshold)
+        print('is_parallel', is_parallel)
         input('Press Enter to start search')
     
     if algorithm == 'SimulatedAnnealing':
@@ -106,7 +107,7 @@ def main():
         start_bus(time_limit, log_file, score_threshold, run_optimizer)
 
     if algorithm == 'Probe':
-        start_probe(time_limit, log_file)
+        start_probe(time_limit, log_file, is_parallel)
 
 
 if __name__ == '__main__':
