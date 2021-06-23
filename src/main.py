@@ -59,6 +59,9 @@ def main():
     parser.add_argument('-p', '--parallel', action='store_true', dest='is_parallel',
                         help='Run the optimizer with parallel processing features')
     
+    parser.add_argument('--sa-option', type=int, choices=[1, 2], dest='sa_option', default=1,
+                        help='Option 1 makes it less likely for SA to be stuck in a local max')
+
     parser.add_argument('--score', type=float, action='store', dest='score_threshold', default=200.00,
                         help='Initial score threshold to be achieved by programs synthesized with BUS')
 
@@ -83,6 +86,7 @@ def main():
     is_parallel = parameters.is_parallel
     iterations = parameters.n_iter
     kappa = parameters.kappa
+    sa_option = parameters.sa_option
 
     game = parameters.game
 
@@ -106,7 +110,7 @@ def main():
         input('Press Enter to start search')
     
     if algorithm == 'SimulatedAnnealing':
-        start_sa(time_limit, log_file, run_optimizer, game)
+        start_sa(time_limit, log_file, run_optimizer, game, sa_option)
 
     if algorithm == 'BUS':
         start_bus(time_limit, log_file, score_threshold, run_optimizer, game)
