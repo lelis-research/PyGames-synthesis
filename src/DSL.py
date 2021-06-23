@@ -563,7 +563,7 @@ class Strategy(Node):
 
     @classmethod
     def new(cls, statement, next_statements):
-        assert type(statement).__name__ in [IT.className(), ITE.className()]
+        assert type(statement).__name__ in [IT.className()]
         assert type(next_statements).__name__ in [Strategy.className(), ReturnAction.className(), type(None).__name__]
 
         if type(statement).__name__ == ITE.className():
@@ -598,12 +598,12 @@ class Strategy(Node):
 
 Node.valid_children_types = [set([Strategy.className()])]
 
-Strategy.valid_first_statement = set([IT.className(), ITE.className()])
+Strategy.valid_first_statement = set([IT.className()])
 Strategy.valid_next_statements = set([Strategy.className(), ReturnAction.className(), None])
 Strategy.valid_children_types = [Strategy.valid_first_statement, Strategy.valid_next_statements]
 
 IT.valid_if_cond = set([LessThan.className(), GreaterThan.className(), EqualTo.className(), NonPlayerObjectApproaching.className()])
-IT.valid_if_body = set([ReturnAction.className(), Strategy.className()])
+IT.valid_if_body = set([ReturnAction.className()])
 IT.valid_children_types = [IT.valid_if_cond, IT.valid_if_body]
 
 ITE.valid_if_cond = IT.valid_if_cond
