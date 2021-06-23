@@ -1,4 +1,4 @@
-from src.dsl import Constant, FallingFruitPosition, GreaterThan, IT, PlayerPosition, ReturnAction, Strategy
+from src.dsl import Constant, GreaterThan, IT, ReturnAction, Strategy
 from src.Optimizer.optimizer import Optimizer
 from unittest.mock import DEFAULT, patch, Mock
 import unittest

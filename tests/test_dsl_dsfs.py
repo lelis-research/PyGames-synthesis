@@ -1,6 +1,6 @@
 import unittest
 from unittest.loader import makeSuite
-from src.dsl import PlayerPosition, FallingFruitPosition
+from src.dsl import NonPlayerObjectPosition, PlayerPosition
 
 class TestPlayerPosition(unittest.TestCase):
 
@@ -22,21 +22,21 @@ class TestPlayerPosition(unittest.TestCase):
             p_position.interpret(self.env)
 
 
-class TestFallingFruitPosition(unittest.TestCase):
+class TestNonPlayerPosition(unittest.TestCase):
 
     def setUp(self):
         self.env = {}
         self.env['state'] = {}
-        self.env['state']['fruit_position'] = 55
+        self.env['state']['non_player_position'] = 55
 
     def test_interpret_no_exception(self):
-        p_position = FallingFruitPosition()
-        self.assertEqual(p_position.interpret(self.env), 55, 'interpret method of FallingFruitPosition object should return 60')
+        p_position = NonPlayerObjectPosition()
+        self.assertEqual(p_position.interpret(self.env), 55, 'interpret method of NonPlayerObjectPosition object should return 60')
 
     def test_interpret_key_error(self):
-        p_position = FallingFruitPosition()
-        self.env['state'].pop('fruit_position')
-        test_msg = 'interpret method of FallingFruitPosition object should raise KeyError'
+        p_position = NonPlayerObjectPosition()
+        self.env['state'].pop('non_player_position')
+        test_msg = 'interpret method of NonPlayerObjectPosition object should raise KeyError'
 
         with self.assertRaises(KeyError, msg=test_msg) as cm:
             p_position.interpret(self.env)
