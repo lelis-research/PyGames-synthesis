@@ -14,7 +14,7 @@ from src.SA.sim_anneal import *
 from src.evaluation import *
 from src.Utils.logger import *
 
-def start_sa(time_limit, log_file, run_optimizer):
+def start_sa(time_limit, log_file, run_optimizer, game):
     grammar = {}
     grammar['operators'] = [Plus, 
                             Minus,
@@ -29,7 +29,7 @@ def start_sa(time_limit, log_file, run_optimizer):
                             ReturnAction
                         ]
 
-    grammar['dsfs'] = [FallingFruitPosition, PlayerPosition]
+    grammar['dsfs'] = [NonPlayerObjectPosition, NonPlayerObjectApproaching, PlayerPosition]
     grammar['constants'] = np.arange(0, 101, 0.01).tolist()
     grammar['scalars'] = ['paddle_width']
     grammar['arrays'] = ['actions']
@@ -42,5 +42,5 @@ def start_sa(time_limit, log_file, run_optimizer):
     )
     sa = SimulatedAnnealing(time_limit, logger, run_optimizer)
 
-    eval_funct = Evaluation(0)
+    eval_funct = Evaluation(0, game)
     sa.synthesize(grammar, 2000, 1, eval_funct)
