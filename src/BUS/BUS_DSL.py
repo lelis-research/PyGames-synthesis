@@ -56,7 +56,7 @@ class IT(baseDSL.IT):
 
     def grow(plist, psize):
         nplist = []
-        valid_dsbs = [LessThan.className(), GreaterThan.className(), EqualTo.className()]
+        valid_dsbs = [LessThan.className(), GreaterThan.className(), EqualTo.className(), NonPlayerObjectApproaching.className()]
         valid_return = [ReturnAction.className()]
 
         cost_combinations = itertools.product(range(psize-1), repeat=2)
@@ -96,8 +96,8 @@ class ITE(baseDSL.ITE):
 
     def grow(plist, psize):
         nplist = []
-        valid_dsbs = [LessThan.className(), GreaterThan.className(), EqualTo.className()]
-        valid_return = [ReturnAction.className()]
+        valid_dsbs = [LessThan.className(), GreaterThan.className(), EqualTo.className(), NonPlayerObjectApproaching.className()]
+        valid_return = [ReturnAction.className(), IT.className()]
 
         cost_combinations = itertools.product(range(psize-1), repeat=3)
         
@@ -139,12 +139,24 @@ class PlayerPosition(baseDSL.PlayerPosition):
 
 """
 This class implements a domain-specific function that returns
-the y-position of the falling fruit to be caught by the player.
+the x-position of the non-player object. The non-player object
+is the falling fruit in the Catcher game, while in Pong, it is
+the ball.
 """
-class FallingFruitPosition(baseDSL.FallingFruitPosition):
+class NonPlayerObjectPosition(baseDSL.NonPlayerObjectPosition):
 
     def __init__(self):
-        super(FallingFruitPosition, self).__init__()
+        super(NonPlayerObjectPosition, self).__init__()
+
+
+"""
+This class implements a DSF that returns True if the non-player
+object is moving towards the player and False otherwise.
+"""
+class NonPlayerObjectApproaching(baseDSL.NonPlayerObjectApproaching):
+
+    def __init__(self):
+        super(NonPlayerObjectApproaching, self).__init__()
 
 
 """
@@ -179,7 +191,7 @@ class LessThan(baseDSL.LessThan):
 
     def grow(plist, psize):
         nplist = []
-        valid_nodes = [PlayerPosition.className(), FallingFruitPosition.className(), Plus.className(),
+        valid_nodes = [PlayerPosition.className(), NonPlayerObjectPosition.className(), Plus.className(),
             Minus.className(), Divide.className(), Times.className(), Constant.className()]
 
         cost_combinations = itertools.product(range(psize-1), repeat=2)
@@ -218,7 +230,7 @@ class GreaterThan(baseDSL.GreaterThan):
 
     def grow(plist, psize):
         nplist = []
-        valid_nodes = [PlayerPosition.className(), FallingFruitPosition.className(), Plus.className(),
+        valid_nodes = [PlayerPosition.className(), NonPlayerObjectPosition.className(), Plus.className(),
             Minus.className(), Divide.className(), Times.className(), Constant.className()]
 
         cost_combinations = itertools.product(range(psize-1), repeat=2)
@@ -256,7 +268,7 @@ class EqualTo(baseDSL.EqualTo):
 
     def grow(plist, psize):
         nplist = []
-        valid_nodes = [PlayerPosition.className(), FallingFruitPosition.className(), Plus.className(),
+        valid_nodes = [PlayerPosition.className(), NonPlayerObjectPosition.className(), Plus.className(),
             Minus.className(), Divide.className(), Times.className(), Constant.className()]
 
         cost_combinations = itertools.product(range(psize-1), repeat=2)
@@ -293,7 +305,7 @@ class Plus(baseDSL.Plus):
 
     def grow(plist, psize):
         nplist = []
-        valid_nodes = [VarScalar.className(), PlayerPosition.className(), FallingFruitPosition.className(),
+        valid_nodes = [VarScalar.className(), PlayerPosition.className(), NonPlayerObjectPosition.className(), 
             Constant.className(), Times.className(), Minus.className(), Plus.className(), Divide.className()]
 
         cost_combinations = itertools.product(range(psize-1), repeat=2)
@@ -329,7 +341,7 @@ class Times(baseDSL.Times):
 
     def grow(plist, psize):
         nplist = []
-        valid_nodes = [VarScalar.className(), PlayerPosition.className(), FallingFruitPosition.className(),
+        valid_nodes = [VarScalar.className(), PlayerPosition.className(), NonPlayerObjectPosition.className(),
             Constant.className(), Times.className(), Minus.className(), Plus.className(), Divide.className()]
 
         cost_combinations = itertools.product(range(psize-1), repeat=2)
@@ -371,7 +383,7 @@ class Minus(baseDSL.Minus):
 
     def grow(plist, psize):
         nplist = []
-        valid_nodes = [VarScalar.className(), PlayerPosition.className(), FallingFruitPosition.className(),
+        valid_nodes = [VarScalar.className(), PlayerPosition.className(), NonPlayerObjectPosition.className(),
             Constant.className(), Times.className(), Minus.className(), Plus.className(), Divide.className()]
 
         cost_combinations = itertools.product(range(psize-1), repeat=2)
@@ -407,7 +419,7 @@ class Divide(baseDSL.Divide):
 
     def grow(plist, psize):
         nplist = []
-        valid_nodes = [VarScalar.className(), PlayerPosition.className(), FallingFruitPosition.className(),
+        valid_nodes = [VarScalar.className(), PlayerPosition.className(), NonPlayerObjectPosition.className(),
             Constant.className(), Times.className(), Minus.className(), Plus.className(), Divide.className()]
 
         cost_combinations = itertools.product(range(psize-1), repeat=2)
