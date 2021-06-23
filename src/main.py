@@ -4,7 +4,7 @@ main.py
 Author: Olivier Vadiavaloo
 
 Description:
-This module contains the driver code for the Catcher synthesizer.
+This module contains the driver code for the synthesizer.
 It provides and parses command line arguments that specify options
 to run the synthesizer with. For example, the score_threshold, paths
 to log files to store the results of the synthesis and an optional
@@ -34,6 +34,9 @@ def main():
             description='Synthesize strategies for Catcher',
             epilog='Happy Synthesizing! :-)'
     )
+
+    parser.add_argument('-g', '--game', choices=Evaluation.available_games, dest='game', default='Catcher',
+                        help='Game for which a strategy will be synthesized')
 
     parser.add_argument('-l', '--log', action='store', dest='log_file', default='log',
                         help='Name of log file in which results of search will be stored')
@@ -81,6 +84,8 @@ def main():
     iterations = parameters.n_iter
     kappa = parameters.kappa
 
+    game = parameters.game
+
     if parameters.hide_warning:
         warnings.filterwarnings('ignore')
 
@@ -101,13 +106,13 @@ def main():
         input('Press Enter to start search')
     
     if algorithm == 'SimulatedAnnealing':
-        start_sa(time_limit, log_file, run_optimizer)
+        start_sa(time_limit, log_file, run_optimizer, game)
 
     if algorithm == 'BUS':
-        start_bus(time_limit, log_file, score_threshold, run_optimizer)
+        start_bus(time_limit, log_file, score_threshold, run_optimizer, game)
 
     if algorithm == 'Probe':
-        start_probe(time_limit, log_file, is_parallel)
+        start_probe(time_limit, log_file, is_parallel, game)
 
 
 if __name__ == '__main__':
