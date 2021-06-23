@@ -15,13 +15,14 @@ from src.PROBE.probe import *
 from src.Utils.logger import Logger
 from src.evaluation import Evaluation
 
-def start_probe(time_limit, log_file, is_parallel):
+def start_probe(time_limit, log_file, is_parallel, game):
 
     rules = [
         const_rule,
         var_from_arr_rule,
         var_scalar_rule,
-        fruit_pos_rule,
+        non_player_pos_rule,
+        non_player_dir_rule,
         player_pos_rule,
         ite_rule,
         it_rule,
@@ -44,7 +45,7 @@ def start_probe(time_limit, log_file, is_parallel):
     for rule in rules:
         pcfg[rule] = {probability_key: uniform_prob, cost_key: uniform_cost}
 
-    pcfg['dsfs'] = [FallingFruitPosition, PlayerPosition]
+    pcfg['dsfs'] = [NonPlayerObjectPosition, NonPlayerObjectApproaching, PlayerPosition]
     pcfg['constants'] = [0.5, 2]
     pcfg['scalars'] = [
         VarScalar.new('paddle_width'),
@@ -53,7 +54,7 @@ def start_probe(time_limit, log_file, is_parallel):
         VarFromArray.new('actions', 2)
     ]
 
-    eval_funct = Evaluation(0)
+    eval_funct = Evaluation(0, game)
 
     logger = Logger(
         log_file,

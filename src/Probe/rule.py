@@ -66,8 +66,8 @@ ite_rule = Rule(
     ITE,
     [
         set([GreaterThan, LessThan, EqualTo]),
-        set([ReturnAction]),
-        set([ReturnAction])
+        set([ReturnAction, IT]),
+        set([ReturnAction, IT])
     ]
 )
 
@@ -92,7 +92,7 @@ arithmetic_op_sub_expr = set([
     Plus,
     Minus,
     Divide,
-    FallingFruitPosition,
+    NonPlayerObjectPosition,
     PlayerPosition,
     VarScalar
 ])
@@ -109,7 +109,7 @@ comparison_op_sub_expr = set([
     Plus, 
     Times, 
     Divide, 
-    FallingFruitPosition, 
+    NonPlayerObjectPosition, 
     PlayerPosition
 ])
 
@@ -143,8 +143,13 @@ var_from_arr_rule = Rule(
     [set([str]), set([int])]
 )
 
-fruit_pos_rule = Rule(
-    FallingFruitPosition,
+non_player_pos_rule = Rule(
+    NonPlayerObjectPosition,
+    []
+)
+
+non_player_dir_rule = Rule(
+    NonPlayerObjectApproaching,
     []
 )
 

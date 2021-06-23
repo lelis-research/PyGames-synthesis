@@ -40,10 +40,13 @@ class Plist:
 
         for dsf in dsfs:
             p = dsf()
-            if isinstance(p, FallingFruitPosition):
-                cost = pcfg[fruit_pos_rule][cost_key]
-            else:
+            if isinstance(p, NonPlayerObjectPosition):
+                cost = pcfg[non_player_pos_rule][cost_key]
+            elif isinstance(p, PlayerPosition):
                 cost = pcfg[player_pos_rule][cost_key]
+            else:
+                cost = pcfg[non_player_dir_rule][cost_key]
+
             self.insert(p, cost)
         
     def insert(self, item, cost):
@@ -141,6 +144,8 @@ class Probe:
 
                 self.logger.log_program(best_program.to_string(), pdescr)
                 self.logger.log('Program Cost: ' + str(best_program_cost), end='\n\n')
+
+        self.logger.log('Running Time: ' + str(time.time() - start))
 
     def guided_search(self):
         cost = 1
