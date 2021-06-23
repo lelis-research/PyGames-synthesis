@@ -177,9 +177,9 @@ if FallingFruitPosition < (PlayerPosition - (paddle_width // 2)):
 
 - In the last experiment, the bayesian optimizer was used with triage, a kappa value of **5** and **1000** optimization steps. The best program achieved a score of 1428.0, just like in the third experiment. It has a size of 13 and was found after 9hrs 35 mins.
     
-    - Therefore, the program performs strongly and it is more interpretable than the previous solutions.
+    - Therefore, the program performs strongly and it is also more interpretable than the previous solutions.
     
-    - It is the smallest in size with the program from experiment 4. It consists of a simple if-else statement that compares the position of the paddle and the falling fruit. It moves the paddle to the right if the fruit is on the right and moves it to the left if the fruit is on the left.
+    - It is the smallest in size, together with the program from experiment 4. It consists of a simple if-else statement that compares the position of the paddle and the falling fruit. It moves the paddle to the right if the fruit is on the right and moves it to the left if the fruit is on the left.
     
     - It also contains a constant value, which was not optimized and it is likely because the optimization stopped right after the first two or first three batches of optimization steps. The higher kappa value might also be preventing the optimizer from exploring the parameter's local space well, hence why not many programs were optimized successfully.
 
