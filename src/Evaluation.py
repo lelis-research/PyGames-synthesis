@@ -12,12 +12,21 @@ https://pygame-learning-environment.readthedocs.io/en/latest/user/games/catcher.
 """
 ### import game from Pygame-Learning-Environment ###
 from pygame_games.ple.games.catcher import Catcher
+from pygame_games.ple.games.pong import Ball, Pong
 from pygame_games.ple.ple import PLE
 
 class Evaluation:
 
-    def __init__(self, threshold):
+    games_dict = {
+        'Catcher': Catcher(width=500, height=500, init_lives=3), 
+        'Pong': Pong(width=600, height=550, MAX_SCORE=5)
+    }
+    available_games = list(games_dict.keys())
+
+    def __init__(self, threshold, game):
         self.score_threshold = threshold
+        self.gamename = game
+        self.game = Evaluation.games_dict[game]
 
     def update_env(self, game_state, action_set):
         """
@@ -26,9 +35,15 @@ class Evaluation:
         """
         env = {}
         env['state'] = {}
-        env['state']['fruit_position'] = game_state['fruit_x']
-        env['state']['player_position'] = game_state['player_x']
-        env['paddle_width'] = game_state['paddle_width']
+        if self.gamename == 'Catcher':
+            env['state']['non_player_position'] = game_state.get('fruit_x')
+            env['state']['non_player_approaching'] = True
+        else:
+            env['state']['non_player_position'] = game_state.get('ball_y')
+            env['state']['non_player_approaching'] = game_state.get('ball_velocity_x') < 0
+        
+        env['state']['player_position'] = game_state.get('player_x')
+        env['paddle_width'] = game_state.get('paddle_width')
         env['actions'] = action_set
         return env
 
@@ -39,8 +54,7 @@ class Evaluation:
         returns the score of the program when the game is over or when an exception
         is raised due to an impossible action.
         """
-        game = Catcher(width=500, height=500, init_lives=3)
-        p = PLE(game, fps=30, display_screen=False)
+        p = PLE(self.game, fps=30, display_screen=False)
 
         score = -100000
         while not p.game_over():
