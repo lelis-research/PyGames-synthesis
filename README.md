@@ -1,4 +1,4 @@
-# catcher-synthesis
+# PyGames-synthesis
 A synthesizer and DSL for generating strategies for playing Catcher game.
 
 ## Dependencies
