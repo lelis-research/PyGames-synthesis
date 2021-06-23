@@ -176,7 +176,20 @@ class SimulatedAnnealing:
             
             return optimized_p, new_score
 
-    def synthesize(self, grammar, current_t, final_t, eval_funct):
+    def synthesize(self, grammar, current_t, final_t, eval_funct, option=1):
+        """
+        This method implements the simulated annealing algorithm that can be used
+        to generate strategies given a grammar and an evaluation function.
+
+            - CFG: grammar
+            - current_t: initial temperature
+            - final_t: final temperature
+            - option: 1 or 2
+                -- Option 1: Does not generate a random program each time simulated annealing
+                             finishes to run. More likely to get stuck on a local min/max.
+                -- Option 2: Generates a random program after each simulated annealing run.
+
+        """
         start = time.time()
         self.logger.set_start(start)
 
@@ -189,9 +202,6 @@ class SimulatedAnnealing:
 
         self.init_var_child_types(grammar)
 
-        best = None
-        best_eval = None
-
         if self.run_optimizer:
             self.optimizer = Optimizer(eval_funct, self.is_triage, self.n_iter, self.kappa)
 
@@ -203,29 +213,47 @@ class SimulatedAnnealing:
         else:
             ppool_max_size = 1
 
+        # Option 2: Generate random program only once
+        if option == 2:
+            best = self.generate_random()
+            best_eval = eval_funct.evaluate(best)
+        else:
+            best = None
+            best_eval = None
+
         while time.time() - start < self.time_limit:
             current_t = self.initial_t
 
-            current = self.generate_random()
-            current_eval = eval_funct.evaluate(best)
+            # Option 1: Generate random program and compare with best
+            if option == 1:
+                current = self.generate_random()
+                current_eval = eval_funct.evaluate(current)
 
+                if best is None or current_eval > best_eval:
+                    best, best_eval = current, current_eval
+            
+            # Option 2: Assign current to best solution in previous iteration
+            elif option == 2 and best is not None:
+                current = best
+                current_eval = best_eval
+
+            # Log first generated program to file
             if iterations == 0:
-                pdescr = {'header': 'Initial Program', 'psize': current.get_size(), 'score': current_eval}
-                self.logger.log_program(current.to_string(), pdescr)
-
-            if best is None or current_eval > best_eval:
-                best, best_eval = current, current_eval
+                pdescr = {'header': 'Initial Program', 'psize': best.get_size(), 'score': best_eval}
+                self.logger.log_program(best.to_string(), pdescr)
 
             epoch = 0
-            mutations = 0            
+            mutations = 0    
             while current_t > final_t:
                 candidate = self.mutate(cp.deepcopy(current))
                 mutations += 1
                 candidate_eval = eval_funct.evaluate(candidate)
 
+                # Run optimizer if flag was specified
                 if self.run_optimizer:
                     ppool.append((candidate, candidate_eval))
                     # print('ppool_len', len(ppool))
+
                     if len(ppool) >= ppool_max_size:
                         candidate, candidate_eval = self.start_optimizer(ppool)
                         ppool = []
