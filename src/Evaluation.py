@@ -10,9 +10,11 @@ Catcher game implemented in
 https://pygame-learning-environment.readthedocs.io/en/latest/user/games/catcher.html
 
 """
+import pygame, time
+
 ### import game from Pygame-Learning-Environment ###
 from pygame_games.ple.games.catcher import Catcher
-from pygame_games.ple.games.pong import Ball, Pong
+from pygame_games.ple.games.pong import Pong
 from pygame_games.ple.ple import PLE
 
 class Evaluation:
@@ -54,19 +56,23 @@ class Evaluation:
         returns the score of the program when the game is over or when an exception
         is raised due to an impossible action.
         """
-        p = PLE(self.game, fps=30, display_screen=False)
+        sum = 0
+        for i in range(5):
+            p = PLE(self.game, fps=30, display_screen=False, rng=int(time.time()))
 
-        score = -100000
-        while not p.game_over():
-            env = self.update_env(p.getGameState(), p.getActionSet())
-            try:
-                action = program.interpret(env)
-            except:
-                return 0
-            p.act(action)
-            score = p.score()
+            score = -100000
+            while not p.game_over():
+                env = self.update_env(p.getGameState(), p.getActionSet())
+                try:
+                    action = program.interpret(env)
+                except:
+                    return 0
+                p.act(action)
+                score = p.score()
 
-        return score
+            sum += score
+
+        return round(sum / 5, 2)
 
     def is_correct(self, program):
         """
