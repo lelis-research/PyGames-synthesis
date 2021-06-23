@@ -5,7 +5,8 @@ Author: Olivier Vadiavaloo
 
 Description:
 This module implements the nodes used to create Abstract-Syntax Trees (ASTs)
-that represent programs written in the DSL designed for playing the Catcher game.
+that represent programs written in the DSL designed for playing games implemented
+in the PyGame-Learning-Environment.
 
 """
 from random import choice
@@ -162,8 +163,12 @@ class ReturnAction(Node):
         return inst
 
     def to_string(self, indent=0):
+        tab = ''
+        for _ in range(indent):
+            tab += '\t'
+        
         action = self.get_children()[0]
-        return f"return {action.to_string()}"
+        return f"{tab}return {action.to_string()}"
 
     def interpret(self, env):
         action = self.get_children()[0]
@@ -183,7 +188,7 @@ class IT(Node):
 
     @classmethod
     def new(cls, condition, if_body):
-        assert type(if_body).__name__ == ReturnAction.className()
+        assert type(if_body).__name__ in [ReturnAction.className(), Strategy.className()]
         inst = cls()
         inst.add_child(condition)
         inst.add_child(if_body)
@@ -192,14 +197,14 @@ class IT(Node):
 
     def to_string(self, indent=0):
         tab = ""
-        for i in range(indent):
+        for _ in range(indent):
             tab += "\t"
 
         condition = self.get_children()[0]
         if_body = self.get_children()[1]
         
         it_string = f"""{tab}if {condition.to_string()}:\n"""
-        it_string += f"""{tab}\t{if_body.to_string()}"""
+        it_string += f"""{if_body.to_string(indent+1)}"""
         return it_string
 
     def interpret(self, env):
@@ -234,7 +239,7 @@ class ITE(Node):
 
     def to_string(self, indent=0):
         tab = ""
-        for i in range(indent):
+        for _ in range(indent):
             tab += "\t"
         
         condition = self.get_children()[0]
@@ -242,9 +247,9 @@ class ITE(Node):
         else_body = self.get_children()[2]
 
         ite_string = f"""{tab}if {condition.to_string()}:\n"""
-        ite_string += f"""{tab}\t{if_body.to_string()}\n"""
+        ite_string += f"""{if_body.to_string(indent+1)}\n"""
         ite_string += f"""{tab}else:\n"""
-        ite_string += f"""{tab}\t{else_body.to_string()}"""
+        ite_string += f"""{else_body.to_string(indent+1)}"""
         return ite_string
 
     def interpret(self, env):
@@ -277,19 +282,38 @@ class PlayerPosition(Node):
 
 """
 This class implements a domain-specific function that returns
-the y-position of the falling fruit to be caught by the player.
+the x-position of the non-player object. The non-player object
+is the falling fruit in the Catcher game, while in Pong, it is
+the ball.
 """
-class FallingFruitPosition(Node):
+class NonPlayerObjectPosition(Node):
 
     def __init__(self):
-        super(FallingFruitPosition, self).__init__()
+        super(NonPlayerObjectPosition, self).__init__()
         self.max_number_children = 0
 
     def to_string(self, indent=0):
-        return FallingFruitPosition.className()
+        return NonPlayerObjectPosition.className()
 
     def interpret(self, env):
-        return env[self.statename]['fruit_position']
+        return env[self.statename]['non_player_position']
+
+
+"""
+This class implements a DSF that returns True if the non-player
+object is moving towards the player and False otherwise.
+"""
+class NonPlayerObjectApproaching(Node):
+    
+    def __init__(self):
+        super(NonPlayerObjectApproaching, self).__init__()
+        self.max_number_children = 0
+
+    def to_string(self, indent=0):
+        return NonPlayerObjectApproaching.className()
+
+    def interpret(self, env):
+        return env[self.statename]['non_player_approaching']
 
 
 """
@@ -555,9 +579,9 @@ class Strategy(Node):
         statement = self.get_children()[0]
         next_statements = self.get_children()[1]
 
-        strategy_string = f"{statement.to_string(0)}\n"
+        strategy_string = f"{statement.to_string(indent)}\n"
         if next_statements is not None:
-            strategy_string += f"{next_statements.to_string()}"
+            strategy_string += f"{next_statements.to_string(indent)}"
 
         return strategy_string
 
@@ -578,13 +602,13 @@ Strategy.valid_first_statement = set([IT.className(), ITE.className()])
 Strategy.valid_next_statements = set([Strategy.className(), ReturnAction.className(), None])
 Strategy.valid_children_types = [Strategy.valid_first_statement, Strategy.valid_next_statements]
 
-IT.valid_if_cond = set([LessThan.className(), GreaterThan.className(), EqualTo.className()])
-IT.valid_if_body = set([ReturnAction.className()])
+IT.valid_if_cond = set([LessThan.className(), GreaterThan.className(), EqualTo.className(), NonPlayerObjectApproaching.className()])
+IT.valid_if_body = set([ReturnAction.className(), Strategy.className()])
 IT.valid_children_types = [IT.valid_if_cond, IT.valid_if_body]
 
 ITE.valid_if_cond = IT.valid_if_cond
-ITE.valid_if_body = IT.valid_if_body
-ITE.valid_else_body = IT.valid_if_body
+ITE.valid_if_body = set([ReturnAction.className()])
+ITE.valid_else_body = set([ReturnAction.className()])
 ITE.valid_children_types = [ITE.valid_if_cond, ITE.valid_if_body, ITE.valid_else_body]
 
 ReturnAction.valid_action = set([VarFromArray.className()])
@@ -592,7 +616,7 @@ ReturnAction.valid_children_types = [ReturnAction.valid_action]
 
 Plus.valid_operands = set([Constant.className(),
                         VarScalar.className(),
-                        FallingFruitPosition.className(),
+                        NonPlayerObjectPosition.className(),
                         PlayerPosition.className(),
                         Plus.className(),
                         Minus.className(),
@@ -612,7 +636,7 @@ Divide.valid_children_types = [Divide.valid_operands, Divide.valid_operands]
 
 LessThan.valid_operands = set([Constant.className(),
                             VarScalar.className(),
-                            FallingFruitPosition.className(),
+                            NonPlayerObjectPosition.className(),
                             PlayerPosition.className(),
                             Plus.className(),
                             Minus.className(),
