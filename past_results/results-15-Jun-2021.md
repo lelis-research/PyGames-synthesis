@@ -141,11 +141,11 @@ if FallingFruitPosition < (PlayerPosition - (paddle_width // 2)):
     
     - This program is slightly stronger than my own hand-written solution which has a score of 1637.0 It was found in a decent amount of time and did not need any optimization.
     
-    - Nevertheless, the solution does not do very well in terms of interpretability too, as it is larger in size and contains two constants that wouldn't make much sense to a human. 
+    - Nevertheless, the solution is also not very interpretable, as it is larger in size and contains two constant values with no obvious purposes.
     
-    - However, it seems that if the first two if-statements don't evaluate to True, the following if-else statement checks if the paddle is greater than a certain size - **18** in this case - the solution moves the paddle to the left, otherwise it returns the NOOP actions (that is, the paddle is not moved).
+    - It seems that if the first two if-statements don't evaluate to True, the following if-else statement checks if the paddle is greater than a certain size - **18** in this case - the solution moves the paddle to the left, otherwise it returns the NOOP actions (that is, the paddle is not moved).
 
-    - The optimization also yielded interesting results, despite not having found better parameters for the best solution. The optimizer enabled the synthesizer to improve bad and moderately good solutions into strong ones.
+    - The optimization also yielded interesting results, despite not having found better parameters for the best solution. The optimizer enabled the synthesizer to turn bad and moderately good solutions into strong ones.
         
         - For example, the following program had a score of **-3** and after the optimization, it obtained a score **1110.0**.
 
