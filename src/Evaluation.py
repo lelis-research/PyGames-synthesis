@@ -49,30 +49,40 @@ class Evaluation:
         env['actions'] = action_set
         return env
 
-    def evaluate(self, program):
+    def evaluate(self, program, verbose=False):
         """
         The evaluate method runs a Catcher game and uses the program parameter as
         strategy to determine which actions to take at each game tick. It then
         returns the score of the program when the game is over or when an exception
         is raised due to an impossible action.
         """
-        sum = 0
-        for i in range(5):
-            p = PLE(self.game, fps=30, display_screen=False, rng=int(time.time()))
+        p = PLE(self.game, fps=30, display_screen=False, rng=int(time.time()))
+        scores = []
 
+        for i in range(5):
+            
             score = -100000
             while not p.game_over():
                 env = self.update_env(p.getGameState(), p.getActionSet())
                 try:
                     action = program.interpret(env)
                 except:
-                    return 0
+                    if verbose:
+                        return tuple([]), -1_000_000
+                    else:
+                        return -1_000_000
+            
                 p.act(action)
                 score = p.score()
 
-            sum += score
+            p.reset_game()
+            scores.append(score)
 
-        return round(sum / 5, 2)
+        score_avg = round(sum(scores) / 5, 2)
+        if verbose:
+            return (tuple(scores), score_avg)
+        else:
+            return score_avg
 
     def is_correct(self, program):
         """
