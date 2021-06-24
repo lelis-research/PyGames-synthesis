@@ -322,6 +322,10 @@ class SimulatedAnnealing:
 
         self.logger.log('Running Time: ' + str(round(time.time() - start, 2)) + 'seconds')
 
+        # Log best program
+        pdescr = {'header': 'Best Program Found By SA', 'psize': best.get_size(), 'score': best_eval}
+        self.logger.log_program(best.to_string(), pdescr)
+
         if generate_plot:
             plotter = Plotter()
             plot_names = {
@@ -332,5 +336,7 @@ class SimulatedAnnealing:
             }
 
             plotter.plot_from_data(scores_dict, best_pscore_dict, names=plot_names)
+            plotter.save_data(scores_dict, best_pscore_dict, names=['all_scores.dat', 'best_scores.dat'])
+            # plotter.plot_from_file('data/all_scores.dat', names=plot_names)
 
         return best, best_eval
