@@ -4,3 +4,4 @@ tests/__pycache__
 pygame_games/
 logs.json
 logs/
+data/
