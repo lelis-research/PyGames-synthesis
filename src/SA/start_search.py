@@ -14,7 +14,8 @@ from src.SA.sim_anneal import *
 from src.evaluation import *
 from src.Utils.logger import *
 
-def start_sa(time_limit, log_file, run_optimizer, game, sa_option):
+def start_sa(time_limit, log_file, run_optimizer, game,
+    sa_option, verbose, plot):
     grammar = {}
     grammar['operators'] = [Plus, 
                             Minus,
@@ -43,4 +44,5 @@ def start_sa(time_limit, log_file, run_optimizer, game, sa_option):
     sa = SimulatedAnnealing(time_limit, logger, run_optimizer)
 
     eval_funct = Evaluation(0, game)
-    sa.synthesize(grammar, 2000, 1, eval_funct, option=sa_option)
+    sa.synthesize(grammar, 2000, 1, eval_funct, option=sa_option,
+        verbose_opt=verbose, generate_plot=plot)
