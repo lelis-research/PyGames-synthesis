@@ -16,6 +16,7 @@ from math import exp
 from src.dsl import *
 from src.evaluation import *
 from src.Optimizer.optimizer import *
+from src.SA.plotter import *
 
 class SimulatedAnnealing:
 
@@ -176,7 +177,8 @@ class SimulatedAnnealing:
             
             return optimized_p, new_score
 
-    def synthesize(self, grammar, current_t, final_t, eval_funct, option=1):
+    def synthesize(self, grammar, current_t, final_t, eval_funct,
+        option=1, verbose_opt=False, generate_plot=False):
         """
         This method implements the simulated annealing algorithm that can be used
         to generate strategies given a grammar and an evaluation function.
@@ -200,6 +202,10 @@ class SimulatedAnnealing:
         self.max_size = 50
         self.initial_t = current_t
 
+        # Initialize variables used to generate plots later on
+        scores_dict = {}
+        best_pscore_dict = {}
+
         self.init_var_child_types(grammar)
 
         if self.run_optimizer:
@@ -216,18 +222,25 @@ class SimulatedAnnealing:
         # Option 2: Generate random program only once
         if option == 2:
             best = self.generate_random()
-            best_eval = eval_funct.evaluate(best)
+            scores, best_eval = eval_funct.evaluate(best, verbose=True)
+            
         else:
             best = None
             best_eval = None
 
+        '''
+        Run Simulated Annealing until time limit is reached
+        If option 1 is specified, generate a random program for
+        the initial program. If option 2 is specified, use best
+        as the initial program.
+        '''
         while time.time() - start < self.time_limit:
             current_t = self.initial_t
 
             # Option 1: Generate random program and compare with best
             if option == 1:
                 current = self.generate_random()
-                current_eval = eval_funct.evaluate(current)
+                scores, current_eval = eval_funct.evaluate(current, verbose=True)
 
                 if best is None or current_eval > best_eval:
                     best, best_eval = current, current_eval
@@ -237,17 +250,37 @@ class SimulatedAnnealing:
                 current = best
                 current_eval = best_eval
 
-            # Log first generated program to file
-            if iterations == 0:
-                pdescr = {'header': 'Initial Program', 'psize': best.get_size(), 'score': best_eval}
-                self.logger.log_program(best.to_string(), pdescr)
+            # Log initial program to file
+            pdescr = {'header': 'Initial Program', 'psize': current.get_size(), 'score': current_eval}
+            self.logger.log_program(current.to_string(), pdescr)
+            self.logger.log('Scores: ' + str(scores).strip('()'), end='\n\n')
+
+            # Store score values to generate plot before exiting if needed
+            scores_dict[iterations] = {}
+            best_pscore_dict[iterations] = {}
+
+            if current_eval != -1_000_000:
+                scores_dict[iterations][0] = current_eval
+
+            if best_eval != -1_000_000:
+                best_pscore_dict[iterations][0] = best_eval
 
             epoch = 0
             mutations = 0    
             while current_t > final_t:
+                best_updated = False
+                header = 'Mutated Program'
+
+                # Mutate current program
                 candidate = self.mutate(cp.deepcopy(current))
                 mutations += 1
-                candidate_eval = eval_funct.evaluate(candidate)
+
+                # Evaluate the mutated program
+                scores, candidate_eval = eval_funct.evaluate(candidate, verbose=True)
+
+                # If candidate program does not raise an error
+                if candidate_eval != -1_000_000:
+                    scores_dict[iterations][epoch+1] = candidate_eval
 
                 # Run optimizer if flag was specified
                 if self.run_optimizer:
@@ -262,12 +295,19 @@ class SimulatedAnnealing:
                         #     candidate = optimized_candidate
                         #     candidate_eval = optimized_candidate_eval
 
+                # Update the current best program if needed
                 if candidate_eval > best_eval:
-                    pdescr = {'header': 'New Best Program', 'psize': candidate.get_size(), 'score': candidate_eval}
-                    self.logger.log_program(candidate.to_string(), pdescr)
-
-                    self.logger.log('Mutations: ' + str(mutations), end='\n\n')
+                    header = 'New Best Program'
+                    best_updated = True
                     best, best_eval = candidate, candidate_eval
+                    best_pscore_dict[iterations][epoch+1] = best_eval
+
+                # Log program to file
+                if best_updated or verbose_opt:
+                    pdescr = {'header': header, 'psize': candidate.get_size(), 'score': candidate_eval}
+                    self.logger.log_program(candidate.to_string(), pdescr)
+                    self.logger.log('Scores: ' + str(scores).strip('()'))
+                    self.logger.log('Mutations: ' + str(mutations), end='\n\n')
 
                 j_diff = candidate_eval - current_eval
                 
@@ -278,7 +318,19 @@ class SimulatedAnnealing:
                 epoch += 1
 
             iterations += 1
+            self.logger.log('Total iterations: ' + str(iterations), end='\n\n')
 
-        self.logger.log('Total iterations: ' + str(iterations), end='\n\n')
         self.logger.log('Running Time: ' + str(round(time.time() - start, 2)) + 'seconds')
+
+        if generate_plot:
+            plotter = Plotter()
+            plot_names = {
+                'x': 'iterations',
+                'y': 'Program Score',
+                'title': 'Simulated Annealing Program Score Graph',
+                'legend': ['current program', 'best program']
+            }
+
+            plotter.plot_from_data(scores_dict, best_pscore_dict, names=plot_names)
+
         return best, best_eval
