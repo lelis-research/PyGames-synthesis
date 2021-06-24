@@ -38,6 +38,9 @@ def main():
     parser.add_argument('-g', '--game', choices=Evaluation.available_games, dest='game', default='Catcher',
                         help='Game for which a strategy will be synthesized')
 
+    parser.add_argument('--plot', action='store_true', dest='generate_plot',
+                        help='Generate plot during synthesis')
+
     parser.add_argument('-l', '--log', action='store', dest='log_file', default='log',
                         help='Name of log file in which results of search will be stored')
 
@@ -75,6 +78,9 @@ def main():
     parser.add_argument('-t', '--time', action='store', dest='time_limit', default=300,
                         help='Running time limit in seconds')
 
+    parser.add_argument('-v', action='store_true', dest='verbose',
+                        help='Logs more information to specified file during synthesis')
+
     parameters = parser.parse_args()
 
     algorithm = parameters.search_algorithm
@@ -87,6 +93,8 @@ def main():
     iterations = parameters.n_iter
     kappa = parameters.kappa
     sa_option = parameters.sa_option
+    verbose = parameters.verbose
+    generate_plot = parameters.generate_plot
 
     game = parameters.game
 
@@ -110,7 +118,7 @@ def main():
         input('Press Enter to start search')
     
     if algorithm == 'SimulatedAnnealing':
-        start_sa(time_limit, log_file, run_optimizer, game, sa_option)
+        start_sa(time_limit, log_file, run_optimizer, game, sa_option, verbose, generate_plot)
 
     if algorithm == 'BUS':
         start_bus(time_limit, log_file, score_threshold, run_optimizer, game)
