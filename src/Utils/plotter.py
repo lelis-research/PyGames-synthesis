@@ -20,33 +20,39 @@ class Plotter:
     def save_data(self):
         raise Exception('save_raw method not implemented')
 
-    def plot(self, x, y, title='', xlabel='x', ylabel='y'):
-        plt.plot(x, y)
-        plt.title(title)
-        plt.xlabel(xlabel)
-        step_size = max(1, int(0.1 * len(x)))
-        plt.xticks(list(range(x[0], x[-1] + 1, step_size)))
-        plt.ylabel(ylabel)
-        plt.savefig(title.replace(' ', '_') + '.png')
+    def plot(self, x, y, names):
+        fig, ax = plt.subplots()
+        ax.plot(x, y)
+        ax.set_title(names['title'])
+        ax.set_xlabel(names['x'])
+        ax.set_ylabel(names['y'])
+
+        ax.autoscale()
+
+        fig.savefig(names['filename'] + '.png')
+        plt.close(fig)
 
     def plot_from_data(self, *data, names):
         max_x_len = -1
+        fig, ax = plt.subplots()
         for d in data:
             try:
                 x, y = self.parse_data(d)
-                plt.plot(x, y)
+                ax.plot(x, y)
                 if len(x) > max_x_len:
                     max_x_len = len(x)
             except AssertionError:
                 return -1
 
-        plt.xlabel(names['x'])
-        step_size = max(1, int(0.1 * max_x_len))
-        plt.xticks(list(range(max_x_len + 1, step_size)))
-        plt.ylabel(names['y'])
-        plt.legend(names['legend'], loc='lower right')
-        plt.title(names['title'])
-        plt.savefig(names['title'].replace(' ', '_') + '.png')
+        ax.set_xlabel(names['x'])
+        ax.set_ylabel(names['y'])
+        ax.legend(names['legend'], loc='lower right')
+        ax.set_title(names['title'])
+
+        ax.autoscale()
+
+        fig.savefig(names['filename'] + '.png')
+        plt.close(fig)
 
     def plot_from_file(self, path, names):
         if not os.path.exists(path):
@@ -64,4 +70,4 @@ class Plotter:
                 x.append(int(line_split[0]))
                 y.append(round(float(line_split[1]), 2))
 
-            self.plot(x, y, title=names['title'], xlabel=names['x'], ylabel=names['y'])
+            self.plot(x, y, names)
