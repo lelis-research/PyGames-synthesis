@@ -27,7 +27,7 @@ class Plotter(base_plt.Plotter):
 
         return x, y
 
-    def save_data(self, *data, names=[]):
+    def save_data(self, *data, names):
         DATA_DIR = 'data/'
         count = 0
         for data_dict in data:
