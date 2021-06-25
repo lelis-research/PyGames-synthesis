@@ -24,27 +24,31 @@ class Plotter:
         plt.plot(x, y)
         plt.title(title)
         plt.xlabel(xlabel)
-        plt.xticks(list(range(x[0], x[-1] + 1, int(0.1 * len(x)))))
+        step_size = max(1, int(0.1 * len(x)))
+        plt.xticks(list(range(x[0], x[-1] + 1, step_size)))
         plt.ylabel(ylabel)
         plt.savefig(title.replace(' ', '_') + '.png')
 
-    def plot_from_data(self, *data, names={}):
-        for data_dict in data:
+    def plot_from_data(self, *data, names):
+        max_x_len = -1
+        for d in data:
             try:
-                x, y = self.parse_data(data_dict)
+                x, y = self.parse_data(d)
+                plt.plot(x, y)
+                if len(x) > max_x_len:
+                    max_x_len = len(x)
             except AssertionError:
                 return -1
-            
-            plt.plot(x, y)
 
-        x_len = len(x)
         plt.xlabel(names['x'])
+        step_size = max(1, int(0.1 * max_x_len))
+        plt.xticks(list(range(max_x_len + 1, step_size)))
         plt.ylabel(names['y'])
         plt.legend(names['legend'], loc='lower right')
         plt.title(names['title'])
         plt.savefig(names['title'].replace(' ', '_') + '.png')
 
-    def plot_from_file(self, path, names={}):
+    def plot_from_file(self, path, names):
         if not os.path.exists(path):
             raise Exception(f'Path to {path} does not exist')
 
