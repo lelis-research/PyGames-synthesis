@@ -15,7 +15,7 @@ from src.evaluation import *
 from src.Utils.logger import *
 
 def start_sa(time_limit, log_file, run_optimizer, game,
-    sa_option, verbose, plot):
+    sa_option, verbose, plot, plot_filename):
     grammar = {}
     grammar['operators'] = [Plus, 
                             Minus,
@@ -30,7 +30,10 @@ def start_sa(time_limit, log_file, run_optimizer, game,
                             ReturnAction
                         ]
 
-    grammar['dsfs'] = [NonPlayerObjectPosition, NonPlayerObjectApproaching, PlayerPosition]
+    grammar['dsfs'] = [NonPlayerObjectPosition, PlayerPosition]
+    if game != 'Catcher':
+        grammar['dsfs'].append(NonPlayerObjectApproaching)
+    
     grammar['constants'] = np.arange(0, 101, 0.01).tolist()
     grammar['scalars'] = ['paddle_width']
     grammar['arrays'] = ['actions']
@@ -44,5 +47,13 @@ def start_sa(time_limit, log_file, run_optimizer, game,
     sa = SimulatedAnnealing(time_limit, logger, run_optimizer)
 
     eval_funct = Evaluation(0, game)
-    sa.synthesize(grammar, 2000, 1, eval_funct, option=sa_option,
-        verbose_opt=verbose, generate_plot=plot)
+    sa.synthesize(
+        grammar, 
+        2000, 
+        1, 
+        eval_funct,
+        plot_filename, 
+        option=sa_option,
+        verbose_opt=verbose, 
+        generate_plot=plot
+    )
