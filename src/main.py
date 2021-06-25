@@ -41,9 +41,6 @@ def main():
     parser.add_argument('-g', '--game', choices=Evaluation.available_games, dest='game', default='Catcher',
                         help='Game for which a strategy will be synthesized')
 
-    parser.add_argument('--plot', action='store_true', dest='generate_plot',
-                        help='Generate plot during synthesis')
-
     parser.add_argument('-l', '--log', action='store', dest='log_file', default='log',
                         help='Name of log file in which results of search will be stored')
 
@@ -64,6 +61,12 @@ def main():
 
     parser.add_argument('-p', '--parallel', action='store_true', dest='is_parallel',
                         help='Run the optimizer with parallel processing features')
+
+    parser.add_argument('--plot', action='store_true', dest='generate_plot',
+                        help='Generate plot during synthesis')
+    
+    parser.add_argument('--plot-name', action='store', dest='plot_filename', default='plot_file',
+                        help='Name of file storing the plotted figure if --plot is specified')
     
     parser.add_argument('--sa-option', type=int, choices=[1, 2], dest='sa_option', default=1,
                         help='Option 1 makes it less likely for SA to be stuck in a local max')
@@ -98,6 +101,7 @@ def main():
     sa_option = parameters.sa_option
     verbose = parameters.verbose
     generate_plot = parameters.generate_plot
+    plot_filename = parameters.plot_filename
 
     game = parameters.game
 
@@ -121,7 +125,15 @@ def main():
         input('Press Enter to start search')
     
     if algorithm == 'SimulatedAnnealing':
-        start_sa(time_limit, log_file, run_optimizer, game, sa_option, verbose, generate_plot)
+        start_sa(
+            time_limit,
+            log_file, 
+            run_optimizer, 
+            game, sa_option, 
+            verbose, 
+            generate_plot,
+            plot_filename
+        )
 
     if algorithm == 'BUS':
         start_bus(time_limit, log_file, score_threshold, run_optimizer, game)
