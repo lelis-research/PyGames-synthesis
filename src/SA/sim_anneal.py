@@ -338,5 +338,10 @@ class SimulatedAnnealing:
             plotter.plot_from_data(scores_dict, best_pscore_dict, names=plot_names)
             plotter.save_data(scores_dict, best_pscore_dict, names=['all_scores.dat', 'best_scores.dat'])
             # plotter.plot_from_file('data/all_scores.dat', names=plot_names)
+            
+            plot_names['title'] = 'Simulated Annealing Iteration 0'
+            x = list(scores_dict[0].keys())
+            y = list(scores_dict[0].values())
+            plotter.plot(x, y, title=plot_names['title'], xlabel='iterations', ylabel='score')
 
         return best, best_eval
