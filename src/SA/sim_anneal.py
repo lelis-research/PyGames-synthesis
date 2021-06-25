@@ -177,7 +177,7 @@ class SimulatedAnnealing:
             
             return optimized_p, new_score
 
-    def synthesize(self, grammar, current_t, final_t, eval_funct,
+    def synthesize(self, grammar, current_t, final_t, eval_funct, plot_filename,
         option=1, verbose_opt=False, generate_plot=False):
         """
         This method implements the simulated annealing algorithm that can be used
@@ -259,10 +259,8 @@ class SimulatedAnnealing:
             scores_dict[iterations] = {}
             best_pscore_dict[iterations] = {}
 
-            if current_eval != -1_000_000:
+            if current_eval != -1_000_000 and best_eval != -1_000_000:
                 scores_dict[iterations][0] = current_eval
-
-            if best_eval != -1_000_000:
                 best_pscore_dict[iterations][0] = best_eval
 
             epoch = 0
@@ -276,11 +274,7 @@ class SimulatedAnnealing:
                 mutations += 1
 
                 # Evaluate the mutated program
-                scores, candidate_eval = eval_funct.evaluate(candidate, verbose=True)
-
-                # If candidate program does not raise an error
-                if candidate_eval != -1_000_000:
-                    scores_dict[iterations][epoch+1] = candidate_eval
+                scores, candidate_eval = eval_funct.evaluate(candidate, verbose=True)    
 
                 # Run optimizer if flag was specified
                 if self.run_optimizer:
@@ -295,11 +289,15 @@ class SimulatedAnnealing:
                         #     candidate = optimized_candidate
                         #     candidate_eval = optimized_candidate_eval
 
-                # Update the current best program if needed
+                # Update the best program if needed
                 if candidate_eval > best_eval:
                     header = 'New Best Program'
                     best_updated = True
                     best, best_eval = candidate, candidate_eval
+
+                # If candidate program does not raise an error, store scores
+                if candidate_eval != -1_000_000:  
+                    scores_dict[iterations][epoch+1] = candidate_eval  
                     best_pscore_dict[iterations][epoch+1] = best_eval
 
                 # Log program to file
@@ -311,6 +309,7 @@ class SimulatedAnnealing:
 
                 j_diff = candidate_eval - current_eval
                 
+                # Decide whether to accept the candidate program
                 if j_diff > 0 or self.is_accept(j_diff, current_t):
                     current, current_eval = candidate, candidate_eval
                 
@@ -327,21 +326,33 @@ class SimulatedAnnealing:
         self.logger.log_program(best.to_string(), pdescr)
 
         if generate_plot:
-            plotter = Plotter()
+            plotter = Plotter()     # Plotter object
             plot_names = {
-                'x': 'iterations',
+                'x': 'Total iterations',
                 'y': 'Program Score',
-                'title': 'Simulated Annealing Program Score Graph',
+                'title': 'SA Program Scores vs Total Iterations',
+                'filename': plot_filename,
                 'legend': ['current program', 'best program']
             }
 
-            plotter.plot_from_data(scores_dict, best_pscore_dict, names=plot_names)
-            plotter.save_data(scores_dict, best_pscore_dict, names=['all_scores.dat', 'best_scores.dat'])
-            # plotter.plot_from_file('data/all_scores.dat', names=plot_names)
-            
-            plot_names['title'] = 'Simulated Annealing Iteration 0'
-            x = list(scores_dict[0].keys())
-            y = list(scores_dict[0].values())
-            plotter.plot(x, y, title=plot_names['title'], xlabel='iterations', ylabel='score')
+            plotter.plot_from_data(scores_dict, best_pscore_dict, names=plot_names)     # plot all scores
+
+            # Save data to files
+            data_filenames = [
+                'all_scores_' + plot_filename.replace('graph', 'data') + '.dat',
+                'best_scores_' + plot_filename.replace('graph', 'data') + '.dat'
+            ]
+            plotter.save_data(scores_dict, best_pscore_dict, names=data_filenames)
+
+            # # Plot scores of solutions generated during first run of SA
+            # x = list(scores_dict[0].keys())
+            # y = list(scores_dict[0].values())
+            # print('x', x)
+            # print('y', y)
+            # plot_names['title'] = '1st SA Run - Program Scores vs Iterations'
+            # plot_names['filename'] = plot_filename + '_first_SA_Run'
+            # plot_names['x'] = 'iterations'
+
+            # plotter.plot(x, y, plot_names)
 
         return best, best_eval
