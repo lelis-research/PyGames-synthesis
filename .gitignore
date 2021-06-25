@@ -5,3 +5,4 @@ pygame_games/
 logs.json
 logs/
 data/
+*.png
