@@ -35,7 +35,7 @@ class Plotter(base_plt.Plotter):
                 os.makedirs(DATA_DIR)
 
             with open(join(DATA_DIR + names[count]), 'w') as data_file:
-                data_file.write(f'# {names[count]}')
+                data_file.write(f'# {names[count]}\n')
                 x, y = self.parse_data(data_dict)
                 for i in range(len(y)):
                     data_file.write(f'{x[i]} {y[i]}\n')
