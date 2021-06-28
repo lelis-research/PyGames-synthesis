@@ -131,7 +131,7 @@ class Optimizer:
             target = self.initial_score
 
         self.set_const_value(params)
-        return self.ast, bayesOpt.max['params'], bayesOpt.max['target'], is_optimized
+        return self.ast, params, target, is_optimized
 
     def optimize(self, ast, initial_ast_score):
         self.ast = ast
