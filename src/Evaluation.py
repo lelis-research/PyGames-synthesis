@@ -49,7 +49,7 @@ class Evaluation:
         env['actions'] = action_set
         return env
 
-    def evaluate(self, program, verbose=False):
+    def evaluate(self, program, optimizing=False, verbose=False):
         """
         The evaluate method runs a Catcher game and uses the program parameter as
         strategy to determine which actions to take at each game tick. It then
@@ -58,7 +58,10 @@ class Evaluation:
         """
         p = PLE(self.game, fps=30, display_screen=True, rng=int(time.time()))
         scores = []
-        total_games_played = 5
+        if optimizing:
+            total_games_played = 5
+        else:
+            total_games_played = 35
 
         for i in range(total_games_played):
             score = -100000
