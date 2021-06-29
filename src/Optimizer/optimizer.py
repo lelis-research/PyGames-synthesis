@@ -139,7 +139,7 @@ class Optimizer:
 
         self.const_range_list, self.original_values = self.get_const_range()
         if len(self.original_values) == 0:
-            return self.ast, self.original_values, 0, False
+            return self.ast, self.original_values, initial_ast_score, False
 
         try:
             if self.is_triage:
