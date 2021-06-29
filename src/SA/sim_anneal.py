@@ -215,7 +215,7 @@ class SimulatedAnnealing:
         ppool = []
 
         if self.is_parallel:
-                ppool_max_size = 5
+            ppool_max_size = 5
         else:
             ppool_max_size = 1
 
