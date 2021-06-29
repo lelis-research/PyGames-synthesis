@@ -56,11 +56,11 @@ class Evaluation:
         returns the score of the program when the game is over or when an exception
         is raised due to an impossible action.
         """
-        p = PLE(self.game, fps=30, display_screen=False, rng=int(time.time()))
+        p = PLE(self.game, fps=30, display_screen=True, rng=int(time.time()))
         scores = []
+        total_games_played = 5
 
-        for i in range(5):
-            
+        for i in range(total_games_played):
             score = -100000
             while not p.game_over():
                 env = self.update_env(p.getGameState(), p.getActionSet())
@@ -78,7 +78,7 @@ class Evaluation:
             p.reset_game()
             scores.append(score)
 
-        score_avg = round(sum(scores) / 5, 2)
+        score_avg = round(sum(scores) / total_games_played, 2)
         if verbose:
             return (tuple(scores), score_avg)
         else:
