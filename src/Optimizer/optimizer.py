@@ -73,7 +73,7 @@ class Optimizer:
     def evaluation_fun(self, **kwargs):
         const_nodes = np.fromiter(kwargs.values(), dtype=float)
         self.set_const_value(const_nodes.tolist())
-        score = self.eval_funct.evaluate(self.ast)
+        score = self.eval_funct.evaluate(self.ast, optimizing=True)
         return score
 
     def break_down(self, iterations):
@@ -100,7 +100,7 @@ class Optimizer:
             for _ in range(i):
                 next_point = bayesOpt.suggest(utility)
                 self.set_const_value(next_point)
-                target = self.eval_funct.evaluate(self.ast)
+                target = self.eval_funct.evaluate(self.ast, optimizing=True)
                 bayesOpt.register(params=next_point, target=target)
 
             # Compare results with previous runs of the optimizer
