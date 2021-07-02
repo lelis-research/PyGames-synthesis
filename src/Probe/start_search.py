@@ -13,7 +13,7 @@ from src.dsl import *
 from src.PROBE.rule import *
 from src.PROBE.probe import *
 from src.Utils.logger import Logger
-from src.evaluation import Evaluation
+from src.evaluation import *
 
 def start_probe(time_limit, log_file, is_parallel, game):
 
@@ -54,7 +54,8 @@ def start_probe(time_limit, log_file, is_parallel, game):
         VarFromArray.new('actions', 2)
     ]
 
-    eval_funct = Evaluation(0, game)
+    eval_factory = EvaluationFactory(0)
+    eval_funct = eval_factory.get_eval_fun(game)
 
     logger = Logger(
         log_file,
