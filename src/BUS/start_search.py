@@ -27,7 +27,8 @@ def start_bus(time_limit, log_file, score_threshold, run_optimizer, game):
     bus = BUS(time_limit, logger, run_optimizer)
 
     # Initialize the evaluation object
-    eval_funct = Evaluation(score_threshold, game)
+    eval_factory = EvaluationFactory(0)
+    eval_funct = eval_factory.get_eval_fun(game)
     
     # Initialize the arguments to the synthesizer
     operators = [IT, ITE, Strategy, ReturnAction, Plus, Times, Divide, Minus, 
