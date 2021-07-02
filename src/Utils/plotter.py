@@ -53,7 +53,8 @@ class Plotter:
         ax.autoscale()
 
         fig.savefig(names['filename'] + '.png')
-        plt.close(fig)
+        fig.clf()
+        plt.close('all')
 
     def plot_from_file(self, path, names):
         if not os.path.exists(path):
