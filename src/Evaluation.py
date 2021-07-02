@@ -72,7 +72,7 @@ class Evaluation:
         if optimizing:
             total_games_played = 5
         else:
-            total_games_played = 1
+            total_games_played = 30
         
         scores = []
         score = -1_000_000
