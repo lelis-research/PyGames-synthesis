@@ -1,0 +1,32 @@
+{
+    "Catcher": {
+        "dsfs": [
+            "NonPlayerObjectPosition",
+            "PlayerPosition"
+        ],
+        "array_indexes": [0, 1, 2]
+    },
+    "Pong": {
+        "dsfs": [
+            "NonPlayerObjectPosition",
+            "PlayerPosition",
+            "NonPlayerObjectApproaching"
+        ],
+        "array_indexes": [0, 1, 2]
+    },
+    "operators": [
+        "Minus",
+        "Plus",
+        "Times",
+        "Divide",
+        "LessThan",
+        "GreaterThan",
+        "EqualTo",
+        "IT",
+        "ITE",
+        "Strategy",
+        "ReturnAction"
+    ],
+    "scalars": ["paddle_width"],
+    "arrays": ["actions"]
+}
