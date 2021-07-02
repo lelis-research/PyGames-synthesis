@@ -144,12 +144,35 @@ class SimulatedAnnealing:
         VarScalar.valid_children_types = [set(grammar['scalars'])]
         Constant.valid_children_types = [set(grammar['constants'])]
 
-    def start_optimizer(self, ppool):
+    def init_attributes(self, eval_funct):
+        self.alpha = 0.9
+        self.beta = 100
+        self.initial_depth = 0
+        self.max_depth = 4
+        self.max_size = 50
+        self.ppool = []     # for storing solutions to be optimized
+
+        if self.is_parallel:
+            # Change this number to change the number of
+            # solutions to be optimized in parallel
+            self.ppool_max_size = 5
+        else:
+            self.ppool_max_size = 1
+
+        # Initialize variables used to generate plots later on
+        self.scores_dict = {}
+        self.best_pscore_dict = {}
+
+        # Declare optimizer if command-line option was specified
+        if self.run_optimizer:
+            self.optimizer = Optimizer(eval_funct, self.is_triage, self.n_iter, self.kappa)
+
+    def start_optimizer(self):
         if self.is_parallel:
             with mp.Pool() as pool:
                 current_best = None
                 current_best_score = -1000000
-                for arg, res in zip(ppool, pool.starmap(self.optimizer.optimize, ppool, chunksize=20)):
+                for arg, res in zip(self.ppool, pool.starmap(self.optimizer.optimize, self.ppool, chunksize=20)):
                     optimized_p, optimized_const_values, new_score, is_optimized = res
                     arg_p, arg_pscore = arg
 
@@ -166,19 +189,29 @@ class SimulatedAnnealing:
                 return current_best, current_best_score
 
         else:
-            p, pscore = ppool[0]
+            p, pscore = self.ppool[0]
             optimized_p, optimized_const_values, new_score, is_optimized = self.optimizer.optimize(p, pscore)
             
             if is_optimized:
                 pdescr = {'header': 'Optimized Program', 'psize': optimized_p.get_size(), 'score': new_score}
-                self.logger.log('Constant Values: ' + str(optimized_const_values))
                 self.logger.log_program(optimized_p.to_string(indent=1), pdescr)
+                self.logger.log('Constant Values: ' + str(optimized_const_values))
                 self.logger.log('Previous Score: ' + str(pscore), end='\n\n')
             
             return optimized_p, new_score
 
-    def synthesize(self, grammar, current_t, final_t, eval_funct, plot_filename,
-        option=1, verbose_opt=False, generate_plot=False):
+    def synthesize(
+            self,
+            grammar, 
+            current_t, 
+            final_t, 
+            eval_funct, 
+            plot_filename,
+            ibr,
+            option=1, 
+            verbose_opt=False, 
+            generate_plot=False,
+        ):
         """
         This method implements the simulated annealing algorithm that can be used
         to generate strategies given a grammar and an evaluation function.
@@ -195,29 +228,11 @@ class SimulatedAnnealing:
         start = time.time()
         self.logger.set_start(start)
 
-        self.alpha = 0.9
-        self.beta = 100
-        self.initial_depth = 0
-        self.max_depth = 4
-        self.max_size = 50
-        self.initial_t = current_t
-
-        # Initialize variables used to generate plots later on
-        scores_dict = {}
-        best_pscore_dict = {}
-
         self.init_var_child_types(grammar)
+        self.init_attributes(eval_funct)
 
-        if self.run_optimizer:
-            self.optimizer = Optimizer(eval_funct, self.is_triage, self.n_iter, self.kappa)
-
+        initial_t = current_t
         iterations = 0
-        ppool = []
-
-        if self.is_parallel:
-            ppool_max_size = 5
-        else:
-            ppool_max_size = 1
 
         # Option 2: Generate random program only once
         if option == 2:
@@ -235,7 +250,7 @@ class SimulatedAnnealing:
         as the initial program.
         '''
         while time.time() - start < self.time_limit:
-            current_t = self.initial_t
+            current_t = initial_t
 
             # Option 1: Generate random program and compare with best
             if option == 1:
@@ -244,9 +259,10 @@ class SimulatedAnnealing:
 
                 if best is None or current_eval > best_eval:
                     best, best_eval = current, current_eval
+                    eval_funct.set_best(best, best_eval)
             
             # Option 2: Assign current to best solution in previous iteration
-            elif option == 2 and best is not None:
+            elif option == 2 and best is not None and not ibr:
                 current = best
                 current_eval = best_eval
 
@@ -256,65 +272,31 @@ class SimulatedAnnealing:
             self.logger.log('Scores: ' + str(scores).strip('()'), end='\n\n')
 
             # Store score values to generate plot before exiting if needed
-            scores_dict[iterations] = {}
-            best_pscore_dict[iterations] = {}
+            self.scores_dict[iterations] = {}
+            self.best_pscore_dict[iterations] = {}
 
             if current_eval != -1_000_000 and best_eval != -1_000_000:
-                scores_dict[iterations][0] = current_eval
-                best_pscore_dict[iterations][0] = best_eval
+                self.scores_dict[iterations][0] = current_eval
+                self.best_pscore_dict[iterations][0] = best_eval
 
-            epoch = 0
-            mutations = 0    
-            while current_t > final_t:
-                best_updated = False
-                header = 'Mutated Program'
+            # Call simulated annealing
+            best, best_eval, is_new_best = self.simulated_annealing(
+                                current_t,
+                                final_t,
+                                current,
+                                best,
+                                current_eval,
+                                best_eval,
+                                iterations,
+                                eval_funct,
+                                verbose_opt,
+                                ibr
+                            )
 
-                # Mutate current program
-                candidate = self.mutate(cp.deepcopy(current))
-                mutations += 1
-
-                # Evaluate the mutated program
-                scores, candidate_eval = eval_funct.evaluate(candidate, verbose=True)    
-
-                # Run optimizer if flag was specified
-                if self.run_optimizer:
-                    ppool.append((candidate, candidate_eval))
-                    # print('ppool_len', len(ppool))
-
-                    if len(ppool) >= ppool_max_size:
-                        candidate, candidate_eval = self.start_optimizer(ppool)
-                        ppool = []
-
-                        # if optimized_candidate_eval > candidate_eval:
-                        #     candidate = optimized_candidate
-                        #     candidate_eval = optimized_candidate_eval
-
-                # Update the best program if needed
-                if candidate_eval > best_eval:
-                    header = 'New Best Program'
-                    best_updated = True
-                    best, best_eval = candidate, candidate_eval
-
-                # If candidate program does not raise an error, store scores
-                if candidate_eval != -1_000_000:  
-                    scores_dict[iterations][epoch+1] = candidate_eval  
-                    best_pscore_dict[iterations][epoch+1] = best_eval
-
-                # Log program to file
-                if best_updated or verbose_opt:
-                    pdescr = {'header': header, 'psize': candidate.get_size(), 'score': candidate_eval}
-                    self.logger.log_program(candidate.to_string(), pdescr)
-                    self.logger.log('Scores: ' + str(scores).strip('()'))
-                    self.logger.log('Mutations: ' + str(mutations), end='\n\n')
-
-                j_diff = candidate_eval - current_eval
-                
-                # Decide whether to accept the candidate program
-                if j_diff > 0 or self.is_accept(j_diff, current_t):
-                    current, current_eval = candidate, candidate_eval
-                
-                current_t = self.reduce_temp(current_t, epoch)
-                epoch += 1
+            # If iterated-best response option was specified,
+            # update the current best solution to the new best
+            if ibr and is_new_best:
+                eval_funct.set_best(best, best_eval)
 
             iterations += 1
             self.logger.log('Total iterations: ' + str(iterations), end='\n\n')
@@ -325,34 +307,118 @@ class SimulatedAnnealing:
         pdescr = {'header': 'Best Program Found By SA', 'psize': best.get_size(), 'score': best_eval}
         self.logger.log_program(best.to_string(), pdescr)
 
+        # Plot data if required
         if generate_plot:
-            plotter = Plotter()     # Plotter object
-            plot_names = {
-                'x': 'Total iterations',
-                'y': 'Program Score',
-                'title': 'SA Program Scores vs Total Iterations',
-                'filename': plot_filename,
-                'legend': ['current program', 'best program']
-            }
-
-            plotter.plot_from_data(scores_dict, best_pscore_dict, names=plot_names)     # plot all scores
-
-            # Save data to files
-            data_filenames = [
-                'all_scores_' + plot_filename.replace('graph', 'data') + '.dat',
-                'best_scores_' + plot_filename.replace('graph', 'data') + '.dat'
-            ]
-            plotter.save_data(scores_dict, best_pscore_dict, names=data_filenames)
-
-            # # Plot scores of solutions generated during first run of SA
-            # x = list(scores_dict[0].keys())
-            # y = list(scores_dict[0].values())
-            # print('x', x)
-            # print('y', y)
-            # plot_names['title'] = '1st SA Run - Program Scores vs Iterations'
-            # plot_names['filename'] = plot_filename + '_first_SA_Run'
-            # plot_names['x'] = 'iterations'
-
-            # plotter.plot(x, y, plot_names)
+            self.plot(plot_filename)
 
         return best, best_eval
+
+    def plot(self, plot_filename):
+        plotter = Plotter()     # Plotter object
+        plot_names = {
+            'x': 'Total iterations',
+            'y': 'Program Score',
+            'title': 'SA Program Scores vs Total Iterations',
+            'filename': plot_filename,
+            'legend': ['current program', 'best program']
+        }
+
+        plotter.plot_from_data(self.scores_dict, self.best_pscore_dict, names=plot_names)     # plot all scores
+
+        # Save data to files
+        data_filenames = [
+            'all_scores_' + plot_filename.replace('graph', 'data') + '.dat',
+            'best_scores_' + plot_filename.replace('graph', 'data') + '.dat'
+        ]
+        plotter.save_data(self.scores_dict, self.best_pscore_dict, names=data_filenames)
+
+        # # Plot scores of solutions generated during first run of SA
+        for i in range(len(self.scores_dict.keys())):
+            x = list(self.scores_dict[i].keys())
+            y = list(self.scores_dict[i].values())
+
+            # Match i to its corresponding string description
+            # That is, if i = 0 and this means that the scores
+            # for the first iteration will be plotted and so '1st'
+            # is i's string description and is used in the title
+            i_strings = ['st', 'nd', 'rd', 'th']
+            i_str = str(i+1) + i_strings[min(i, 3)]
+
+            plot_names['title'] = f'{i_str} SA Run - Program Scores vs Iterations'
+            plot_names['filename'] = plot_filename + f'_{i_str}_SA_Run'
+            plot_names['x'] = 'iterations'
+
+            plotter.plot(x, y, plot_names)
+
+    def simulated_annealing(
+            self,
+            current_t,
+            final_t,
+            current,
+            best,
+            current_eval,
+            best_eval,
+            iterations,
+            eval_funct,
+            verbose_opt,
+            ibr
+        ):
+        epoch = 0
+        mutations = 0
+        is_new_best = False
+        while current_t > final_t:
+            best_updated = False
+            header = 'Mutated Program'
+
+            # Mutate current program
+            candidate = self.mutate(cp.deepcopy(current))
+            mutations += 1
+
+            # Evaluate the mutated program
+            scores, candidate_eval = eval_funct.evaluate(candidate, verbose=True)
+
+            # Run optimizer if flag was specified
+            if self.run_optimizer:
+                self.ppool.append((candidate, candidate_eval))
+                # print('self.ppool_len', len(self.ppool))
+
+                if len(self.ppool) >= self.ppool_max_size:
+                    candidate, candidate_eval = self.start_optimizer(self.ppool)
+                    self.ppool = []
+
+                    # if optimized_candidate_eval > candidate_eval:
+                    #     candidate = optimized_candidate
+                    #     candidate_eval = optimized_candidate_eval
+
+            # Update the best program if needed
+            if candidate_eval > best_eval:
+                header = 'New Best Program'
+                best_updated = True
+                is_new_best = True
+                best, best_eval = candidate, candidate_eval
+
+            # If candidate program does not raise an error, store scores
+            if candidate_eval != -1_000_000:  
+                self.scores_dict[iterations][epoch+1] = candidate_eval  
+                self.best_pscore_dict[iterations][epoch+1] = best_eval
+
+            # Log program to file
+            if best_updated or verbose_opt:
+                pdescr = {'header': header, 'psize': candidate.get_size(), 'score': candidate_eval}
+                self.logger.log_program(candidate.to_string(), pdescr)
+                self.logger.log('Scores: ' + str(scores).strip('()'))
+                self.logger.log('Mutations: ' + str(mutations), end='\n\n')
+
+            j_diff = candidate_eval - current_eval
+            
+            # Decide whether to accept the candidate program
+            if j_diff > 0 or self.is_accept(j_diff, current_t):
+                current, current_eval = candidate, candidate_eval
+            
+            current_t = self.reduce_temp(current_t, epoch)
+            epoch += 1
+
+            if ibr and best_updated:
+                break
+
+        return best, best_eval, is_new_best
