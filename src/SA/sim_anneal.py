@@ -332,23 +332,23 @@ class SimulatedAnnealing:
         ]
         plotter.save_data(self.scores_dict, self.best_pscore_dict, names=data_filenames)
 
-        # # Plot scores of solutions generated during first run of SA
-        for i in range(len(self.scores_dict.keys())):
-            x = list(self.scores_dict[i].keys())
-            y = list(self.scores_dict[i].values())
+        # Plot scores of solutions generated during first run of SA
+        # for i in range(len(self.scores_dict.keys())):
+        #     x = list(self.scores_dict[i].keys())
+        #     y = list(self.scores_dict[i].values())
 
-            # Match i to its corresponding string description
-            # That is, if i = 0 and this means that the scores
-            # for the first iteration will be plotted and so '1st'
-            # is i's string description and is used in the title
-            i_strings = ['st', 'nd', 'rd', 'th']
-            i_str = str(i+1) + i_strings[min(i, 3)]
+              # Match i to its corresponding string description
+              # That is, if i = 0 and this means that the scores
+              # for the first iteration will be plotted and so '1st'
+              # is i's string description and is used in the title
+        #     i_strings = ['st', 'nd', 'rd', 'th']
+        #     i_str = str(i+1) + i_strings[min(i, 3)]
 
-            plot_names['title'] = f'{i_str} SA Run - Program Scores vs Iterations'
-            plot_names['filename'] = plot_filename + f'_{i_str}_SA_Run'
-            plot_names['x'] = 'iterations'
+        #     plot_names['title'] = f'{i_str} SA Run - Program Scores vs Iterations'
+        #     plot_names['filename'] = plot_filename + f'_{i_str}_SA_Run'
+        #     plot_names['x'] = 'iterations'
 
-            plotter.plot(x, y, plot_names)
+        #     plotter.plot(x, y, plot_names)
 
     def simulated_annealing(
             self,
