@@ -238,7 +238,7 @@ class SimulatedAnnealing:
         if option == 2:
             best = self.generate_random()
             scores, best_eval = eval_funct.evaluate(best, verbose=True)
-            
+            eval_funct.set_best(best, best_eval)
         else:
             best = None
             best_eval = None
@@ -262,7 +262,7 @@ class SimulatedAnnealing:
                     eval_funct.set_best(best, best_eval)
             
             # Option 2: Assign current to best solution in previous iteration
-            elif option == 2 and best is not None and not ibr:
+            elif option == 2 and best is not None:
                 current = best
                 current_eval = best_eval
 
@@ -383,7 +383,7 @@ class SimulatedAnnealing:
                 # print('self.ppool_len', len(self.ppool))
 
                 if len(self.ppool) >= self.ppool_max_size:
-                    candidate, candidate_eval = self.start_optimizer(self.ppool)
+                    candidate, candidate_eval = self.start_optimizer()
                     self.ppool = []
 
                     # if optimized_candidate_eval > candidate_eval:
