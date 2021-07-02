@@ -15,7 +15,10 @@ from src.evaluation import *
 from src.Utils.logger import *
 
 def start_sa(time_limit, log_file, run_optimizer, game,
-    sa_option, verbose, plot, plot_filename):
+    sa_option, verbose, plot, plot_filename, ibr):
+    if ibr:
+        assert available_games[game] == 2, f'Cannot perform IBR on {game}'
+
     grammar = {}
     grammar['operators'] = [Plus, 
                             Minus,
@@ -46,13 +49,16 @@ def start_sa(time_limit, log_file, run_optimizer, game,
     )
     sa = SimulatedAnnealing(time_limit, logger, run_optimizer)
 
-    eval_funct = Evaluation(0, game)
+    eval_factory = EvaluationFactory(0)
+    eval_funct = eval_factory.get_eval_fun(game)
+    
     sa.synthesize(
         grammar, 
         2000, 
         1, 
         eval_funct,
         plot_filename, 
+        ibr,
         option=sa_option,
         verbose_opt=verbose, 
         generate_plot=plot
