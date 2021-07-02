@@ -107,6 +107,13 @@ class Node:
             return globals()[classname]()
         return classname
 
+    @staticmethod
+    def get_class(classname):
+        if classname in globals():
+            return globals()[classname]
+        else:
+            raise Exception(f'Invalid classname: {classname}')
+
     @classmethod
     def get_valid_children_types(cls):
         return cls.valid_children_types.copy()
