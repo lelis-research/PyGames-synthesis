@@ -13,34 +13,16 @@ the synthesis process, and calls the synthesizer with the desired arguments.
 from src.SA.sim_anneal import *
 from src.evaluation import *
 from src.Utils.logger import *
+from src.Utils.dsl_config import *
+import json
 
 def start_sa(time_limit, log_file, run_optimizer, game,
     sa_option, verbose, plot, plot_filename, ibr):
     if ibr:
         assert available_games[game] == 2, f'Cannot perform IBR on {game}'
 
-    grammar = {}
-    grammar['operators'] = [Plus, 
-                            Minus,
-                            Times, 
-                            Divide, 
-                            LessThan, 
-                            GreaterThan, 
-                            EqualTo, 
-                            IT, 
-                            ITE, 
-                            Strategy, 
-                            ReturnAction
-                        ]
-
-    grammar['dsfs'] = [NonPlayerObjectPosition, PlayerPosition]
-    if game != 'Catcher':
-        grammar['dsfs'].append(NonPlayerObjectApproaching)
-    
-    grammar['constants'] = np.arange(0, 101, 0.01).tolist()
-    grammar['scalars'] = ['paddle_width']
-    grammar['arrays'] = ['actions']
-    grammar['array_indexes'] = [0, 1, 2]
+    dsl_config = DslConfig('./src/dsl_config.json')
+    grammar = dsl_config.get_grammar(game)
 
     logger = Logger(
         log_file,
