@@ -38,8 +38,11 @@ def main():
             epilog='Happy Synthesizing! :-)'
     )
 
-    parser.add_argument('-g', '--game', choices=Evaluation.available_games, dest='game', default='Catcher',
+    parser.add_argument('-g', '--game', choices=available_games.keys(), dest='game', default='Catcher',
                         help='Game for which a strategy will be synthesized')
+
+    parser.add_argument('--ibr', action='store_true', dest='ibr',
+                        help='Run the Iterated Best Response. Will only with 2-player games.')
 
     parser.add_argument('-l', '--log', action='store', dest='log_file', default='log',
                         help='Name of log file in which results of search will be stored')
@@ -97,6 +100,7 @@ def main():
     is_optimize_true = parameters.optimize
     is_parallel = parameters.is_parallel
     iterations = parameters.n_iter
+    ibr = parameters.ibr
     kappa = parameters.kappa
     sa_option = parameters.sa_option
     verbose = parameters.verbose
@@ -132,7 +136,8 @@ def main():
             game, sa_option, 
             verbose, 
             generate_plot,
-            plot_filename
+            plot_filename,
+            ibr
         )
 
     if algorithm == 'BUS':
