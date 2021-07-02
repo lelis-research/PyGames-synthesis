@@ -30,7 +30,8 @@ class Plotter:
         ax.autoscale()
 
         fig.savefig(names['filename'] + '.png')
-        plt.close(fig)
+        fig.clf()
+        plt.close('all')
 
     def plot_from_data(self, *data, names):
         max_x_len = -1
