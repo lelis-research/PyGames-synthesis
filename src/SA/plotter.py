@@ -4,7 +4,8 @@ SA/plotter.py
 Author: Olivier Vadiavaloo
 
 Description:
-This module implements 
+This module implements the plotter subclass for plotting the results
+of simulated annealing for a given game.
 """
 import src.Utils.plotter as base_plt
 import matplotlib.pyplot as plt
