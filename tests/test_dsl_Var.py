@@ -1,5 +1,5 @@
 import unittest
-from src.dsl import VarScalar, VarFromArray, Constant
+from src.dsl import VarArray, VarScalar, VarFromArray, Constant
 from unittest.mock import Mock
 
 def Const(value):
@@ -8,6 +8,27 @@ def Const(value):
     const.interpret.return_value = value
     type(const).__name__ = Constant.className()
     return const
+
+
+class TestVarArray(unittest.TestCase):
+
+    def setUp(self):
+        self.env = {}
+        self.env['action'] = [119, 83, None]
+
+    def test_size_one(self):
+        var_arr = VarArray.new('action')
+        self.assertEqual(var_arr.get_size(), 1, 'VarArray object should have 1')
+
+    def test_size_change_var_size(self):
+        var_arr = VarArray.new('action')
+        var_arr.size = 191
+        self.assertEqual(var_arr.get_size(), 191, 'VarArray object should have size 191')
+
+    def test_interpret(self):
+        var_arr = VarArray.new('action')
+        self.assertEqual(var_arr.interpret(self.env), [119, 83, None],
+            'interpret method of VarArray object should return [119, 83, None]')
 
 
 class TestVarScalar(unittest.TestCase):
