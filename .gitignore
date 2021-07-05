@@ -6,3 +6,4 @@ logs.json
 logs/
 data/
 *.png
+pong/
