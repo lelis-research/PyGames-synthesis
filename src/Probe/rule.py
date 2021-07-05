@@ -55,6 +55,14 @@ class Rule:
 
         return False
 
+for_each_rule = Rule(
+    ForEach,
+    [
+        set([VarArray]),
+        set([IT, ITE])
+    ]
+)
+
 it_rule = Rule(
         IT,
         [
@@ -131,6 +139,11 @@ eq_rule = Rule(
 const_rule = Rule(
     Constant,
     [set([int, float])]
+)
+
+var_arr_rule = Rule(
+    VarArray,
+    [set([str])]
 )
 
 var_scalar_rule = Rule(
