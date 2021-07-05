@@ -1,6 +1,6 @@
 from src.dsl import Constant, GreaterThan, IT, ReturnAction, Strategy
 from src.Optimizer.optimizer import Optimizer
-from unittest.mock import DEFAULT, patch, Mock
+from unittest.mock import Mock
 import unittest
 
 class TestOptimizer(unittest.TestCase):
@@ -21,7 +21,7 @@ class TestOptimizer(unittest.TestCase):
             self.mock_const_1.get_children.return_value = [child]
         self.mock_const_1.replace_child.side_effect = replace_child
 
-        self.mock_const_2 = Mock()
+        self.mock_const_2 = Mock(spec=Constant)
         self.mock_const_2.__class__ = Constant
         self.mock_const_2.get_children.return_value = [0]
 
@@ -76,9 +76,9 @@ class TestOptimizer(unittest.TestCase):
 
     def test_triage_optimize_true(self):
         self.score = 100
-        def increase_score(x):
+        def increase_score(x, optimizing=False):
             self.score += 100
-            return self.score - 100
+            return self.score
         
         eval_funct = Mock()
         eval_funct.evaluate.side_effect = increase_score
@@ -95,9 +95,9 @@ class TestOptimizer(unittest.TestCase):
 
     def test_nontriage_optimize_true(self):
         self.score = 100
-        def increase_score(x):
+        def increase_score(x, optimizing=False):
             self.score += 100
-            return self.score - 100
+            return self.score
         
         eval_funct = Mock()
         eval_funct.evaluate.side_effect = increase_score
