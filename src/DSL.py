@@ -28,6 +28,7 @@ class Node:
 
         self.statename = 'state'
         self.actionname = 'actions'
+        self.loopname = 'loop'
 
     def add_child(self, child):
         if type(self).__name__ == Constant.className():
@@ -181,6 +182,53 @@ class ReturnAction(Node):
         action = self.get_children()[0]
         return action.interpret(env)
 
+"""
+This class represents a for loop in the DSL. It is interpreted as
+a for-each loop where the program iterates over each element of the
+provided iterable directly. For example,
+
+for each x in coords:
+    # loop body
+"""
+class ForEach(Node):
+
+    def __init__(self):
+        super(ForEach, self).__init__()
+        self.max_number_children = 2
+
+    @classmethod
+    def new(cls, iterable, loop_body):
+        assert isinstance(iterable, VarArray)
+        assert isinstance(loop_body, IT) or isinstance(loop_body, ITE)
+        inst = cls()
+        inst.add_child(iterable)
+        inst.add_child(loop_body)
+
+        return inst
+
+    def to_string(self, indent=0):
+        tabs = ''
+        for _ in range(indent):
+            tabs += '\t'
+
+        iterable = self.get_children()[0]
+        loop_body = self.get_children()[1]
+        for_str = f"""{tabs}for each element in {iterable.to_string()}:\n"""
+        for_str += loop_body.to_string(indent+1)
+
+        return for_str
+
+    def interpret(self, env):
+        iterable = self.get_children()[0]
+        loop_body = self.get_children()[1]
+
+        for element in iterable.interpret(env):
+            env[self.loopname] = element
+            loop_res = loop_body.interpret(env)
+            
+            if loop_res != 'False':
+                return loop_res
+
 
 """
 This class represents an if-then conditional statement in the DSL. It is
@@ -220,6 +268,7 @@ class IT(Node):
 
         if condition.interpret(env):
             return if_body.interpret(env)
+        return 'False'
     
 
 """
@@ -346,6 +395,34 @@ class VarScalar(Node):
 
     def interpret(self, env):
         return env[self.get_children()[0]]
+
+
+"""
+This class implements an AST node represent a list variable
+"""
+class VarArray(Node):
+
+    def __init__(self):
+        super(VarArray, self).__init__()
+        self.max_number_children = 1
+        self.size = 0
+
+    @classmethod
+    def new(cls, array_name):
+        assert type(array_name) is str
+        inst = cls()
+        inst.add_child(array_name)
+
+        return inst
+
+    def to_string(self, indent=0):
+        array_name = self.get_children()[0]
+        assert type(array_name) is str
+        return array_name
+
+    def interpret(self, env):
+        array_name = self.get_children()[0]
+        return env[array_name]
 
 
 """
@@ -570,7 +647,7 @@ class Strategy(Node):
 
     @classmethod
     def new(cls, statement, next_statements):
-        assert type(statement).__name__ in [IT.className()]
+        assert type(statement).__name__ in [ForEach.className(), IT.className()]
         assert type(next_statements).__name__ in [Strategy.className(), ReturnAction.className(), type(None).__name__]
 
         if type(statement).__name__ == ITE.className():
@@ -605,9 +682,13 @@ class Strategy(Node):
 
 Node.valid_children_types = [set([Strategy.className()])]
 
-Strategy.valid_first_statement = set([IT.className()])
+Strategy.valid_first_statement = set([ForEach.className(), IT.className()])
 Strategy.valid_next_statements = set([Strategy.className(), ReturnAction.className(), None])
 Strategy.valid_children_types = [Strategy.valid_first_statement, Strategy.valid_next_statements]
+
+ForEach.valid_iterable = set([VarArray.className()])
+ForEach.valid_loop_body = set([IT.className(), ITE.className()])
+ForEach.valid_children_types = [ForEach.valid_iterable, ForEach.valid_loop_body]
 
 IT.valid_if_cond = set([LessThan.className(), GreaterThan.className(), EqualTo.className(), NonPlayerObjectApproaching.className()])
 IT.valid_if_body = set([ReturnAction.className()])
