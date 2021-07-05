@@ -38,7 +38,7 @@ class SimulatedAnnealing:
                 continue
 
             child = Node.instance(child_type)
-            if child_type in [VarFromArray.className(), VarScalar.className(), Constant.className()] \
+            if child_type in [VarFromArray.className(), VarArray.className(), VarScalar.className(), Constant.className()] \
                 or child.get_max_number_children() == 0:
                 terminal_nodes.append(child)
 
@@ -62,7 +62,8 @@ class SimulatedAnnealing:
             valid_ith_child_types = p.get_valid_children_types()[i]
 
             # if p is a scalar or constant, no need to call complete_program on child
-            if isinstance(p, VarScalar) or isinstance(p, VarFromArray) or isinstance(p, Constant):
+            if isinstance(p, VarScalar) or isinstance(p, VarFromArray) or \
+                isinstance(p, Constant) or isinstance(p, VarArray):
                 child = random.choice(list(valid_ith_child_types))
                 p.add_child(child)
 
@@ -140,6 +141,7 @@ class SimulatedAnnealing:
         return False
 
     def init_var_child_types(self, grammar):
+        VarArray.valid_children_types = [set(grammar['arrays'])]
         VarFromArray.valid_children_types = [set(grammar['arrays']), set(grammar['array_indexes'])]
         VarScalar.valid_children_types = [set(grammar['scalars'])]
         Constant.valid_children_types = [set(grammar['constants'])]
