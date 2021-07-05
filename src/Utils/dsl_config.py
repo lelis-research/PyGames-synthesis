@@ -28,8 +28,6 @@ class DslConfig:
             for dsf in dsl_dict[game]['dsfs']:
                 grammar['dsfs'].append(Node.get_class(dsf))
 
-            print('grammar[\'dsfs\']', grammar['dsfs'])
-
             grammar['operators'] = []
             for op in dsl_dict['operators']:
                 grammar['operators'].append(Node.get_class(op))
