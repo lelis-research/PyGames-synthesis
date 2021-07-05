@@ -19,11 +19,13 @@ def start_probe(time_limit, log_file, is_parallel, game):
 
     rules = [
         const_rule,
+        var_arr_rule,
         var_from_arr_rule,
         var_scalar_rule,
         non_player_pos_rule,
         non_player_dir_rule,
         player_pos_rule,
+        for_each_rule,
         ite_rule,
         it_rule,
         strategy_rule,
@@ -48,6 +50,7 @@ def start_probe(time_limit, log_file, is_parallel, game):
     pcfg['dsfs'] = [NonPlayerObjectPosition, NonPlayerObjectApproaching, PlayerPosition]
     pcfg['constants'] = [0.5, 2]
     pcfg['scalars'] = [
+        VarArray.new('actions'),
         VarScalar.new('paddle_width'),
         VarFromArray.new('actions', 0),
         VarFromArray.new('actions', 1),

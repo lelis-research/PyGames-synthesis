@@ -31,12 +31,13 @@ def start_bus(time_limit, log_file, score_threshold, run_optimizer, game):
     eval_funct = eval_factory.get_eval_fun(game)
     
     # Initialize the arguments to the synthesizer
-    operators = [IT, ITE, Strategy, ReturnAction, Plus, Times, Divide, Minus, 
+    operators = [ForEach, IT, ITE, Strategy, ReturnAction, Plus, Times, Divide, Minus, 
         GreaterThan, LessThan, EqualTo]
     dsfs = [NonPlayerObjectPosition, NonPlayerObjectApproaching, PlayerPosition]
     # constants = np.arange(0, 101, 0.01).tolist()
     constants = [round(random.uniform(0, 101), 2), round(random.uniform(0, 101), 2)]
     scalars = [
+        VarArray.new('actions'),
         VarScalar.new('paddle_width'),
         VarFromArray.new('actions', 0),
         VarFromArray.new('actions', 1),
