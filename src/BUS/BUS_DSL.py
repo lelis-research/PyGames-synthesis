@@ -45,6 +45,49 @@ class ReturnAction(baseDSL.ReturnAction):
 
 
 """
+This class represents a for loop in the DSL. It is interpreted as
+a for-each loop where the program iterates over each element of the
+provided iterable directly. For example,
+
+for each x in coords:
+    # loop body
+"""
+class ForEach(baseDSL.ForEach):
+
+    def __init__(self):
+        super(IT, self).__init__()
+
+    def grow(plist, psize):
+        nplist = []
+        valid_iterable = [VarArray.className()]
+        valid_loop_body = [IT.className(), ITE.className()]
+        
+        cost_combinations = itertools.product(range(psize-1), repeat=2)
+
+        for cost in cost_combinations:
+
+            if cost[0] + cost[1] + 1 == psize:
+                program_set_1 = plist.get(cost[0])
+                program_set_2 = plist.get(cost[1])
+
+                if program_set_1 is not None and program_set_2 is not None:
+
+                    for t1, p1 in program_set_1.items():
+                        if t1 in valid_iterable:
+                            for iter in p1:
+
+                                for t2, p2 in program_set_2.items():
+                                    if t2 in valid_loop_body:
+                                        for loop_body in p2:
+
+                                            for_each = ForEach.new(iter, loop_body)
+                                            nplist.append(for_each)
+                                            yield for_each
+
+        return nplist
+
+
+"""
 This class represents an if-then conditional statement in the DSL. It is
 interpreted as the if-then conditional statements in general-purpose programming
 languages
@@ -157,6 +200,15 @@ class NonPlayerObjectApproaching(baseDSL.NonPlayerObjectApproaching):
 
     def __init__(self):
         super(NonPlayerObjectApproaching, self).__init__()
+
+
+"""
+This class implements an AST node represent a list variable
+"""
+class VarArray(baseDSL.VarArray):
+    
+    def __init__(self):
+        super(VarArray, self).__init__()
 
 
 """
