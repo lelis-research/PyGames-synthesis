@@ -44,9 +44,13 @@ During optimization, if any is performed, the program to be optimized plays **5 
 Each experiment in a batch use **5 different configurations** of the synthesizer. However, the configurations remain the same across the batches.
 
 **Experiment 1:** No optimizer
+
 **Experiment 2:** Optimizer without triage
+
 **Experiment 3:** Optimizer with triage
+
 **Experiment 4:** Optimizer without triage, 1000 optimization steps, kappa=5.0
+
 **Experiment 5:** Optimizer with triage, 1000 optimization steps, kappa=5.0
 
 Thus, each experiment is run 5 times and the average scores and variance of the best programs' scores are reported.
