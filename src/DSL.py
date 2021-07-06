@@ -243,7 +243,7 @@ class IT(Node):
 
     @classmethod
     def new(cls, condition, if_body):
-        assert type(if_body).__name__ in [ReturnAction.className(), Strategy.className()]
+        assert type(if_body).__name__ in [ReturnAction.className(), IT.className()]
         inst = cls()
         inst.add_child(condition)
         inst.add_child(if_body)
@@ -647,11 +647,11 @@ class Strategy(Node):
 
     @classmethod
     def new(cls, statement, next_statements):
-        assert type(statement).__name__ in [ForEach.className(), IT.className()]
+        assert type(statement).__name__ in [IT.className()]
         assert type(next_statements).__name__ in [Strategy.className(), ReturnAction.className(), type(None).__name__]
 
         if type(statement).__name__ == ITE.className():
-            assert type(next_statements) is None
+            next_statements = None
         
         inst = cls()
         inst.add_child(statement)
@@ -680,9 +680,9 @@ class Strategy(Node):
         return res
 
 
-Node.valid_children_types = [set([Strategy.className()])]
+Node.valid_children_types = [set([Strategy.className(), ForEach.className()])]
 
-Strategy.valid_first_statement = set([ForEach.className(), IT.className()])
+Strategy.valid_first_statement = set([IT.className()])
 Strategy.valid_next_statements = set([Strategy.className(), ReturnAction.className(), None])
 Strategy.valid_children_types = [Strategy.valid_first_statement, Strategy.valid_next_statements]
 
@@ -691,7 +691,7 @@ ForEach.valid_loop_body = set([IT.className(), ITE.className()])
 ForEach.valid_children_types = [ForEach.valid_iterable, ForEach.valid_loop_body]
 
 IT.valid_if_cond = set([LessThan.className(), GreaterThan.className(), EqualTo.className(), NonPlayerObjectApproaching.className()])
-IT.valid_if_body = set([ReturnAction.className()])
+IT.valid_if_body = set([ReturnAction.className(), IT.className()])
 IT.valid_children_types = [IT.valid_if_cond, IT.valid_if_body]
 
 ITE.valid_if_cond = IT.valid_if_cond
