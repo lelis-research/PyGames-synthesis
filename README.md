@@ -52,29 +52,7 @@ The following information should be displayed:
 The domain-specific language (DSL) that was implemented in [src/DSL.py](https://github.com/olivier-vadiaval/catcher-synthesis/blob/main/src/DSL.py) can be summarized in the
 following context-free grammar (CFG):
 
-```
-I → S1 | S2 | S3
-
-S1 → ZS1 | A | ε
-
-Z → if (B) then {Z} | A
-
-S2 → if (B) then {A} else {A}
-
-S3 → for each elem in {A} do {S1} | for each elem in {A} do {S2}
-
-D → D1 | D2
-
-D1 → c1 | c2 | c3 | ...
-
-D2 → D1 + D1 | D1 - D1 | D1 * D1 | D1 // D1 | D1 * T
-
-T → 0.01 | 0.02 | 0.03 | ... | 0.1 | 0.11 | ... | 1.01 | ... | 100 | paddle_width
-
-B → D < D | D > D | D == D
-
-A → actions[0] | actions[1] | actions[2]
-```
+![image](https://user-images.githubusercontent.com/59672031/124651446-2be75000-de58-11eb-9d02-83a21c4d95d9.png)
 
 where,
 * **I** is the initial symbol. 
