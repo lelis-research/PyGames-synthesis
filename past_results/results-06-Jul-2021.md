@@ -44,9 +44,13 @@ During optimization, if any is performed, the program to be optimized plays **5 
 Each experiment in a batch use **5 different configurations** of the synthesizer. However, the configurations remain the same across the batches.
 
 **Experiment 1:** No optimizer
+
 **Experiment 2:** Optimizer without triage
+
 **Experiment 3:** Optimizer with triage
+
 **Experiment 4:** Optimizer without triage, 1000 optimization steps, kappa=5.0
+
 **Experiment 5:** Optimizer with triage, 1000 optimization steps, kappa=5.0
 
 Thus, each experiment is run 5 times and the average scores and variance of the best programs' scores are reported.
@@ -83,6 +87,8 @@ Thus, each experiment is run 5 times and the average scores and variance of the 
     <img src='https://github.com/olivier-vadiaval/PyGames-synthesis/blob/main/graph_optimizer_triage_1000_iter_5_kappa.png?raw=true' />
 </div>
 
+___
+
 ##### Mean and Standard Deviation
 
 | Experiment | Mean Best Score | Std. Deviation |
@@ -95,26 +101,28 @@ Thus, each experiment is run 5 times and the average scores and variance of the 
 
 ___
 
+### Results by Batch of Experiments
+
 ##### First Batch
 
 | Experiment | Best Score | Optimizer | Triage | Steps | Kappa |
 |:----------:|:----------:|:---------:|:------:|:-----:|:-----:|
-|      1     |   1401.87  |    No     |   N/A  |  200  |  2.5  |
+|      1     | **1401.87**|    No     |   N/A  |  200  |  2.5  |
 |      2     |    -2.8    |    Yes    |   No   |  200  |  2.5  |
 |      3     |   1378.97  |    Yes    |   Yes  |  200  |  2.5  |
 |      4     |    -3.4    |    Yes    |   No   |  1000 |  5.0  |
 |      5     |   1369.13  |    Yes    |   Yes  |  1000 |  5.0  |
-
+---
 ##### Second Batch
 
 | Experiment | Best Score | Optimizer | Triage | Steps | Kappa |
 |:----------:|:----------:|:---------:|:------:|:-----:|:-----:|
 |      1     |   1364.20  |    No     |   N/A  |  200  |  2.5  |
-|      2     |   1520.40  |    Yes    |   No   |  200  |  2.5  |
+|      2     | **1520.40**|    Yes    |   No   |  200  |  2.5  |
 |      3     |   1377.33  |    Yes    |   Yes  |  200  |  2.5  |
 |      4     |    -2.6    |    Yes    |   No   |  1000 |  5.0  |
 |      5     |   1372.47  |    Yes    |   Yes  |  1000 |  5.0  |
-
+---
 ##### Third Batch
 
 | Experiment | Best Score | Optimizer | Triage | Steps | Kappa |
@@ -123,24 +131,25 @@ ___
 |      2     |    -3.2    |    Yes    |   No   |  200  |  2.5  |
 |      3     |   1293.97  |    Yes    |   Yes  |  200  |  2.5  |
 |      4     |   1375.40  |    Yes    |   No   |  1000 |  5.0  |
-|      5     |   1409.53  |    Yes    |   Yes  |  1000 |  5.0  |
-
+|      5     | **1409.53**|    Yes    |   Yes  |  1000 |  5.0  |
+---
 ##### Fourth Batch
 
 | Experiment | Best Score | Optimizer | Triage | Steps | Kappa |
 |:----------:|:----------:|:---------:|:------:|:-----:|:-----:|
 |      1     |   1381.70  |    No     |   N/A  |  200  |  2.5  |
-|      2     |   2046.60  |    Yes    |   No   |  200  |  2.5  |
+|      2     | **2046.60**|    Yes    |   No   |  200  |  2.5  |
 |      3     |   1388.80  |    Yes    |   Yes  |  200  |  2.5  |
 |      4     |   1554.40  |    Yes    |   No   |  1000 |  5.0  |
 |      5     |   1381.47  |    Yes    |   Yes  |  1000 |  5.0  |
-
+---
 ##### Fifth Batch
 
 | Experiment | Best Score | Optimizer | Triage | Steps | Kappa |
 |:----------:|:----------:|:---------:|:------:|:-----:|:-----:|
-|      1     |   1380.30  |    No     |   N/A  |  200  |  2.5  |
+|      1     | **1380.30**|    No     |   N/A  |  200  |  2.5  |
 |      2     |    -2.4    |    Yes    |   No   |  200  |  2.5  |
 |      3     |   1312.40  |    Yes    |   Yes  |  200  |  2.5  |
 |      4     |    -1.2    |    Yes    |   No   |  1000 |  5.0  |
 |      5     |   1364.37  |    Yes    |   Yes  |  1000 |  5.0  |
+---
