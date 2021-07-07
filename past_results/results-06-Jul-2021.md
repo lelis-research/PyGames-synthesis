@@ -2,7 +2,7 @@
 
 **Date:** 6th July 2021
 
-**Synthesizer:** Simulated Annealing
+**Synthesizer:** Simulated Annealing (SA)
 
 **Game:** Catcher
 
@@ -14,6 +14,10 @@ Each experiment
 * ran for **12 hours (or 43200 seconds)**
 * on **16** CPUs
 * of **8000Mb** each.
+
+The ```--sa-option``` was set to ```2``` for every experiment. In other words, while the time limit hasn't been reached, the best program found in the previous call to simulated annealing is used as the initial program in the next call, instead of generating a random program again.
+
+This means that once a program has been generated right before the first call to simulated annealing, the best-performing mutated versions of that program are used as initial programs in subsequent calls.
 
 The reduction function used in Simulated Annealing was
 
