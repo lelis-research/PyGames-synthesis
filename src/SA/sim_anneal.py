@@ -255,8 +255,8 @@ class SimulatedAnnealing:
             best = self.generate_random()
             scores, best_eval = eval_funct.evaluate(best, verbose=True)
             eval_funct.set_best(best, best_eval)
-            timestamp = self.get_timestamp()
-            self.closed_list[best.to_string()] = (best_eval, timestamp)
+            self.closed_list[best.to_string()] = (best_eval, self.get_timestamp())
+
         else:
             best = None
             best_eval = None
@@ -286,6 +286,7 @@ class SimulatedAnnealing:
             elif option == 2 and best is not None:
                 current = best
                 current_eval = best_eval
+                timestamp = self.get_timestamp()
 
             # Log initial program to file
             pdescr = {
