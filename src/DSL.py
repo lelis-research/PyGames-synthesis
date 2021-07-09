@@ -680,9 +680,9 @@ class Strategy(Node):
         return res
 
 
-Node.valid_children_types = [set([Strategy.className(), ForEach.className()])]
+Node.valid_children_types = [set([Strategy.className(), ITE.className()])]
 
-Strategy.valid_first_statement = set([IT.className(), ITE.className()])
+Strategy.valid_first_statement = set([IT.className()])
 Strategy.valid_next_statements = set([Strategy.className(), ReturnAction.className(), None])
 Strategy.valid_children_types = [Strategy.valid_first_statement, Strategy.valid_next_statements]
 
