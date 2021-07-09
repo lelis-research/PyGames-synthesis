@@ -9,6 +9,7 @@ from a json config file.
 """
 import json
 import os
+import random
 from src.dsl import *
 
 class DslConfig:
@@ -35,6 +36,6 @@ class DslConfig:
             grammar['scalars'] = dsl_dict['scalars']
             grammar['arrays'] = dsl_dict['arrays']
             grammar['array_indexes'] = dsl_dict[game]['array_indexes']
-            grammar['constants'] = np.arange(0, 101, 0.01).tolist()
+            grammar['constants'] = [random.uniform(-100.01, 100.01)]
 
             return grammar
