@@ -41,6 +41,8 @@ class EvaluationFactory:
 
 class Evaluation:
 
+    MIN_SCORE = -1_000_000
+
     def __init__(self, score_threshold):
         self.score_threshold = score_threshold
 
@@ -75,7 +77,7 @@ class Evaluation:
             total_games_played = 30
         
         scores = []
-        score = -1_000_000
+        score = Evaluation.MIN_SCORE
         for _ in range(total_games_played):
             self.reset_game()
             while not self.game_over():
@@ -83,9 +85,9 @@ class Evaluation:
                     score = self.play(program)
                 except:
                     if verbose:
-                        return tuple([]), -1_000_000
+                        return tuple([]), Evaluation.MIN_SCORE
                     else:
-                        return -1_000_000
+                        return Evaluation.MIN_SCORE
                         
             scores.append(score)
         
