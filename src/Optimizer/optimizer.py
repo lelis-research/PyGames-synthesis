@@ -8,6 +8,7 @@ This module provides an Optimizer class that can be used by
 synthesizers such as Bottom-Up Search to find the optimal value
 of operands/parameters in operations defined in the DSL.
 """
+from scipy.sparse import base
 from src.dsl import *
 from src.evaluation import Evaluation
 from bayes_opt import BayesianOptimization, UtilityFunction
@@ -22,6 +23,9 @@ class Optimizer:
         self.kappa = kappa
         if is_triage:
             self.iter_breakdown = self.break_down(iterations)
+
+    def set_baseline_eval(self, baseline_eval):
+        self.baseline_eval = baseline_eval
 
     def get_const_range(self):
         pbounds = {}
@@ -92,12 +96,16 @@ class Optimizer:
 
         utility = UtilityFunction(kind='ucb', kappa=self.kappa, xi=0.0)
 
-        current_max_score = self.initial_score
-        current_argmax_params = self.original_values
+        current_eval = self.initial_score
+        current_params = self.original_values
         is_optimized = False
-        for i in self.iter_breakdown:
+
+        bayesOpt.register(params=current_params, target=current_eval)
+        baseline_break_down = self.break_down(self.baseline_eval)
+
+        for i, optimization_steps in enumerate(self.iter_breakdown):
             # Run Bayesian Optimization
-            for _ in range(i):
+            for _ in range(optimization_steps):
                 next_point = bayesOpt.suggest(utility)
                 self.set_const_value(next_point)
                 target = self.eval_funct.evaluate(self.ast, optimizing=True)
@@ -105,15 +113,15 @@ class Optimizer:
 
             # Compare results with previous runs of the optimizer
             target, params = bayesOpt.max['target'], bayesOpt.max['params']
-            if target > current_max_score:
+            if target > sum(baseline_break_down[:i+1]):
                 is_optimized = True
-                current_max_score = target
-                current_argmax_params = params
+                current_eval = target
+                current_params = params
             else:
                 break
 
-        self.set_const_value(current_argmax_params)
-        return self.ast, current_argmax_params, current_max_score, is_optimized
+        self.set_const_value(current_params)
+        return self.ast, current_params, current_eval, is_optimized
 
     def non_triage_optimize(self):
         bayesOpt = BayesianOptimization(
@@ -125,7 +133,7 @@ class Optimizer:
         is_optimized = True
         bayesOpt.maximize(init_points=20, n_iter=self.iterations, kappa=self.kappa)
         target, params = bayesOpt.max['target'], bayesOpt.max['params']
-        if target <= self.initial_score:
+        if target <= self.baseline_score:
             is_optimized = False
             params = self.original_values
             target = self.initial_score
