@@ -22,7 +22,6 @@
         "LessThan",
         "GreaterThan",
         "EqualTo",
-        "ForEach",
         "IT",
         "ITE",
         "Strategy",
