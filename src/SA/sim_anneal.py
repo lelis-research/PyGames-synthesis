@@ -9,7 +9,7 @@ algorithm.
 
 """
 import copy as cp
-import time
+from time import time
 import random
 import multiprocessing as mp
 from math import exp
@@ -80,11 +80,14 @@ class SimulatedAnnealing:
                 self.complete_program(child, depth+1, max_depth, max_size)
 
     def generate_random(self):
-        initial_nodes = Node.get_valid_children_types()[0]
-        random_p = Node.instance(random.choice(list(initial_nodes)))
-        self.complete_program(random_p, self.initial_depth, self.max_depth, self.max_size)
-        random_p.check_correct_size()
-        return random_p
+        while True:
+            initial_nodes = Node.get_valid_children_types()[0]
+            random_p = Node.instance(random.choice(list(initial_nodes)))
+            self.complete_program(random_p, self.initial_depth, self.max_depth, self.max_size)
+            random_p.check_correct_size()
+
+            if self.closed_list.get(random_p.to_string()) is None:
+                return random_p
 
     def mutate_inner_nodes(self, p, index):
         self.processed_nodes += 1
@@ -111,25 +114,30 @@ class SimulatedAnnealing:
         return False
 
     def mutate(self, p):
-        # print('p.get_size()', p.get_size())
-        index = random.randint(0, p.get_size())
-        # print('index', index)
-        # print()
+        while True:
+            # print('p.get_size()', p.get_size())
+            index = random.randint(0, p.get_size())
+            # print('index', index)
+            # print()
 
-        # root will be mutated
-        if index == 0:
-            ptypes = Node.get_valid_children_types()[0]
-            p = Node.instance(random.choice(list(ptypes)))
-            self.complete_program(p, self.initial_depth, self.max_depth, self.max_size)
+            # root will be mutated
+            if index == 0:
+                ptypes = Node.get_valid_children_types()[0]
+                p = Node.instance(random.choice(list(ptypes)))
+                self.complete_program(p, self.initial_depth, self.max_depth, self.max_size)
+                p.check_correct_size()
+
+                # Check for duplicates
+                if self.closed_list.get(p.to_string()) is None:
+                    return p
+
+            self.processed_nodes = 0
+            self.mutate_inner_nodes(p, index)
             p.check_correct_size()
 
-            return p
-
-        self.processed_nodes = 0
-        self.mutate_inner_nodes(p, index)
-        p.check_correct_size()
-
-        return p
+            # Check for duplicates
+            if self.closed_list.get(p.to_string()) is None:
+                return p
 
     def reduce_temp(self, current_t, epoch):
         return current_t / (1 + self.alpha * epoch)
@@ -164,6 +172,7 @@ class SimulatedAnnealing:
         # Initialize variables used to generate plots later on
         self.scores_dict = {}
         self.best_pscore_dict = {}
+        self.unoptimized_pscore_dict = {}
 
         # Declare optimizer if command-line option was specified
         if self.run_optimizer:
@@ -173,7 +182,8 @@ class SimulatedAnnealing:
         if self.is_parallel:
             with mp.Pool() as pool:
                 current_best = None
-                current_best_score = -1000000
+                current_best_score = Evaluation.MIN_SCORE
+                current_best_is_optimized = False
                 for arg, res in zip(self.ppool, pool.starmap(self.optimizer.optimize, self.ppool, chunksize=20)):
                     optimized_p, optimized_const_values, new_score, is_optimized = res
                     arg_p, arg_pscore = arg
@@ -187,8 +197,9 @@ class SimulatedAnnealing:
                     if new_score > current_best_score:
                         current_best_score = new_score
                         current_best = optimized_p
+                        current_best_is_optimized = is_optimized
 
-                return current_best, current_best_score
+                return current_best, current_best_score, current_best_is_optimized
 
         else:
             p, pscore = self.ppool[0]
@@ -200,7 +211,10 @@ class SimulatedAnnealing:
                 self.logger.log('Constant Values: ' + str(optimized_const_values))
                 self.logger.log('Previous Score: ' + str(pscore), end='\n\n')
             
-            return optimized_p, new_score
+            return optimized_p, new_score, is_optimized
+
+    def get_timestamp(self):
+        return round((time() - self.start) / 60, 2)
 
     def synthesize(
             self,
@@ -227,20 +241,21 @@ class SimulatedAnnealing:
                 -- Option 2: Generates a random program after each simulated annealing run.
 
         """
-        start = time.time()
-        self.logger.set_start(start)
+        self.start = time()
 
         self.init_var_child_types(grammar)
         self.init_attributes(eval_funct)
 
         initial_t = current_t
         iterations = 0
+        self.closed_list = {}
 
         # Option 2: Generate random program only once
         if option == 2:
             best = self.generate_random()
             scores, best_eval = eval_funct.evaluate(best, verbose=True)
             eval_funct.set_best(best, best_eval)
+            self.closed_list[best.to_string()] = (best_eval, self.get_timestamp())
         else:
             best = None
             best_eval = None
@@ -251,13 +266,16 @@ class SimulatedAnnealing:
         the initial program. If option 2 is specified, use best
         as the initial program.
         '''
-        while time.time() - start < self.time_limit:
+        while time() - self.start < self.time_limit:
             current_t = initial_t
 
             # Option 1: Generate random program and compare with best
             if option == 1:
                 current = self.generate_random()
                 scores, current_eval = eval_funct.evaluate(current, verbose=True)
+
+                timestamp = self.get_timestamp()
+                self.closed_list[current.to_string()] = (current_eval, timestamp)   # save to closed_list
 
                 if best is None or current_eval > best_eval:
                     best, best_eval = current, current_eval
@@ -269,17 +287,23 @@ class SimulatedAnnealing:
                 current_eval = best_eval
 
             # Log initial program to file
-            pdescr = {'header': 'Initial Program', 'psize': current.get_size(), 'score': current_eval}
+            pdescr = {
+                        'header': 'Initial Program',
+                        'psize': current.get_size(), 
+                        'score': current_eval,
+                        'timestamp': timestamp
+                    }
             self.logger.log_program(current.to_string(), pdescr)
             self.logger.log('Scores: ' + str(scores).strip('()'), end='\n\n')
 
             # Store score values to generate plot before exiting if needed
             self.scores_dict[iterations] = {}
             self.best_pscore_dict[iterations] = {}
+            self.unoptimized_pscore_dict[iterations] = {}
 
-            if current_eval != -1_000_000 and best_eval != -1_000_000:
-                self.scores_dict[iterations][0] = current_eval
-                self.best_pscore_dict[iterations][0] = best_eval
+            if current_eval != Evaluation.MIN_SCORE and best_eval != Evaluation.MIN_SCORE:
+                self.scores_dict[iterations][0] = (current_eval, timestamp)
+                self.best_pscore_dict[iterations][0] = (best_eval, timestamp)
 
             # Call simulated annealing
             best, best_eval, is_new_best = self.simulated_annealing(
@@ -303,10 +327,15 @@ class SimulatedAnnealing:
             iterations += 1
             self.logger.log('Total iterations: ' + str(iterations), end='\n\n')
 
-        self.logger.log('Running Time: ' + str(round(time.time() - start, 2)) + 'seconds')
+        self.logger.log('Running Time: ' + str(round(time() - self.start, 2)) + 'seconds')
 
         # Log best program
-        pdescr = {'header': 'Best Program Found By SA', 'psize': best.get_size(), 'score': best_eval}
+        pdescr = {
+                'header': 'Best Program Found By SA',
+                'psize': best.get_size(), 
+                'score': best_eval,
+                'timestamp': self.closed_list[best.to_string()][1]
+            }
         self.logger.log_program(best.to_string(), pdescr)
 
         # Plot data if required
@@ -318,11 +347,12 @@ class SimulatedAnnealing:
     def plot(self, plot_filename):
         plotter = Plotter()     # Plotter object
         plot_names = {
-            'x': 'Total iterations',
+            'x': 'Elapsed Time (mins)',
             'y': 'Program Score',
+            'z': 'Iterations',
             'title': 'SA Program Scores vs Total Iterations',
             'filename': plot_filename,
-            'legend': ['current program', 'best program']
+            'legend': ['current program', 'best program', 'unoptimized program']
         }
 
         plotter.plot_from_data(self.scores_dict, self.best_pscore_dict, names=plot_names)     # plot all scores
@@ -330,9 +360,10 @@ class SimulatedAnnealing:
         # Save data to files
         data_filenames = [
             'all_scores_' + plot_filename.replace('graph', 'data') + '.dat',
-            'best_scores_' + plot_filename.replace('graph', 'data') + '.dat'
+            'best_scores_' + plot_filename.replace('graph', 'data') + '.dat',
+            'unoptimized_scores_' + plot_filename.replace('graph', 'data') + '.dat'
         ]
-        plotter.save_data(self.scores_dict, self.best_pscore_dict, names=data_filenames)
+        plotter.save_data(self.scores_dict, self.best_pscore_dict, self.unoptimized_pscore_dict, names=data_filenames)
 
         # Plot scores of solutions generated during first run of SA
         # for i in range(len(self.scores_dict.keys())):
@@ -374,18 +405,30 @@ class SimulatedAnnealing:
 
             # Mutate current program
             candidate = self.mutate(cp.deepcopy(current))
+            timestamp = self.get_timestamp()
             mutations += 1
 
             # Evaluate the mutated program
             scores, candidate_eval = eval_funct.evaluate(candidate, verbose=True)
+            self.closed_list[candidate.to_string()] = (candidate_eval, timestamp)
+
+            if candidate_eval != Evaluation.MIN_SCORE:
+                self.unoptimized_pscore_dict[iterations][epoch] = (candidate_eval, timestamp)       # store unoptimized program
 
             # Run optimizer if flag was specified
             if self.run_optimizer:
+                self.optimizer.set_baseline_eval(candidate_eval)
                 self.ppool.append((candidate, candidate_eval))
                 # print('self.ppool_len', len(self.ppool))
 
                 if len(self.ppool) >= self.ppool_max_size:
-                    candidate, candidate_eval = self.start_optimizer()
+                    candidate, candidate_eval, is_optimized = self.start_optimizer()
+
+                    # Store optimized candidates into closed_list
+                    if is_optimized:
+                        timestamp = self.get_timestamp()
+                        self.closed_list[candidate.to_string()] = (candidate_eval, timestamp)
+
                     self.ppool = []
 
                     # if optimized_candidate_eval > candidate_eval:
@@ -400,13 +443,18 @@ class SimulatedAnnealing:
                 best, best_eval = candidate, candidate_eval
 
             # If candidate program does not raise an error, store scores
-            if candidate_eval != -1_000_000:  
-                self.scores_dict[iterations][epoch+1] = candidate_eval  
-                self.best_pscore_dict[iterations][epoch+1] = best_eval
+            if candidate_eval != Evaluation.MIN_SCORE:  
+                self.scores_dict[iterations][epoch+1] = (candidate_eval, timestamp)
+                self.best_pscore_dict[iterations][epoch+1] = (best_eval, timestamp)
 
             # Log program to file
             if best_updated or verbose_opt:
-                pdescr = {'header': header, 'psize': candidate.get_size(), 'score': candidate_eval}
+                pdescr = {
+                        'header': header, 
+                        'psize': candidate.get_size(), 
+                        'score': candidate_eval,
+                        'timestamp': timestamp
+                    }
                 self.logger.log_program(candidate.to_string(), pdescr)
                 self.logger.log('Scores: ' + str(scores).strip('()'))
                 self.logger.log('Mutations: ' + str(mutations), end='\n\n')
