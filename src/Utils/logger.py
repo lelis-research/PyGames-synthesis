@@ -17,7 +17,6 @@ class Logger:
     def __init__(self, log_file, algorithm, header_details):
         self.log_file = log_file
         self.log_dir = 'logs/'
-        self.start = None
 
         if not os.path.exists(self.log_dir):
             os.makedirs(self.log_dir)
@@ -25,10 +24,6 @@ class Logger:
         now = datetime.datetime.now()
         self.log_file += '-' + now.strftime("%d-%b-%Y--%H-%M")
         self.create_header(algorithm, now, header_details)
-
-    def set_start(self, start):
-        assert type(start) is float
-        self.start = start
 
     def create_header(self, algorithm, now, header_details):
         with open(join(self.log_dir + self.log_file), 'a') as p_file:
@@ -47,11 +42,6 @@ class Logger:
             p_file.write('\n')
 
     def log_program(self, pstring, pdescr):
-        if self.start is None:
-            raise Exception('start attribute of Logger must be set')
-
-        elapsed_time = round((time.time() - self.start), 2)
-        
         header = pdescr.get('header')
         if header is None:
             header = 'Program Found'
@@ -64,9 +54,13 @@ class Logger:
         if score is None:
             score = 'Not Specified'
 
+        elapsed_time = pdescr.get('timestamp')
+        if elapsed_time is None:
+            elapsed_time = 'Not Specified'
+
         with open(join(self.log_dir + self.log_file), 'a') as p_file:
             p_file.write('=' * 100)
-            p_file.write(f'\n{header}\t Elapsed Time: {elapsed_time} seconds\n')
+            p_file.write(f'\n{header}\t Elapsed Time: {elapsed_time} mins\n')
             p_file.write('=' * 100)
             p_file.write(f'\npsize: {psize} \tscore: {score}\n\n')
             p_file.write(f'{pstring}\n\n')
