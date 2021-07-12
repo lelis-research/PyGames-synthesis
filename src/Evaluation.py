@@ -14,6 +14,7 @@ import copy as cp
 import pygame, time
 from pygame.locals import *
 from pygame.version import ver
+from statistics import *
 
 ### import game from Pygame-Learning-Environment ###
 from pygame_games.ple.games.catcher import Catcher
@@ -27,13 +28,13 @@ available_games = {'Catcher': 1, 'Pong': 2}
 
 class EvaluationFactory:
 
-    def __init__(self, threshold):
-        self.set_games_dict(threshold)
+    def __init__(self, threshold, total_games):
+        self.set_games_dict(threshold, total_games)
 
-    def set_games_dict(self, threshold):
+    def set_games_dict(self, threshold, total_games):
         self.games_dict = {
-            'Catcher': EvaluationCatcher(threshold), 
-            'Pong': EvaluationPong(threshold)
+            'Catcher': EvaluationCatcher(threshold, total_games), 
+            'Pong': EvaluationPong(threshold, total_games)
         }
 
     def get_eval_fun(self, eval_str):
@@ -43,8 +44,9 @@ class Evaluation:
 
     MIN_SCORE = -1_000_000
 
-    def __init__(self, score_threshold):
+    def __init__(self, score_threshold, total_games):
         self.score_threshold = score_threshold
+        self.total_games = total_games
 
     def get_score(self):
         raise Exception('Must implement get_score method')
@@ -64,17 +66,19 @@ class Evaluation:
     def set_best(self, best, best_eval):
         pass
 
-    def evaluate(self, program, optimizing=False, verbose=False):
+    def evaluate(self, program, optimizing=False, verbose=False, total_games_played=None):
         """
         The evaluate method runs a game and uses the program parameter as
         strategy to determine which actions to take at each game tick. It then
         returns the score of the program when the game is over or when an exception
         is raised due to an impossible action.
         """
-        if optimizing:
-            total_games_played = 5
-        else:
-            total_games_played = 30
+        # if total_games_played is None:
+        #     if optimizing:
+        #         total_games_played = 2
+        #     else:
+        #         total_games_played = 30
+        total_games_played = self.total_games
         
         scores = []
         score = Evaluation.MIN_SCORE
@@ -91,7 +95,7 @@ class Evaluation:
                         
             scores.append(score)
         
-        score_avg = round(sum(scores) // total_games_played, 2)
+        score_avg = round(mean(scores), 2)
         if verbose:
             return tuple(scores), score_avg
         else:
@@ -115,10 +119,10 @@ class Evaluation:
 
 class EvaluationPong(Evaluation):
 
-    def __init__(self, reward_threshold):
+    def __init__(self, reward_threshold, total_games):
         self.best = None
         self.best_eval = None
-        super().__init__(reward_threshold)
+        super().__init__(reward_threshold, total_games)
 
     def set_best(self, best, best_eval):
         self.best = best
@@ -171,8 +175,8 @@ class EvaluationPong(Evaluation):
 
 class EvaluationCatcher(Evaluation):
 
-    def __init__(self, score_threshold):
-        super(EvaluationCatcher, self).__init__(score_threshold)
+    def __init__(self, score_threshold, total_games):
+        super(EvaluationCatcher, self).__init__(score_threshold, total_games)
 
     def update_env(self, game_state, action_set):
         """
