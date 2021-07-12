@@ -70,9 +70,9 @@ if __name__ == '__main__':
         }
     
     paths = []
-    paths.append(os.path.join('data/' + 'all_scores_unopt_vs_opt_data.dat'))
-    # paths.append(os.path.join('data/' + 'best_scores_unopt_vs_opt_data.dat'))
-    paths.append(os.path.join('data/' + 'unoptimized_scores_unopt_vs_opt_data.dat'))
+    paths.append(os.path.join('data/' + 'all_scores_no_opt_data.dat'))
+    paths.append(os.path.join('data/' + 'best_scores_unopt_vs_opt_data.dat'))
+    paths.append(os.path.join('data/' + 'unoptimized_scores_no_opt_data.dat'))
+    paths.append(os.path.join('data/' + 'optimized_scores_no_opt_data.dat'))
 
-    # assert os.path.isfile(paths)
-    plotter.plot_from_file(paths, plot_names, same_fig=True, three_dim=False)
+    plotter.plot_from_file(paths, plot_names, same_fig=False, three_dim=False)
