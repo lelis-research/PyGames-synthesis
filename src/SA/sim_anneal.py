@@ -260,7 +260,7 @@ class SimulatedAnnealing:
             scores, best_eval = eval_funct.evaluate(best, verbose=True)
             self.closed_list[best.to_string()] = (best_eval, self.get_timestamp())
 
-            eval_funct.set_best(best, best_eval)    # does nothing for 1-player games
+            eval_funct.set_best(best, best_eval)    # update best score in eval object
 
             # Save variance of scores obtained during evaluation
             # This can help the min. number of games to be played
@@ -300,7 +300,7 @@ class SimulatedAnnealing:
 
                 if best is None or current_eval > best_eval:
                     best, best_eval = current, current_eval
-                    eval_funct.set_best(best, best_eval)        # does nothing for 1-player games
+                    eval_funct.set_best(best, best_eval)        # update best score in eval object
 
                     # Set baseline for optimizer
                     if self.run_optimizer:
@@ -324,7 +324,10 @@ class SimulatedAnnealing:
             # Store score values to generate plot before exiting if needed
             self.scores_dict[iterations] = {}
             self.best_pscore_dict[iterations] = {}
-            self.unoptimized_pscore_dict[iterations] = {}
+
+            if self.run_optimizer:
+                self.unoptimized_pscore_dict[iterations] = {}
+                self.optimized_pscore_dict[iterations] = {}
 
             if current_eval != Evaluation.MIN_SCORE and best_eval != Evaluation.MIN_SCORE:
                 self.scores_dict[iterations][0] = (current_eval, timestamp)
@@ -478,6 +481,12 @@ class SimulatedAnnealing:
                 is_new_best = True
                 best, best_eval = candidate, candidate_eval
 
+                # Set the best program and its score in eval_funct
+                # Since triage is used, the best score in eval_funct must be updated
+                if not ibr:
+                    eval_funct.set_best(best, best_eval)
+
+                # Update the baseline score of the optimizer
                 if self.run_optimizer:
                     self.optimizer.set_baseline_eval(best_eval)
 
@@ -507,6 +516,7 @@ class SimulatedAnnealing:
             current_t = self.reduce_temp(current_t, epoch)
             epoch += 1
 
+            # If using IBR, break out of loop once a best response is found
             if ibr and best_updated:
                 break
 
