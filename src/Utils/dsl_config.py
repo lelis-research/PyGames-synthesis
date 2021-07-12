@@ -39,3 +39,49 @@ class DslConfig:
             grammar['constants'] = [random.uniform(-100.01, 100.01)]
 
             return grammar
+
+    def assign_valid_children_types(
+        self,
+        node,
+        game_specific_children_types,
+        valid_children_types
+    ):
+        node_valid_children = []
+                
+        if game_specific_children_types is not None and node in game_specific_children_types:
+            valid_children_types_lists = game_specific_children_types[node]
+        else:
+            valid_children_types_lists = valid_children_types[node]
+
+        for children_types_list in valid_children_types_lists:
+            if 'None' in children_types_list:
+                children_types_list.remove('None')
+                children_types_list.append(None)
+            
+            node_valid_children.append(set(children_types_list))
+
+        return node_valid_children.copy()
+
+    def init_valid_children_types(self, game):
+        with open(self.config_filepath) as config_f:
+            dsl_dict = json.load(config_f)
+
+            valid_children_types = dsl_dict['valid_children_types']
+            game_specific_children_types = dsl_dict[game].get('valid_children_types')
+
+            for node in valid_children_types.keys():
+                
+                if node in ['arithmetic', 'comparison']:
+                    for operator in dsl_dict[node]:
+                        Node.get_class(operator).valid_children_types = self.assign_valid_children_types(
+                                                        node,
+                                                        game_specific_children_types,
+                                                        valid_children_types
+                                                    )
+
+                else:
+                    Node.get_class(node).valid_children_types = self.assign_valid_children_types(
+                                                        node,
+                                                        game_specific_children_types,
+                                                        valid_children_types
+                                                    )
