@@ -24,15 +24,12 @@ class Plotter(base_plt.Plotter):
         for iteration in data_dict.keys():
             score_dict = data_dict[iteration]
             for epoch in score_dict:
-                print(score_dict[epoch])
                 score.append(score_dict[epoch][0])
                 time.append(score_dict[epoch][1])
 
         iteration = list(range(0, len(score)))
 
         X, Y, Z = np.array(time), np.array(score), np.array(iteration)
-
-        print()
 
         if three_dim:
             return X, Y, Z
