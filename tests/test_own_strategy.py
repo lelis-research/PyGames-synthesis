@@ -13,24 +13,24 @@ class TestOwnStrategy(unittest.TestCase):
         """
         My strategy for playing Catcher is the following:
             
-            if FallingFruitPosition > PlayerPosition + (paddle_width * 0.5):
+            if NonPlayerObjectPosition > PlayerPosition + (paddle_width * 0.5):
                 return action[1]
-            if FallingFruitPosition < PlayerPosition - (paddle_width * 0.5):
+            if NonPlayerObjectPosition < PlayerPosition - (paddle_width * 0.5):
                 return action[0]
         """
-        self.str_representation = "if FallingFruitPosition > (PlayerPosition + (paddle_width * 0.5)):\n\t"
+        self.str_representation = "if NonPlayerObjectPosition > (PlayerPosition + (paddle_width * 0.5)):\n\t"
         self.str_representation += "return action[1]\n"
-        self.str_representation += "if FallingFruitPosition < (PlayerPosition - (paddle_width * 0.5)):\n\t"
+        self.str_representation += "if NonPlayerObjectPosition < (PlayerPosition - (paddle_width * 0.5)):\n\t"
         self.str_representation += "return action[0]\n"
         self.str_representation += "return action[2]"
         self.program = Strategy.new(
             IT.new( 
-                GreaterThan.new( FallingFruitPosition(), Plus.new( PlayerPosition(), Times.new( VarScalar.new('paddle_width'), Constant.new(0.5) ) ) ),
+                GreaterThan.new( NonPlayerObjectPosition(), Plus.new( PlayerPosition(), Times.new( VarScalar.new('paddle_width'), Constant.new(0.5) ) ) ),
                     ReturnAction.new( VarFromArray.new('action', Constant.new(1)) )
             ),
             Strategy.new( 
                 IT.new( 
-                    LessThan.new( FallingFruitPosition(), Minus.new( PlayerPosition(), Times.new( VarScalar.new('paddle_width'), Constant.new(0.5) ) ) ), 
+                    LessThan.new( NonPlayerObjectPosition(), Minus.new( PlayerPosition(), Times.new( VarScalar.new('paddle_width'), Constant.new(0.5) ) ) ), 
                         ReturnAction.new( VarFromArray.new('action', Constant.new(0)) )
                 ),
                 ReturnAction.new( VarFromArray.new('action', Constant.new(2)) )
@@ -44,7 +44,7 @@ class TestOwnStrategy(unittest.TestCase):
     def test_action_right(self):
         self.env['paddle_width'] = 100
         self.env['state']['player_position'] = 35
-        self.env['state']['fruit_position'] = 100
+        self.env['state']['non_player_position'] = 100
 
         """
         (1) player_position + (paddle_width // 2) = 35 + (100 // 2) = 85
@@ -57,7 +57,7 @@ class TestOwnStrategy(unittest.TestCase):
     def test_action_left(self):
         self.env['paddle_width'] = 100
         self.env['state']['player_position'] = 100
-        self.env['state']['fruit_position'] = 35
+        self.env['state']['non_player_position'] = 35
 
         """
         (1) player_position - (paddle_width // 2) = 100 - (100 // 2) = 50
@@ -70,7 +70,7 @@ class TestOwnStrategy(unittest.TestCase):
     def test_action_none(self):
         self.env['paddle_width'] = 100
         self.env['state']['player_position'] = 50
-        self.env['state']['fruit_position'] = 50
+        self.env['state']['non_player_position'] = 50
 
         """
         (1) player_position - (paddle_width // 2) = 50 - (100 // 2) = 0
