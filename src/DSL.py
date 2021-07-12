@@ -685,61 +685,61 @@ class Strategy(Node):
         return res
 
 
-Node.valid_children_types = [set([Strategy.className(), ITE.className()])]
+# Node.valid_children_types = [set([Strategy.className(), ITE.className()])]
 
-Strategy.valid_first_statement = set([IT.className()])
-Strategy.valid_next_statements = set([Strategy.className(), ReturnAction.className(), None])
-Strategy.valid_children_types = [Strategy.valid_first_statement, Strategy.valid_next_statements]
+# Strategy.valid_first_statement = set([IT.className()])
+# Strategy.valid_next_statements = set([Strategy.className(), ReturnAction.className(), None])
+# Strategy.valid_children_types = [Strategy.valid_first_statement, Strategy.valid_next_statements]
 
-ForEach.valid_iterable = set([VarArray.className()])
-ForEach.valid_loop_body = set([IT.className(), ITE.className()])
-ForEach.valid_children_types = [ForEach.valid_iterable, ForEach.valid_loop_body]
+# ForEach.valid_iterable = set([VarArray.className()])
+# ForEach.valid_loop_body = set([IT.className(), ITE.className()])
+# ForEach.valid_children_types = [ForEach.valid_iterable, ForEach.valid_loop_body]
 
-IT.valid_if_cond = set([LessThan.className(), GreaterThan.className(), EqualTo.className(), NonPlayerObjectApproaching.className()])
-IT.valid_if_body = set([ReturnAction.className(), IT.className()])
-IT.valid_children_types = [IT.valid_if_cond, IT.valid_if_body]
+# IT.valid_if_cond = set([LessThan.className(), GreaterThan.className(), EqualTo.className()])
+# IT.valid_if_body = set([ReturnAction.className(), IT.className()])
+# IT.valid_children_types = [IT.valid_if_cond, IT.valid_if_body]
 
-ITE.valid_if_cond = IT.valid_if_cond
-ITE.valid_if_body = set([ReturnAction.className()])
-ITE.valid_else_body = set([ReturnAction.className()])
-ITE.valid_children_types = [ITE.valid_if_cond, ITE.valid_if_body, ITE.valid_else_body]
+# ITE.valid_if_cond = IT.valid_if_cond
+# ITE.valid_if_body = set([ReturnAction.className()])
+# ITE.valid_else_body = set([ReturnAction.className()])
+# ITE.valid_children_types = [ITE.valid_if_cond, ITE.valid_if_body, ITE.valid_else_body]
 
-ReturnAction.valid_action = set([VarFromArray.className()])
-ReturnAction.valid_children_types = [ReturnAction.valid_action]
+# ReturnAction.valid_action = set([VarFromArray.className()])
+# ReturnAction.valid_children_types = [ReturnAction.valid_action]
 
-Plus.valid_operands = set([Constant.className(),
-                        VarScalar.className(),
-                        NonPlayerObjectPosition.className(),
-                        PlayerPosition.className(),
-                        Plus.className(),
-                        Minus.className(),
-                        Divide.className(),
-                        Times.className()
-                    ])
-Plus.valid_children_types = [Plus.valid_operands, Plus.valid_operands]
+# Plus.valid_operands = set([Constant.className(),
+#                         VarScalar.className(),
+#                         NonPlayerObjectPosition.className(),
+#                         PlayerPosition.className(),
+#                         Plus.className(),
+#                         Minus.className(),
+#                         Divide.className(),
+#                         Times.className()
+#                     ])
+# Plus.valid_children_types = [Plus.valid_operands, Plus.valid_operands]
 
-Minus.valid_operands = Plus.valid_operands.copy()
-Minus.valid_children_types = [Minus.valid_operands, Minus.valid_operands]
+# Minus.valid_operands = Plus.valid_operands.copy()
+# Minus.valid_children_types = [Minus.valid_operands, Minus.valid_operands]
 
-Times.valid_operands = Plus.valid_operands.copy()
-Times.valid_children_types = [Times.valid_operands, Times.valid_operands]
+# Times.valid_operands = Plus.valid_operands.copy()
+# Times.valid_children_types = [Times.valid_operands, Times.valid_operands]
 
-Divide.valid_operands = Plus.valid_operands.copy()
-Divide.valid_children_types = [Divide.valid_operands, Divide.valid_operands]
+# Divide.valid_operands = Plus.valid_operands.copy()
+# Divide.valid_children_types = [Divide.valid_operands, Divide.valid_operands]
 
-LessThan.valid_operands = set([Constant.className(),
-                            VarScalar.className(),
-                            NonPlayerObjectPosition.className(),
-                            PlayerPosition.className(),
-                            Plus.className(),
-                            Minus.className(),
-                            Times.className(),
-                            Divide.className()
-                        ])
-LessThan.valid_children_types = [LessThan.valid_operands, LessThan.valid_operands]
+# LessThan.valid_operands = set([Constant.className(),
+#                             VarScalar.className(),
+#                             NonPlayerObjectPosition.className(),
+#                             PlayerPosition.className(),
+#                             Plus.className(),
+#                             Minus.className(),
+#                             Times.className(),
+#                             Divide.className()
+#                         ])
+# LessThan.valid_children_types = [LessThan.valid_operands, LessThan.valid_operands]
 
-GreaterThan.valid_operands = LessThan.valid_operands.copy()
-GreaterThan.valid_children_types = [GreaterThan.valid_operands, LessThan.valid_operands]
+# GreaterThan.valid_operands = LessThan.valid_operands.copy()
+# GreaterThan.valid_children_types = [GreaterThan.valid_operands, LessThan.valid_operands]
 
-EqualTo.valid_operands = LessThan.valid_operands.copy()
-EqualTo.valid_children_types = [EqualTo.valid_operands, EqualTo.valid_operands]
+# EqualTo.valid_operands = LessThan.valid_operands.copy()
+# EqualTo.valid_children_types = [EqualTo.valid_operands, EqualTo.valid_operands]
