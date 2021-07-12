@@ -227,7 +227,10 @@ class ForEach(Node):
             loop_res = loop_body.interpret(env)
             
             if loop_res != 'False':
+                env[self.loopname] = None
                 return loop_res
+
+        env[self.loopname] = None
 
 
 """
@@ -268,7 +271,9 @@ class IT(Node):
 
         if condition.interpret(env):
             return if_body.interpret(env)
-        return 'False'
+
+        if env.get(self.loopname) is not None:
+            return 'False'
     
 
 """
