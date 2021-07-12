@@ -47,6 +47,15 @@ class Evaluation:
     def __init__(self, score_threshold, total_games):
         self.score_threshold = score_threshold
         self.total_games = total_games
+        self.best = None
+        self.best_eval = Evaluation.MIN_SCORE
+
+    def set_best(self, best, best_eval):
+        self.best = best
+        self.best_eval = best_eval
+    
+    def get_best(self):
+        return self.best, self.best_eval
 
     def get_score(self):
         raise Exception('Must implement get_score method')
@@ -63,9 +72,6 @@ class Evaluation:
     def reset_game(self):
         raise Exception('Must implement reset_game method')
 
-    def set_best(self, best, best_eval):
-        pass
-
     def evaluate(self, program, optimizing=False, verbose=False, total_games_played=None):
         """
         The evaluate method runs a game and uses the program parameter as
@@ -73,20 +79,24 @@ class Evaluation:
         returns the score of the program when the game is over or when an exception
         is raised due to an impossible action.
         """
+
         # if total_games_played is None:
         #     if optimizing:
         #         total_games_played = 2
         #     else:
         #         total_games_played = 30
+
         total_games_played = self.total_games
         
         scores = []
         score = Evaluation.MIN_SCORE
+        score_avg = score
         for _ in range(total_games_played):
             self.reset_game()
             while not self.game_over():
                 try:
                     score = self.play(program)
+
                 except:
                     if verbose:
                         return tuple([]), Evaluation.MIN_SCORE
@@ -94,8 +104,11 @@ class Evaluation:
                         return Evaluation.MIN_SCORE
                         
             scores.append(score)
+            score_avg = round(mean(scores), 2)
+
+            if score_avg < self.best_eval and len(scores) > 1:
+                break
         
-        score_avg = round(mean(scores), 2)
         if verbose:
             return tuple(scores), score_avg
         else:
@@ -120,16 +133,7 @@ class Evaluation:
 class EvaluationPong(Evaluation):
 
     def __init__(self, reward_threshold, total_games):
-        self.best = None
-        self.best_eval = None
-        super().__init__(reward_threshold, total_games)
-
-    def set_best(self, best, best_eval):
-        self.best = best
-        self.best_eval = best_eval
-    
-    def get_best(self):
-        return self.best, self.best_eval
+        super(EvaluationPong, self).__init__(reward_threshold, total_games)
 
     def update_env(self, player, game_state, action_set):
         env = {}
