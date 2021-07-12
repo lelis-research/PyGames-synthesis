@@ -14,10 +14,9 @@ from src.SA.sim_anneal import *
 from src.evaluation import *
 from src.Utils.logger import *
 from src.Utils.dsl_config import *
-import json
 
 def start_sa(time_limit, log_file, run_optimizer, game,
-    sa_option, verbose, plot, save, plot_filename, ibr, total_games):
+    sa_option, verbose, plot, save, plot_filename, ibr, total_games=3):
     if ibr:
         assert available_games[game] == 2, f'Cannot perform IBR on {game}'
 
