@@ -1,4 +1,55 @@
 {
+    "valid_children_types": {
+        "Node": [["Strategy", "ITE"]],
+        "Strategy": [["IT"], ["Strategy", "ReturnAction", "None"]],
+        "IT": [["LessThan", "GreaterThan", "EqualTo"], ["ReturnAction"]],
+        "ITE": [["LessThan", "GreaterThan", "EqualTo"], ["ReturnAction"], ["ReturnAction"]],
+        "ReturnAction": [["VarFromArray"]],
+        "arithmetic": [
+            [
+                "Constant",
+                "VarScalar",
+                "NonPlayerObjectPosition",
+                "PlayerPosition",
+                "Plus",
+                "Minus",
+                "Divide",
+                "Times"
+            ],
+            [
+                "Constant",
+                "VarScalar",
+                "NonPlayerObjectPosition",
+                "PlayerPosition",
+                "Plus",
+                "Minus",
+                "Divide",
+                "Times"
+            ]
+        ],
+        "comparison": [
+            [
+                "Constant",
+                "VarScalar",
+                "NonPlayerObjectPosition",
+                "PlayerPosition",
+                "Plus",
+                "Minus",
+                "Divide",
+                "Times"
+            ], 
+            [
+                "Constant",
+                "VarScalar",
+                "NonPlayerObjectPosition",
+                "PlayerPosition",
+                "Plus",
+                "Minus",
+                "Divide",
+                "Times"
+            ]
+        ]
+    },
     "Catcher": {
         "dsfs": [
             "NonPlayerObjectPosition",
@@ -12,7 +63,11 @@
             "PlayerPosition",
             "NonPlayerObjectApproaching"
         ],
-        "array_indexes": [0, 1, 2]
+        "array_indexes": [0, 1, 2],
+        "valid_children_types": {
+            "IT": [["LessThan", "GreaterThan", "EqualTo", "NonPlayerObjectApproaching"], ["ReturnAction", "IT"]],
+            "ITE": [["LessThan", "GreaterThan", "EqualTo", "NonPlayerObjectApproaching"], ["ReturnAction"], ["ReturnAction"]]
+        }
     },
     "operators": [
         "Minus",
@@ -28,5 +83,16 @@
         "ReturnAction"
     ],
     "scalars": ["paddle_width"],
-    "arrays": ["actions"]
+    "arrays": ["actions"],
+    "comparison": [
+        "Minus",
+        "Plus",
+        "Times",
+        "Divide"
+    ],
+    "arithmetic": [
+        "LessThan",
+        "GreaterThan",
+        "EqualTo"
+    ]
 }
