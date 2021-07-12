@@ -92,21 +92,25 @@ class Plotter:
         ax = None
         counter = 0
         names['filename'] += '_0'
+        legend_tmp = names['legend']    # store legend into temp variable when same_fig is False
 
         for path in paths:
             if not os.path.exists(path):
                 raise Exception(f'Path to {path} does not exist')
 
-            if not same_fig and counter > 0:
-                new_title = names['filename'].split()   # replace identifier at the end of title
-                new_title[-1] = str(counter)
-                names['filename'] = ''.join(new_title)
+            if not same_fig:
+                names['legend'] = [legend_tmp[counter]]
+
+                if counter > 0:
+                    new_title = list(names['filename'])   # replace identifier at the end of title
+                    new_title[-1] = str(counter)
+                    names['filename'] = ''.join(new_title)
 
             if three_dim:
                 x, y, z = self.parse_dat_file(path, three_dim)
                 fig, ax = self.plot3d(x, y, z, names, same_fig, ax, fig)
             else:
-                print(path)
+                print('Plotting from', path)
                 x, y = self.parse_dat_file(path, three_dim)
                 fig, ax = self.plot(x, y, names, same_fig, ax, fig)
             
