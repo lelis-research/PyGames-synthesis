@@ -120,3 +120,4 @@ if __name__ == '__main__':
     # print('min sample size required: ', analytics.find_min_sample_size(p1, p2, 'Catcher'))
 
     min_mean_variance, min_sample = analytics.find_min_games()
+    print(min_mean_variance, min_sample)
