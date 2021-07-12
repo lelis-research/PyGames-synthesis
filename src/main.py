@@ -74,6 +74,9 @@ def main():
     parser.add_argument('--sa-option', type=int, choices=[1, 2], dest='sa_option', default=1,
                         help='Option 1 makes it less likely for SA to be stuck in a local max')
 
+    parser.add_argument('--save', action='store_true', dest='save_data',
+                        help='Save result of search')
+
     parser.add_argument('--score', type=float, action='store', dest='score_threshold', default=200.00,
                         help='Initial score threshold to be achieved by programs synthesized with BUS')
 
@@ -105,6 +108,7 @@ def main():
     sa_option = parameters.sa_option
     verbose = parameters.verbose
     generate_plot = parameters.generate_plot
+    save_data = parameters.save_data
     plot_filename = parameters.plot_filename
 
     game = parameters.game
@@ -133,9 +137,11 @@ def main():
             time_limit,
             log_file, 
             run_optimizer, 
-            game, sa_option, 
+            game, 
+            sa_option, 
             verbose, 
             generate_plot,
+            save_data,
             plot_filename,
             ibr
         )
