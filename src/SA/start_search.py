@@ -16,11 +16,12 @@ from src.Utils.logger import *
 from src.Utils.dsl_config import *
 
 def start_sa(time_limit, log_file, run_optimizer, game,
-    sa_option, verbose, plot, save, plot_filename, ibr, total_games=3):
+    sa_option, verbose, plot, save, plot_filename, ibr, total_games=10):
     if ibr:
         assert available_games[game] == 2, f'Cannot perform IBR on {game}'
 
     dsl_config = DslConfig('./src/dsl_config.json')
+    dsl_config.init_valid_children_types(game)
     grammar = dsl_config.get_grammar(game)
 
     logger = Logger(
