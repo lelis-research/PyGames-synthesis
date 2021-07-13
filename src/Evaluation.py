@@ -69,50 +69,49 @@ class Evaluation:
     def update_env(self):
         raise Exception('Must implement update_env method')
     
-    def reset_game(self):
-        raise Exception('Must implement reset_game method')
+    def init_game(self):
+        raise Exception('Must implement init_game method')
 
-    def evaluate(self, program, optimizing=False, verbose=False, total_games_played=None):
+    def check_continue(self):
+        raise Exception('Must implement check_continue method')
+
+    def compute_result(self):
+        raise Exception('Must implement compute_result')
+
+    def clean_up(self):
+        pass
+
+    def evaluate(self, program, verbose=False, triage=False):
         """
         The evaluate method runs a game and uses the program parameter as
         strategy to determine which actions to take at each game tick. It then
         returns the score of the program when the game is over or when an exception
         is raised due to an impossible action.
         """
-
-        # if total_games_played is None:
-        #     if optimizing:
-        #         total_games_played = 2
-        #     else:
-        #         total_games_played = 30
-
-        total_games_played = self.total_games
-        
         scores = []
         score = Evaluation.MIN_SCORE
-        score_avg = score
-        for _ in range(total_games_played):
-            self.reset_game()
+        games_played = 0
+        continue_eval = True
+        while continue_eval:
+            self.init_game()
             while not self.game_over():
                 try:
                     score = self.play(program)
-
                 except:
-                    if verbose:
-                        return tuple([]), Evaluation.MIN_SCORE
-                    else:
-                        return Evaluation.MIN_SCORE
-                        
-            scores.append(score)
-            score_avg = round(mean(scores), 2)
+                    self.clean_up()
+                    return tuple([]), Evaluation.MIN_SCORE
 
-            if score_avg < self.best_eval and len(scores) > 1:
-                break
-        
+            games_played += 1
+            scores.append(score)
+
+            result = self.compute_result(scores, games_played)
+            continue_eval = self.check_continue(triage, games_played)
+
+        self.clean_up()
         if verbose:
-            return tuple(scores), score_avg
+            return tuple(scores), result
         else:
-            return score_avg
+            return result
 
     def is_correct(self, program):
         """
@@ -153,11 +152,27 @@ class EvaluationPong(Evaluation):
     def get_score(self):
         return self.game.get_rewards()[0]   # return rewards of p1
     
-    def reset_game(self):
+    def init_game(self):
         self.game = Pong()
 
     def game_over(self):
         return (not self.game.continue_game or self.game.close_clicked)
+
+    def check_triage_stop(self, games_played):
+        return self.average_score < self.best_eval and games_played >= 0.5 * self.total_games
+
+    def check_continue(self, triage, games_played):
+        if games_played == self.total_games:
+            return False
+
+        if triage and self.check_triage_stop(games_played):
+            return False
+
+        return True
+
+    def compute_result(self, scores, games_played):
+        self.average_score = round(mean(scores), 2)
+        return self.average_score
 
     def play(self, program):
         actions = []
@@ -180,6 +195,9 @@ class EvaluationPong(Evaluation):
 class EvaluationCatcher(Evaluation):
 
     def __init__(self, score_threshold, total_games):
+        self.max_scores = []
+        self.batch_size = 3
+        self.last_score_index = 0
         super(EvaluationCatcher, self).__init__(score_threshold, total_games)
 
     def update_env(self, game_state, action_set):
@@ -203,9 +221,43 @@ class EvaluationCatcher(Evaluation):
     def game_over(self):
         return self.game.game_over()
 
-    def reset_game(self):
+    def clean_up(self):
+        self.max_scores = []
+        self.last_score_index = 0
+
+    def init_game(self):
         self.game = Catcher(width=500, height=500, init_lives=3)
         self.p = PLE(self.game, fps=30, display_screen=True, rng=int(time.time()))
+
+    def compute_result(self, scores, games_played):
+        if games_played % self.batch_size == 0:
+            batch_scores = scores[self.last_score_index:]
+            max_batch_score = max(batch_scores)
+            self.max_scores.append(max_batch_score)
+            self.last_score_index = len(scores)
+
+        if len(self.max_scores) > 0:
+            return round(mean(self.max_scores), 2)
+        else:
+            return Evaluation.MIN_SCORE
+
+    def check_triage_stop(self, games_played):
+        # Check if mean score is less than best score 
+        # and number of batches is equal to batch size
+        num_batches = games_played // self.batch_size
+        return mean(self.max_scores) < self.best_eval and num_batches >= self.batch_size
+
+    def check_continue(self, triage, games_played):
+        if games_played == self.total_games:
+            self.last_score_index = 0
+            return False
+
+        if triage:
+            if len(self.max_scores) > 0 and self.check_triage_stop(games_played):
+                self.last_score_index = 0
+                return False
+
+        return True
 
     def play(self, program):
         env = self.update_env(self.p.getGameState(), self.p.getActionSet())
