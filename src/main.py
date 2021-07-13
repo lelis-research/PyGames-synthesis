@@ -41,7 +41,7 @@ def main():
     parser.add_argument('-g', '--game', choices=available_games.keys(), dest='game', default='Catcher',
                         help='Game for which a strategy will be synthesized')
 
-    parser.add_argument('--tg', '--total-games', type=int, action='store', dest='total_games', default=50,
+    parser.add_argument('--tg', '--total-games', type=int, action='store', dest='total_games', default=48,
                         help='Number of games to be played by programs during evaluation')
 
     parser.add_argument('--ibr', action='store_true', dest='ibr',
