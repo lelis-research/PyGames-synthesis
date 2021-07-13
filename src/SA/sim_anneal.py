@@ -257,7 +257,7 @@ class SimulatedAnnealing:
         # Option 2: Generate random program only once
         if option == 2:
             best = self.generate_random()
-            scores, best_eval = eval_funct.evaluate(best, verbose=True)
+            scores, best_eval = eval_funct.evaluate(best, verbose=True, triage=True)
             self.closed_list[best.to_string()] = (best_eval, self.get_timestamp())
 
             eval_funct.set_best(best, best_eval)    # update best score in eval object
@@ -292,7 +292,7 @@ class SimulatedAnnealing:
             # Option 1: Generate random program and compare with best
             if option == 1:
                 current = self.generate_random()
-                scores, current_eval = eval_funct.evaluate(current, verbose=True)
+                scores, current_eval = eval_funct.evaluate(current, verbose=True, triage=True)
                 self.closed_list[current.to_string()] = (current_eval, timestamp)   # save to closed_list
 
                 if len(scores) > 0:
@@ -334,7 +334,7 @@ class SimulatedAnnealing:
                 self.best_pscore_dict[iterations][0] = (best_eval, timestamp)
 
             # Call simulated annealing
-            best, best_eval, is_new_best = self.simulated_annealing(
+            best, best_eval = self.simulated_annealing(
                                 current_t,
                                 final_t,
                                 current,
@@ -346,11 +346,6 @@ class SimulatedAnnealing:
                                 verbose_opt,
                                 ibr
                             )
-
-            # If iterated-best response option was specified,
-            # update the current best solution to the new best
-            if ibr and is_new_best:
-                eval_funct.set_best(best, best_eval)
 
             iterations += 1
             self.logger.log('Total iterations: ' + str(iterations), end='\n\n')
@@ -446,7 +441,7 @@ class SimulatedAnnealing:
             mutations += 1
 
             # Evaluate the mutated program
-            scores, candidate_eval = eval_funct.evaluate(candidate, verbose=True)
+            scores, candidate_eval = eval_funct.evaluate(candidate, verbose=True, triage=True)
             self.closed_list[candidate.to_string()] = (candidate_eval, timestamp)
 
             if len(scores) > 0:
@@ -470,21 +465,15 @@ class SimulatedAnnealing:
 
                     self.ppool = []
 
-                    # if optimized_candidate_eval > candidate_eval:
-                    #     candidate = optimized_candidate
-                    #     candidate_eval = optimized_candidate_eval
-
             # Update the best program if needed
             if candidate_eval > best_eval:
                 header = 'New Best Program'
                 best_updated = True
-                is_new_best = True
                 best, best_eval = candidate, candidate_eval
 
                 # Set the best program and its score in eval_funct
                 # Since triage is used, the best score in eval_funct must be updated
-                if not ibr:
-                    eval_funct.set_best(best, best_eval)
+                eval_funct.set_best(best, best_eval)
 
                 # Update the baseline score of the optimizer
                 if self.run_optimizer:
@@ -520,4 +509,4 @@ class SimulatedAnnealing:
             if ibr and best_updated:
                 break
 
-        return best, best_eval, is_new_best
+        return best, best_eval
