@@ -41,6 +41,9 @@ def main():
     parser.add_argument('-g', '--game', choices=available_games.keys(), dest='game', default='Catcher',
                         help='Game for which a strategy will be synthesized')
 
+    parser.add_argument('--tg', '--total-games', type=int, action='store', dest='total_games', default=50,
+                        help='Number of games to be played by programs during evaluation')
+
     parser.add_argument('--ibr', action='store_true', dest='ibr',
                         help='Run the Iterated Best Response. Will only with 2-player games.')
 
@@ -53,7 +56,7 @@ def main():
     parser.add_argument('-o', '--optimize', action='store_true', dest='optimize',
                         help='Run Bayesian Optimizer on top of synthesizer')
 
-    parser.add_argument('--optimizer-iter', type=int, dest='n_iter', default=200,
+    parser.add_argument('--optimizer-iter', type=int, dest='n_iter', default=10,
                         help='Number of iterations that the optimization process is run. Must be used with --optimize option')
 
     parser.add_argument('--optimizer-kappa', type=kappa_float, dest='kappa', default=2.5, metavar='KAPPA',
@@ -110,6 +113,7 @@ def main():
     generate_plot = parameters.generate_plot
     save_data = parameters.save_data
     plot_filename = parameters.plot_filename
+    total_games = parameters.total_games
 
     game = parameters.game
 
@@ -143,7 +147,8 @@ def main():
             generate_plot,
             save_data,
             plot_filename,
-            ibr
+            ibr,
+            total_games
         )
 
     if algorithm == 'BUS':
