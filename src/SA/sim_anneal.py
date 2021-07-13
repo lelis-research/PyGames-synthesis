@@ -454,13 +454,14 @@ class SimulatedAnnealing:
 
                 if len(self.ppool) >= self.ppool_max_size:
                     if candidate_eval != Evaluation.MIN_SCORE:
-                        self.unoptimized_pscore_dict[iterations][epoch+1] = (candidate_eval, timestamp)
+                        unoptimized_candidate_eval = candidate_eval
 
                     candidate, candidate_eval, is_optimized = self.start_optimizer()
 
                     # Store optimized candidates into closed_list
                     if is_optimized:
                         self.closed_list[candidate.to_string()] = (candidate_eval, timestamp)
+                        self.unoptimized_pscore_dict[iterations][epoch+1] = (unoptimized_candidate_eval, timestamp)
                         self.optimized_pscore_dict[iterations][epoch+1] = (candidate_eval, timestamp)
 
                     self.ppool = []
