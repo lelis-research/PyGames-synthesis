@@ -16,7 +16,7 @@ from src.Utils.logger import *
 from src.Utils.dsl_config import *
 
 def start_sa(time_limit, log_file, run_optimizer, game,
-    sa_option, verbose, plot, save, plot_filename, ibr, total_games=50):
+    sa_option, verbose, plot, save, plot_filename, ibr, total_games):
     if ibr:
         assert available_games[game] == 2, f'Cannot perform IBR on {game}'
 
