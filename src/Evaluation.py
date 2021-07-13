@@ -196,7 +196,7 @@ class EvaluationCatcher(Evaluation):
 
     def __init__(self, score_threshold, total_games):
         self.max_scores = []
-        self.batch_size = 3
+        self.batch_size = 6
         self.last_score_index = 0
         super(EvaluationCatcher, self).__init__(score_threshold, total_games)
 
