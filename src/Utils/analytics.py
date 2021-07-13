@@ -112,6 +112,46 @@ class Analytics:
         
         return optimizer.max['target'], optimizer.max['params']
 
+    def calc_batch_size(self):
+        p = Strategy.new(
+            IT.new( 
+                GreaterThan.new( NonPlayerObjectPosition(), Plus.new( PlayerPosition(), Times.new( VarScalar.new('paddle_width'), Constant.new(0.5) ) ) ),
+                    ReturnAction.new( VarFromArray.new('actions', Constant.new(1)) )
+            ),
+            Strategy.new( 
+                IT.new( 
+                    LessThan.new( NonPlayerObjectPosition(), Minus.new( PlayerPosition(), Times.new( VarScalar.new('paddle_width'), Constant.new(0.5) ) ) ), 
+                        ReturnAction.new( VarFromArray.new('actions', Constant.new(0)) )
+                ),
+                ReturnAction.new( VarFromArray.new('actions', Constant.new(2)) )
+            ),
+        )
+
+        factory = EvaluationFactory(0, 48)
+        eval_fun = factory.get_eval_fun('Catcher')
+        scores, avg_score = eval_fun.evaluate(p, verbose=True, triage=True)
+        
+        counter = 0
+        batch_count = 1
+        batch = []
+        score_means = []
+        max_scores = []
+        while counter < len(scores):
+            batch.append(scores[counter])
+            counter += 1
+            if counter % 6 == 0:
+                print(f'batch {batch_count}: {batch}, stdev {stdev(batch)}, mean: {mean(batch)}, max: {max(batch)}')
+                score_means.append(mean(batch))
+                max_scores.append(max(batch))
+                batch = []
+                batch_count += 1
+
+        print(f'stdev of score means {stdev(score_means)}')
+        print(f'mean of score means {mean(score_means)}')
+        print(f'stdev of max scores {stdev(max_scores)}')
+        print(f'mean of max scores {mean(max_scores)}')
+        print(f'returned avg score {avg_score}')
+
 
 if __name__ == '__main__':
 
