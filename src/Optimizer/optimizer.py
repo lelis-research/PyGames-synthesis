@@ -8,6 +8,7 @@ This module provides an Optimizer class that can be used by
 synthesizers such as Bottom-Up Search to find the optimal value
 of operands/parameters in operations defined in the DSL.
 """
+from math import ceil
 from scipy.sparse import base
 from src.dsl import *
 from src.evaluation import Evaluation
@@ -77,13 +78,13 @@ class Optimizer:
     def evaluation_fun(self, **kwargs):
         const_nodes = np.fromiter(kwargs.values(), dtype=float)
         self.set_const_value(const_nodes.tolist())
-        score = self.eval_funct.evaluate(self.ast, optimizing=True)
+        score = self.eval_funct.evaluate(self.ast)
         return score
 
-    def break_down(self, iterations):
+    def break_down(self, value):
         iter_breakdown = []
-        for i in [1, 5, 15, 30, 49]:
-            iter_breakdown.append(int((i / 100) * iterations))
+        for i in [21, 30, 49]:
+            iter_breakdown.append(int((i / 100) * value))
 
         return iter_breakdown.copy()
 
@@ -108,17 +109,30 @@ class Optimizer:
             for _ in range(optimization_steps):
                 next_point = bayesOpt.suggest(utility)
                 self.set_const_value(next_point)
-                target = self.eval_funct.evaluate(self.ast, optimizing=True)
+                target = self.eval_funct.evaluate(self.ast)
                 bayesOpt.register(params=next_point, target=target)
 
             # Compare results with previous runs of the optimizer
             target, params = bayesOpt.max['target'], bayesOpt.max['params']
-            if target > sum(baseline_break_down[:i+1]):
-                is_optimized = True
+
+            if self.baseline_eval >= 0:
+                # Want the params being obtained to gradually 
+                # become better than the baseline score
+                baseline_fraction = sum(baseline_break_down[:i+1])
+
+            else:
+                # Here, we subtract because the progress 
+                # needs to be in the positive direction
+                baseline_fraction = (2 * self.baseline_eval) - sum(baseline_break_down[:i+1])
+
+            if target > baseline_fraction:
                 current_eval = target
                 current_params = params
             else:
                 break
+
+        if current_eval > self.initial_score:
+            is_optimized = True
 
         self.set_const_value(current_params)
         return self.ast, current_params, current_eval, is_optimized
@@ -130,13 +144,12 @@ class Optimizer:
             verbose=0
         )
 
-        is_optimized = True
+        is_optimized = False
         bayesOpt.maximize(init_points=20, n_iter=self.iterations, kappa=self.kappa)
         target, params = bayesOpt.max['target'], bayesOpt.max['params']
-        if target <= self.baseline_score:
-            is_optimized = False
-            params = self.original_values
-            target = self.initial_score
+
+        if target > self.initial_score:
+            is_optimized = True
 
         self.set_const_value(params)
         return self.ast, params, target, is_optimized
