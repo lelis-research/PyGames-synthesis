@@ -28,12 +28,12 @@ available_games = {'Catcher': 1, 'Pong': 2}
 
 class EvaluationFactory:
 
-    def __init__(self, threshold, total_games, triage):
-        self.set_games_dict(threshold, total_games, triage)
+    def __init__(self, threshold, total_games, triage, batch=True):
+        self.set_games_dict(threshold, total_games, triage, batch)
 
-    def set_games_dict(self, threshold, total_games, triage):
+    def set_games_dict(self, threshold, total_games, triage, batch):
         self.games_dict = {
-            'Catcher': EvaluationCatcher(threshold, total_games, triage), 
+            'Catcher': EvaluationCatcher(threshold, total_games, triage, batch=batch), 
             'Pong': EvaluationPong(threshold, total_games, triage)
         }
 
@@ -73,14 +73,28 @@ class Evaluation:
     def init_game(self):
         raise Exception('Must implement init_game method')
 
-    def check_continue(self):
-        raise Exception('Must implement check_continue method')
+    def slack(self, games_played):
+        return 0
 
-    def compute_result(self):
-        raise Exception('Must implement compute_result')
+    def check_triage_stop(self, games_played):
+        return self.average_score < self.best_eval - self.slack(games_played) \
+            and games_played >= 0.5 * self.total_games
 
     def clean_up(self):
         pass
+
+    def check_continue(self, triage, games_played):
+        if games_played == self.total_games:
+            return False
+
+        if self.triage and self.check_triage_stop(games_played):
+            return False
+
+        return True
+
+    def compute_result(self, scores, games_played):
+        self.average_score = round(mean(scores), 2)
+        return self.average_score
 
     def evaluate(self, program, verbose=False, triage=False):
         """
@@ -156,22 +170,6 @@ class EvaluationPong(Evaluation):
     def game_over(self):
         return (not self.game.continue_game or self.game.close_clicked)
 
-    def check_triage_stop(self, games_played):
-        return self.average_score < self.best_eval and games_played >= 0.5 * self.total_games
-
-    def check_continue(self, triage, games_played):
-        if games_played == self.total_games:
-            return False
-
-        if self.triage and self.check_triage_stop(games_played):
-            return False
-
-        return True
-
-    def compute_result(self, scores, games_played):
-        self.average_score = round(mean(scores), 2)
-        return self.average_score
-
     def play(self, program):
         actions = []
         p1 = program
@@ -192,11 +190,12 @@ class EvaluationPong(Evaluation):
 
 class EvaluationCatcher(Evaluation):
 
-    def __init__(self, score_threshold, total_games, triage):
+    def __init__(self, score_threshold, total_games, triage, batch=True):
+        super(EvaluationCatcher, self).__init__(score_threshold, total_games, triage)
         self.max_scores = []
         self.batch_size = 5
         self.last_score_index = 0
-        super(EvaluationCatcher, self).__init__(score_threshold, total_games, triage)
+        self.batch = batch
 
     def update_env(self, game_state, action_set):
         """
@@ -220,14 +219,20 @@ class EvaluationCatcher(Evaluation):
         return self.game.game_over()
 
     def clean_up(self):
-        self.max_scores = []
-        self.last_score_index = 0
+        if self.batch:
+            self.max_scores = []
+            self.last_score_index = 0
+        else:
+            super(EvaluationCatcher, self).clean_up()
 
     def init_game(self):
         self.game = Catcher(width=500, height=500, init_lives=3)
         self.p = PLE(self.game, fps=30, display_screen=True, rng=int(time.time()))
 
     def compute_result(self, scores, games_played):
+        if not self.batch:
+            return super(EvaluationCatcher, self).compute_result(scores, games_played)
+
         if games_played % self.batch_size == 0:
             batch_scores = scores[self.last_score_index:]
             max_batch_score = max(batch_scores)
@@ -240,12 +245,18 @@ class EvaluationCatcher(Evaluation):
             return Evaluation.MIN_SCORE
 
     def check_triage_stop(self, games_played):
+        if not self.batch:
+            return super(EvaluationCatcher, self).check_triage_stop(games_played)
+
         # Check if mean score is less than best score 
         # and number of batches is equal to batch size
         num_batches = games_played // self.batch_size
         return mean(self.max_scores) < self.best_eval and num_batches >= self.batch_size
 
     def check_continue(self, triage, games_played):
+        if not self.batch:
+            return super(EvaluationCatcher, self).check_continue(triage, games_played)
+
         if games_played == self.total_games:
             self.last_score_index = 0
             return False
