@@ -300,6 +300,11 @@ class SimulatedAnnealing:
 
                 if best is None or current_eval > best_eval:
                     best, best_eval = current, current_eval
+
+                    # Evaluate strong programs for longer
+                    if best_eval >= eval_funct.STRONG_SCORE:
+                        best_eval = self.run_longer_eval(eval_funct, best)
+
                     eval_funct.set_best(best, best_eval)        # update best score in eval object
 
                     # Set baseline for optimizer
@@ -416,6 +421,25 @@ class SimulatedAnnealing:
 
         plotter.plot_from_data(self.scores_dict, self.best_pscore_dict, names=plot_names)     # plot all scores
 
+    def run_longer_eval(self, eval_funct, program):
+        # Turn batch and triage
+        previous_batch_value = eval_funct.set_batch(False)
+        previous_triage_value = eval_funct.set_triage(False)
+        
+        # set total_games to 1000
+        previous_total_games = eval_funct.set_total_games(1000)
+        program_eval = eval_funct.evaluate(program)             # evaluate program
+
+        # Turn batch and triage back on if they were
+        # on before calling this method
+        eval_funct.set_batch(previous_batch_value)
+        eval_funct.set_triage(previous_triage_value)
+
+        # reset total_games to previous value
+        eval_funct.set_total_games(previous_total_games)
+
+        return program_eval
+
     def simulated_annealing(
             self,
             current_t,
@@ -431,7 +455,6 @@ class SimulatedAnnealing:
         ):
         epoch = 0
         mutations = 0
-        is_new_best = False
         while current_t > final_t:
             best_updated = False
             header = 'Mutated Program'
@@ -472,6 +495,10 @@ class SimulatedAnnealing:
                 header = 'New Best Program'
                 best_updated = True
                 best, best_eval = candidate, candidate_eval
+
+                # Evaluate strong programs for longer
+                if best_eval >= eval_funct.STRONG_SCORE:
+                    best_eval = self.run_longer_eval(eval_funct, best)
 
                 # Set the best program and its score in eval_funct
                 # Since triage is used, the best score in eval_funct must be updated
