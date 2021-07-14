@@ -127,29 +127,27 @@ class Analytics:
             ),
         )
 
-        factory = EvaluationFactory(0, 48)
+        factory = EvaluationFactory(0, 50, True, batch=False)
         eval_fun = factory.get_eval_fun('Catcher')
         scores, avg_score = eval_fun.evaluate(p, verbose=True, triage=True)
         
         counter = 0
         batch_count = 1
         batch = []
-        score_means = []
         max_scores = []
         while counter < len(scores):
             batch.append(scores[counter])
             counter += 1
-            if counter % 6 == 0:
+            if counter % 5 == 0:
                 print(f'batch {batch_count}: {batch}, stdev {stdev(batch)}, mean: {mean(batch)}, max: {max(batch)}')
-                score_means.append(mean(batch))
                 max_scores.append(max(batch))
                 batch = []
                 batch_count += 1
 
-        print(f'stdev of score means {stdev(score_means)}')
-        print(f'mean of score means {mean(score_means)}')
+        print(f'stdev scores {stdev(scores)}')
+        print(f'mean scores {round(mean(scores), 2)}')
         print(f'stdev of max scores {stdev(max_scores)}')
-        print(f'mean of max scores {mean(max_scores)}')
+        print(f'mean of max scores {round(mean(max_scores), 2)}')
         print(f'returned avg score {avg_score}')
 
 
@@ -159,5 +157,7 @@ if __name__ == '__main__':
 
     # print('min sample size required: ', analytics.find_min_sample_size(p1, p2, 'Catcher'))
 
-    min_mean_variance, min_sample = analytics.find_min_games()
-    print(min_mean_variance, min_sample)
+    # min_mean_variance, min_sample = analytics.find_min_games()
+    # print(min_mean_variance, min_sample)
+
+    analytics.calc_batch_size()
