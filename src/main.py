@@ -38,6 +38,9 @@ def main():
             epilog='Happy Synthesizing! :-)'
     )
 
+    parser.add_argument('--batch', action='store_true', dest='batch_eval',
+                        help='Run batch evaluation')
+
     parser.add_argument('-g', '--game', choices=available_games.keys(), dest='game', default='Catcher',
                         help='Game for which a strategy will be synthesized')
 
@@ -93,6 +96,9 @@ def main():
     parser.add_argument('-t', '--time', action='store', dest='time_limit', default=300,
                         help='Running time limit in seconds')
 
+    parser.add_argument('--te', '--triage-eval', action='store_true', dest='triage_eval',
+                        help='Run triage evaluation (can be used with batch evaluation)')
+
     parser.add_argument('-v', action='store_true', dest='verbose',
                         help='Logs more information to specified file during synthesis')
 
@@ -114,6 +120,8 @@ def main():
     save_data = parameters.save_data
     plot_filename = parameters.plot_filename
     total_games = parameters.total_games
+    triage_eval = parameters.triage_eval
+    batch_eval = parameters.batch_eval
 
     game = parameters.game
 
@@ -141,7 +149,9 @@ def main():
             time_limit,
             log_file, 
             run_optimizer, 
-            game, 
+            game,
+            triage_eval,
+            batch_eval,
             sa_option, 
             verbose, 
             generate_plot,
