@@ -28,13 +28,13 @@ available_games = {'Catcher': 1, 'Pong': 2}
 
 class EvaluationFactory:
 
-    def __init__(self, threshold, total_games):
-        self.set_games_dict(threshold, total_games)
+    def __init__(self, threshold, total_games, triage):
+        self.set_games_dict(threshold, total_games, triage)
 
-    def set_games_dict(self, threshold, total_games):
+    def set_games_dict(self, threshold, total_games, triage):
         self.games_dict = {
-            'Catcher': EvaluationCatcher(threshold, total_games), 
-            'Pong': EvaluationPong(threshold, total_games)
+            'Catcher': EvaluationCatcher(threshold, total_games, triage), 
+            'Pong': EvaluationPong(threshold, total_games, triage)
         }
 
     def get_eval_fun(self, eval_str):
@@ -44,9 +44,10 @@ class Evaluation:
 
     MIN_SCORE = -1_000_000
 
-    def __init__(self, score_threshold, total_games):
+    def __init__(self, score_threshold, total_games, triage):
         self.score_threshold = score_threshold
         self.total_games = total_games
+        self.triage = triage
         self.best = None
         self.best_eval = Evaluation.MIN_SCORE
 
@@ -131,9 +132,6 @@ class Evaluation:
 
 class EvaluationPong(Evaluation):
 
-    def __init__(self, reward_threshold, total_games):
-        super(EvaluationPong, self).__init__(reward_threshold, total_games)
-
     def update_env(self, player, game_state, action_set):
         env = {}
         env['state'] = {}
@@ -165,7 +163,7 @@ class EvaluationPong(Evaluation):
         if games_played == self.total_games:
             return False
 
-        if triage and self.check_triage_stop(games_played):
+        if self.triage and self.check_triage_stop(games_played):
             return False
 
         return True
@@ -194,11 +192,11 @@ class EvaluationPong(Evaluation):
 
 class EvaluationCatcher(Evaluation):
 
-    def __init__(self, score_threshold, total_games):
+    def __init__(self, score_threshold, total_games, triage):
         self.max_scores = []
-        self.batch_size = 6
+        self.batch_size = 5
         self.last_score_index = 0
-        super(EvaluationCatcher, self).__init__(score_threshold, total_games)
+        super(EvaluationCatcher, self).__init__(score_threshold, total_games, triage)
 
     def update_env(self, game_state, action_set):
         """
@@ -252,7 +250,7 @@ class EvaluationCatcher(Evaluation):
             self.last_score_index = 0
             return False
 
-        if triage:
+        if self.triage:
             if len(self.max_scores) > 0 and self.check_triage_stop(games_played):
                 self.last_score_index = 0
                 return False
