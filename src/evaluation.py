@@ -197,6 +197,9 @@ class EvaluationCatcher(Evaluation):
         self.last_score_index = 0
         self.batch = batch
 
+    def set_batch(self, batch_eval_bool):
+        self.batch = batch_eval_bool
+
     def update_env(self, game_state, action_set):
         """
         This method updates the env variable based on the game_state and
