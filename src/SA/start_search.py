@@ -15,7 +15,7 @@ from src.evaluation import *
 from src.Utils.logger import *
 from src.Utils.dsl_config import *
 
-def start_sa(time_limit, log_file, run_optimizer, game,
+def start_sa(time_limit, log_file, run_optimizer, game, triage,
     sa_option, verbose, plot, save, plot_filename, ibr, total_games):
     if ibr:
         assert available_games[game] == 2, f'Cannot perform IBR on {game}'
@@ -31,7 +31,7 @@ def start_sa(time_limit, log_file, run_optimizer, game,
     )
     sa = SimulatedAnnealing(time_limit, logger, run_optimizer)
 
-    eval_factory = EvaluationFactory(0, total_games)
+    eval_factory = EvaluationFactory(0, total_games, triage)
     eval_funct = eval_factory.get_eval_fun(game)
     
     sa.synthesize(
