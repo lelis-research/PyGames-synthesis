@@ -29,7 +29,7 @@ class Plotter(base_plt.Plotter):
 
         iteration = list(range(0, len(score)))
 
-        X, Y, Z = np.array(time), np.array(score), np.array(iteration)
+        X, Y, Z = np.array(iteration), np.array(score), np.array(time)
 
         if three_dim:
             return X, Y, Z
