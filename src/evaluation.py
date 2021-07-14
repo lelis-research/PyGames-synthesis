@@ -13,7 +13,6 @@ https://pygame-learning-environment.readthedocs.io/en/latest/user/games/catcher.
 import copy as cp
 import pygame, time
 from pygame.locals import *
-from pygame.version import ver
 from statistics import *
 
 ### import game from Pygame-Learning-Environment ###
@@ -21,6 +20,7 @@ from pygame_games.ple.games.catcher import Catcher
 # from pygame_games.ple.games.pong import Pong
 from pygame_games.ple.ple import PLE
 from pong.pong3 import Pong
+from src.evaluation_config import *
 
 # keys: game
 # values: number of players
@@ -28,13 +28,13 @@ available_games = {'Catcher': 1, 'Pong': 2}
 
 class EvaluationFactory:
 
-    def __init__(self, threshold, total_games, triage, batch=True):
+    def __init__(self, threshold, total_games, triage, batch):
         self.set_games_dict(threshold, total_games, triage, batch)
 
     def set_games_dict(self, threshold, total_games, triage, batch):
         self.games_dict = {
-            'Catcher': EvaluationCatcher(threshold, total_games, triage, batch=batch), 
-            'Pong': EvaluationPong(threshold, total_games, triage)
+            'Catcher': EvaluationCatcher(threshold, total_games, triage, batch), 
+            'Pong': EvaluationPong(threshold, total_games, triage, batch)
         }
 
     def get_eval_fun(self, eval_str):
@@ -43,13 +43,34 @@ class EvaluationFactory:
 class Evaluation:
 
     MIN_SCORE = -1_000_000
+    STRONG_SCORE = 1000.0
 
-    def __init__(self, score_threshold, total_games, triage):
+    def __init__(self, score_threshold, total_games, triage, batch):
         self.score_threshold = score_threshold
         self.total_games = total_games
-        self.triage = triage
         self.best = None
         self.best_eval = Evaluation.MIN_SCORE
+
+        config_factory = EvaluationConfigFactory(batch, triage)
+        self.eval_config = config_factory.get_config()
+
+    def set_total_games(self, new_total_games):
+        previous_total_games = self.total_games
+        self.total_games = new_total_games
+        return previous_total_games
+    
+    def change_config(self, batch, triage, batch_size=None):
+        previous_eval_config = self.eval_config
+        config_factory = EvaluationConfigFactory(batch, triage)
+        self.eval_config = config_factory.get_config()
+
+        if batch:
+            assert batch_size is not None
+            self.eval_config.set_config_attributes(batch_size, self.total_games, self.best_eval)
+        else:
+            self.eval_config.set_config_attributes(self.total_games, self.best_eval)
+
+        return previous_eval_config
 
     def set_best(self, best, best_eval):
         self.best = best
@@ -75,28 +96,17 @@ class Evaluation:
 
     def slack(self, games_played):
         return 0
-
-    def check_triage_stop(self, games_played):
-        return self.average_score < self.best_eval - self.slack(games_played) \
-            and games_played >= 0.5 * self.total_games
-
+    
     def clean_up(self):
-        pass
-
-    def check_continue(self, triage, games_played):
-        if games_played == self.total_games:
-            return False
-
-        if self.triage and self.check_triage_stop(games_played):
-            return False
-
-        return True
+        self.eval_config.clean_up()
 
     def compute_result(self, scores, games_played):
-        self.average_score = round(mean(scores), 2)
-        return self.average_score
+        self.eval_config.compute_result(scores, games_played)
 
-    def evaluate(self, program, verbose=False, triage=False):
+    def check_continue(self, games_played):
+        return self.eval_config.check_continue(games_played)
+
+    def evaluate(self, program, verbose=False):
         """
         The evaluate method runs a game and uses the program parameter as
         strategy to determine which actions to take at each game tick. It then
@@ -120,7 +130,7 @@ class Evaluation:
             scores.append(score)
 
             result = self.compute_result(scores, games_played)
-            continue_eval = self.check_continue(triage, games_played)
+            continue_eval = self.check_continue(games_played)
 
         self.clean_up()
         if verbose:
@@ -145,6 +155,10 @@ class Evaluation:
 
 
 class EvaluationPong(Evaluation):
+
+    def __init__(self, score_threshold, total_games, triage, batch=True):
+        super(EvaluationPong, self).__init__(score_threshold, total_games, triage, batch)
+        self.eval_config.set_config_attributes(self.total_games, self.best)
 
     def update_env(self, player, game_state, action_set):
         env = {}
@@ -190,15 +204,17 @@ class EvaluationPong(Evaluation):
 
 class EvaluationCatcher(Evaluation):
 
+
     def __init__(self, score_threshold, total_games, triage, batch=True):
-        super(EvaluationCatcher, self).__init__(score_threshold, total_games, triage)
-        self.max_scores = []
+        super(EvaluationCatcher, self).__init__(score_threshold, total_games, triage, batch)
         self.batch_size = 5
-        self.last_score_index = 0
-        self.batch = batch
+
+        self.eval_config.set_config_attributes(self.batch_size, self.total_games, self.best_eval)
 
     def set_batch(self, batch_eval_bool):
+        previous_value = self.batch
         self.batch = batch_eval_bool
+        return previous_value
 
     def update_env(self, game_state, action_set):
         """
@@ -221,55 +237,9 @@ class EvaluationCatcher(Evaluation):
     def game_over(self):
         return self.game.game_over()
 
-    def clean_up(self):
-        if self.batch:
-            self.max_scores = []
-            self.last_score_index = 0
-        else:
-            super(EvaluationCatcher, self).clean_up()
-
     def init_game(self):
         self.game = Catcher(width=500, height=500, init_lives=3)
         self.p = PLE(self.game, fps=30, display_screen=True, rng=int(time.time()))
-
-    def compute_result(self, scores, games_played):
-        if not self.batch:
-            return super(EvaluationCatcher, self).compute_result(scores, games_played)
-
-        if games_played % self.batch_size == 0:
-            batch_scores = scores[self.last_score_index:]
-            max_batch_score = max(batch_scores)
-            self.max_scores.append(max_batch_score)
-            self.last_score_index = len(scores)
-
-        if len(self.max_scores) > 0:
-            return round(mean(self.max_scores), 2)
-        else:
-            return Evaluation.MIN_SCORE
-
-    def check_triage_stop(self, games_played):
-        if not self.batch:
-            return super(EvaluationCatcher, self).check_triage_stop(games_played)
-
-        # Check if mean score is less than best score 
-        # and number of batches is equal to batch size
-        num_batches = games_played // self.batch_size
-        return mean(self.max_scores) < self.best_eval and num_batches >= self.batch_size
-
-    def check_continue(self, triage, games_played):
-        if not self.batch:
-            return super(EvaluationCatcher, self).check_continue(triage, games_played)
-
-        if games_played == self.total_games:
-            self.last_score_index = 0
-            return False
-
-        if self.triage:
-            if len(self.max_scores) > 0 and self.check_triage_stop(games_played):
-                self.last_score_index = 0
-                return False
-
-        return True
 
     def play(self, program):
         env = self.update_env(self.p.getGameState(), self.p.getActionSet())
