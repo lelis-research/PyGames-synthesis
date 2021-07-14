@@ -311,15 +311,16 @@ class SimulatedAnnealing:
                 current = best
                 current_eval = best_eval
 
-            # Log initial program to file
-            pdescr = {
-                        'header': 'Initial Program',
-                        'psize': current.get_size(), 
-                        'score': current_eval,
-                        'timestamp': timestamp
-                    }
-            self.logger.log_program(current.to_string(), pdescr)
-            self.logger.log('Scores: ' + str(scores).strip('()'), end='\n\n')
+            if verbose_opt:
+                # Log initial program to file
+                pdescr = {
+                            'header': 'Initial Program',
+                            'psize': current.get_size(), 
+                            'score': current_eval,
+                            'timestamp': timestamp
+                        }
+                self.logger.log_program(current.to_string(), pdescr)
+                self.logger.log('Scores: ' + str(scores).strip('()'), end='\n\n')
 
             # Store score values to generate plot before exiting if needed
             self.scores_dict[iterations] = {}
