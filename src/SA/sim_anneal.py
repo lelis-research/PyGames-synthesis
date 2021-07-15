@@ -422,20 +422,15 @@ class SimulatedAnnealing:
         plotter.plot_from_data(self.scores_dict, self.best_pscore_dict, names=plot_names)     # plot all scores
 
     def run_longer_eval(self, eval_funct, program):
-        # Turn batch and triage
-        previous_batch_value = eval_funct.set_batch(False)
-        previous_triage_value = eval_funct.set_triage(False)
-        
-        # set total_games to 1000
+        # Change the evaluation object's configuration
+        previous_config = eval_funct.change_config(False, False)
+
+        # Set total_number of games to 1000
         previous_total_games = eval_funct.set_total_games(1000)
-        program_eval = eval_funct.evaluate(program)             # evaluate program
 
-        # Turn batch and triage back on if they were
-        # on before calling this method
-        eval_funct.set_batch(previous_batch_value)
-        eval_funct.set_triage(previous_triage_value)
+        program_eval = eval_funct.evaluate(program, verbose=False)
 
-        # reset total_games to previous value
+        eval_funct.set_config(previous_config)
         eval_funct.set_total_games(previous_total_games)
 
         return program_eval
