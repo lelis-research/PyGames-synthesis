@@ -257,7 +257,7 @@ class SimulatedAnnealing:
         # Option 2: Generate random program only once
         if option == 2:
             best = self.generate_random()
-            scores, best_eval = eval_funct.evaluate(best, verbose=True, triage=True)
+            scores, best_eval = eval_funct.evaluate(best, verbose=True)
             self.closed_list[best.to_string()] = (best_eval, self.get_timestamp())
 
             eval_funct.set_best(best, best_eval)    # update best score in eval object
@@ -292,7 +292,7 @@ class SimulatedAnnealing:
             # Option 1: Generate random program and compare with best
             if option == 1:
                 current = self.generate_random()
-                scores, current_eval = eval_funct.evaluate(current, verbose=True, triage=True)
+                scores, current_eval = eval_funct.evaluate(current, verbose=True)
                 self.closed_list[current.to_string()] = (current_eval, timestamp)   # save to closed_list
 
                 if len(scores) > 0:
@@ -460,7 +460,7 @@ class SimulatedAnnealing:
             mutations += 1
 
             # Evaluate the mutated program
-            scores, candidate_eval = eval_funct.evaluate(candidate, verbose=True, triage=True)
+            scores, candidate_eval = eval_funct.evaluate(candidate, verbose=True)
             self.closed_list[candidate.to_string()] = (candidate_eval, timestamp)
 
             if len(scores) > 0:
