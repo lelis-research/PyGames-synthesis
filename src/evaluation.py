@@ -56,7 +56,7 @@ class Evaluation:
         self.eval_config = config_factory.get_config()
 
         if batch:
-            self.eval_config.set_config_attributes(self.batch_size, self.total_games, self.best_eval)
+            self.eval_config.set_config_attributes(self.batch_size, self.total_games, self.best_eval, Evaluation.MIN_SCORE)
         else:
             self.eval_config.set_config_attributes(total_games, self.best_eval)
 
@@ -110,7 +110,7 @@ class Evaluation:
         self.eval_config.clean_up()
 
     def compute_result(self, scores, games_played):
-        self.eval_config.compute_result(scores, games_played)
+        return self.eval_config.compute_result(scores, games_played)
 
     def check_continue(self, games_played):
         return self.eval_config.check_continue(games_played)
