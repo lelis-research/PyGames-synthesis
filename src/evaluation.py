@@ -43,21 +43,30 @@ class EvaluationFactory:
 class Evaluation:
 
     MIN_SCORE = -1_000_000
-    STRONG_SCORE = 1000.0
+    STRONG_SCORE = 10000.0
 
     def __init__(self, score_threshold, total_games, triage, batch):
         self.score_threshold = score_threshold
         self.total_games = total_games
         self.best = None
         self.best_eval = Evaluation.MIN_SCORE
+        self.batch_size = 5
 
         config_factory = EvaluationConfigFactory(batch, triage)
         self.eval_config = config_factory.get_config()
+
+        if batch:
+            self.eval_config.set_config_attributes(self.batch_size, self.total_games, self.best_eval)
+        else:
+            self.eval_config.set_config_attributes(total_games, self.best_eval)
 
     def set_total_games(self, new_total_games):
         previous_total_games = self.total_games
         self.total_games = new_total_games
         return previous_total_games
+
+    def set_config(self, eval_config):
+        self.eval_config = eval_config
     
     def change_config(self, batch, triage, batch_size=None):
         previous_eval_config = self.eval_config
@@ -158,7 +167,6 @@ class EvaluationPong(Evaluation):
 
     def __init__(self, score_threshold, total_games, triage, batch=True):
         super(EvaluationPong, self).__init__(score_threshold, total_games, triage, batch)
-        self.eval_config.set_config_attributes(self.total_games, self.best)
 
     def update_env(self, player, game_state, action_set):
         env = {}
@@ -207,9 +215,6 @@ class EvaluationCatcher(Evaluation):
 
     def __init__(self, score_threshold, total_games, triage, batch=True):
         super(EvaluationCatcher, self).__init__(score_threshold, total_games, triage, batch)
-        self.batch_size = 5
-
-        self.eval_config.set_config_attributes(self.batch_size, self.total_games, self.best_eval)
 
     def set_batch(self, batch_eval_bool):
         previous_value = self.batch
