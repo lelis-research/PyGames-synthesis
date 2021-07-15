@@ -25,14 +25,13 @@ class EvaluationConfigBatch:
         self.triage = triage
         self.config_attributes_set = False
 
-    def set_config_attributes(self, batch_size, total_games, best_eval):
+    def set_config_attributes(self, batch_size, total_games, best_eval, min_score):
         self.batch_size = batch_size
         self.total_games = total_games
         self.best_eval = best_eval
-        self.clean_up()
-
-    def set_min_score(self, min_score):
+        self.config_attributes_set = True
         self.MIN_SCORE = min_score
+        self.clean_up()
 
     def clean_up(self):
         self.max_scores = []
@@ -82,6 +81,7 @@ class EvaluationConfigNormal:
     def set_config_attributes(self, total_games, best_eval):
         self.total_games = total_games
         self.best_eval = best_eval
+        self.config_attributes_set = True
 
     def clean_up(self):
         pass
@@ -103,5 +103,10 @@ class EvaluationConfigNormal:
         return True
 
     def compute_result(self, scores, games_played):
+        if not self.config_attributes_set:
+            raise Exception(
+                'Must set attributes of EvaluationConfigBatch object using set_config_attributes'
+            )
+        
         self.average_score = round(mean(scores), 2)
         return self.average_score
