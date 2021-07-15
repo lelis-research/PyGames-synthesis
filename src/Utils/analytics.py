@@ -127,9 +127,9 @@ class Analytics:
             ),
         )
 
-        factory = EvaluationFactory(0, 50, True, batch=False)
+        factory = EvaluationFactory(0, 10, True, batch=True)
         eval_fun = factory.get_eval_fun('Catcher')
-        scores, avg_score = eval_fun.evaluate(p, verbose=True, triage=True)
+        scores, avg_score = eval_fun.evaluate(p, verbose=True)
         
         counter = 0
         batch_count = 1
@@ -138,7 +138,7 @@ class Analytics:
         while counter < len(scores):
             batch.append(scores[counter])
             counter += 1
-            if counter % 5 == 0:
+            if counter % 2 == 0:
                 print(f'batch {batch_count}: {batch}, stdev {stdev(batch)}, mean: {mean(batch)}, max: {max(batch)}')
                 max_scores.append(max(batch))
                 batch = []
