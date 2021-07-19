@@ -125,6 +125,18 @@ class Plotter(base_plt.Plotter):
             'optimized_scores': 'optimized_scores_' + plot_filename.replace('graph', 'data') + '.dat'
         }
 
+    def construct_paths_by_config(self, dat_filepaths_by_config):
+        paths_by_config = {}
+        for config in dat_filepaths_by_config:
+            paths_by_config[config] = {}
+
+            with open(config, 'r') as dat_filepaths_file:
+                dat_filepaths = dat_filepaths_file.readlines()
+                for run_index, dat_filepath in enumerate(dat_filepaths):
+                    paths_by_config[config][run_index] = dat_filepath
+
+        return paths_by_config
+
 
 if __name__ == '__main__':
 
@@ -148,7 +160,7 @@ if __name__ == '__main__':
     # plotter.plot_from_file(paths, plot_names, same_fig=False, three_dim=False)
 
     paths_by_config = {
-        'sa_t_opt_t_eval_tg_10_iter_10_kap_2_5_paths': {
+        'sa_no_opt_no_t_eval': {
             0: 'data/best_scores_run0_sa_no_opt_no_t_eval_data.dat',
             1: 'data/best_scores_run1_sa_no_opt_no_t_eval_data.dat',
             2: 'data/best_scores_run2_sa_no_opt_no_t_eval_data.dat',
