@@ -140,6 +140,8 @@ def main():
     triage_eval = parameters.triage_eval
     batch_eval = parameters.batch_eval
     runs = parameters.runs
+    if runs is None:
+        runs = 1
 
     game = parameters.game
 
@@ -158,6 +160,9 @@ def main():
         multi_runs.append(True)
         multi_runs.append(runs)
         multi_runs.append(config_name)
+    else:
+        multi_runs.append(False)
+        multi_runs.append(1)
 
     if parameters.show_args:
         print('optimizer', run_optimizer)
