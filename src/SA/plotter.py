@@ -8,9 +8,12 @@ This module implements the plotter subclass for plotting the results
 of simulated annealing for a given game.
 """
 from time import time
+from scipy.interpolate import interp1d
 import src.Utils.plotter as base_plt
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
+import seaborn as sb
 import os
 from os.path import join
 
@@ -52,24 +55,106 @@ class Plotter(base_plt.Plotter):
 
             count += 1
 
+    def plot_average_curve(self, paths_by_config):
+        all_times, all_scores = self.parse_all_paths(paths_by_config)
+
+        min_max_time = self.find_min_max_time(all_times)
+        union_time, union_score, union_config_name = self.interpolate_all(min_max_time, all_times, all_scores)
+
+        iter_frame = pd.DataFrame({'score': union_score, 'time': union_time, 'name': union_config_name})
+
+        fig, ax = plt.subplots()
+        sns_plot = sb.lineplot(x='time', y='score', hue='name', style='name', ci='sd', markers=False, data=iter_frame)
+        ax.set_ylabel('Score')
+        ax.set_xlabel('Running Time (mins)')
+
+        handles, labels = ax.get_legend_handles_labels()
+        ax.legend(handles=handles[1:], labels=labels[1:])
+
+        plot_name = 'average_curve'
+        sns_plot.get_figure().savefig(plot_name + '.png')
+        plt.show()
+
+    def interpolate_all(self, x_upper_bound, times_by_config, scores_by_config):
+        union_time = []
+        union_score = []
+        union_config_name = []
+        for config_name, scores_by_config_run in scores_by_config.items():
+            for run_index, score in scores_by_config_run.items():
+                x_range = np.linspace(0, x_upper_bound, num=50, endpoint=True)
+
+                interpolated_function = interp1d(times_by_config[config_name][run_index], score)
+                interpolated_scores = interpolated_function(x_range)
+
+                union_time.extend(x_range)
+                union_score.extend(interpolated_scores)
+                union_config_name.extend([config_name for _ in range(len(x_range))])
+
+        return union_time, union_score, union_config_name
+
+    def find_min_max_time(self, all_times):
+        max_scores = []
+        for times_by_config_run in all_times.values():
+            for time in times_by_config_run.values():
+                max_scores.append(max(time))
+
+        return min(max_scores)
+
+    def parse_all_paths(self, paths_by_config):
+        all_scores = {}
+        all_times = {}
+        for config_name, paths_by_config_run in paths_by_config.items():
+            all_scores[config_name] = {}
+            all_times[config_name] = {}                
+            for run_index, path in paths_by_config_run.items():
+                time, score = self.parse_dat_file(path)
+            
+                all_scores[config_name][run_index] = score
+                all_times[config_name][run_index] = time
+
+        print(all_times)
+        print(all_scores)
+        return all_times, all_scores
+
+    def construct_dat_filenames(self, plot_filename):
+        return {
+            'variance': 'score_variances_' + plot_filename.replace('graph', 'data') + '.dat',
+            'all_scores': 'all_scores_' + plot_filename.replace('graph', 'data') + '.dat',
+            'best_scores': 'best_scores_' + plot_filename.replace('graph', 'data') + '.dat',
+            'unoptimized_scores': 'unoptimized_scores_' + plot_filename.replace('graph', 'data') + '.dat',
+            'optimized_scores': 'optimized_scores_' + plot_filename.replace('graph', 'data') + '.dat'
+        }
+
 
 if __name__ == '__main__':
 
     plotter = Plotter()
 
-    plot_names = {
-            'x': 'Elapsed Time (mins)',
-            'y': 'Program Score',
-            'z': 'Iterations',
-            'title': 'SA Program Scores vs Total Iterations',
-            'filename': 'some_graph',
-            'legend': ['all scores', 'unoptimized scores']
-        }
+    # plot_names = {
+    #         'x': 'Elapsed Time (mins)',
+    #         'y': 'Program Score',
+    #         'z': 'Iterations',
+    #         'title': 'SA Program Scores vs Total Iterations',
+    #         'filename': 'some_graph',
+    #         'legend': ['all scores', 'unoptimized scores']
+    #     }
     
-    paths = []
-    paths.append(os.path.join('data/' + 'all_scores_no_opt_data.dat'))
-    paths.append(os.path.join('data/' + 'best_scores_unopt_vs_opt_data.dat'))
-    paths.append(os.path.join('data/' + 'unoptimized_scores_no_opt_data.dat'))
-    paths.append(os.path.join('data/' + 'optimized_scores_no_opt_data.dat'))
+    # paths = []
+    # paths.append(os.path.join('data/' + 'all_scores_no_opt_data.dat'))
+    # paths.append(os.path.join('data/' + 'best_scores_unopt_vs_opt_data.dat'))
+    # paths.append(os.path.join('data/' + 'unoptimized_scores_no_opt_data.dat'))
+    # paths.append(os.path.join('data/' + 'optimized_scores_no_opt_data.dat'))
 
-    plotter.plot_from_file(paths, plot_names, same_fig=False, three_dim=False)
+    # plotter.plot_from_file(paths, plot_names, same_fig=False, three_dim=False)
+
+    paths_by_config = {
+        'sa_t_opt_t_eval_tg_10_iter_10_kap_2_5_paths': {
+            0: 'data/best_scores_run0_sa_no_opt_no_t_eval_data.dat',
+            1: 'data/best_scores_run1_sa_no_opt_no_t_eval_data.dat',
+            2: 'data/best_scores_run2_sa_no_opt_no_t_eval_data.dat',
+            3: 'data/best_scores_run3_sa_no_opt_no_t_eval_data.dat',
+            4: 'data/best_scores_run4_sa_no_opt_no_t_eval_data.dat'
+        }
+    }
+
+    plotter.plot_average_curve(paths_by_config)
