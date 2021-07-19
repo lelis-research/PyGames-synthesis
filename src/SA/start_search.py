@@ -11,12 +11,20 @@ the synthesis process, and calls the synthesizer with the desired arguments.
 
 """
 from src.SA.sim_anneal import *
+from src.SA.plotter import *
 from src.evaluation import *
 from src.Utils.logger import *
 from src.Utils.dsl_config import *
+from os.path import join
+
+def dump(config_name, data_filename):
+    data_filepath = join('data/' + data_filename)
+    
+    with open(config_name + '_paths', 'a') as paths_file:
+        paths_file.write(data_filepath + '\n')
 
 def start_sa(time_limit, log_file, run_optimizer, game, triage_eval, batch_eval,
-    sa_option, verbose, plot, save, plot_filename, ibr, total_games):
+    sa_option, verbose, plot, save, plot_filename, ibr, total_games, multi_runs):
     if ibr:
         assert available_games[game] == 2, f'Cannot perform IBR on {game}'
 
@@ -34,15 +42,40 @@ def start_sa(time_limit, log_file, run_optimizer, game, triage_eval, batch_eval,
     eval_factory = EvaluationFactory(0, total_games, triage_eval, batch_eval)
     eval_funct = eval_factory.get_eval_fun(game)
     
-    sa.synthesize(
-        grammar, 
-        2000, 
-        1, 
-        eval_funct,
-        plot_filename, 
-        ibr,
-        option=sa_option,
-        verbose_opt=verbose, 
-        generate_plot=plot,
-        save_data=save
-    )
+    if multi_runs[0]:
+        plotter = Plotter()
+        total_runs = multi_runs[1]
+        for run in range(total_runs):
+            n_plot_filename = 'run' + str(run) + '_' + plot_filename
+            print(f'Starting run #{run}')
+            sa.synthesize(
+                grammar, 
+                2000, 
+                1, 
+                eval_funct,
+                n_plot_filename, 
+                ibr,
+                option=sa_option,
+                verbose_opt=verbose, 
+                generate_plot=plot,
+                save_data=save
+            )
+            print(f'Finishing run #{run}\n')
+
+            data_filenames = plotter.construct_dat_filenames(n_plot_filename)
+            config_name = multi_runs[-1]
+            dump(config_name, data_filenames['best_scores'])
+    
+    else:
+        sa.synthesize(
+            grammar, 
+            2000, 
+            1, 
+            eval_funct,
+            plot_filename, 
+            ibr,
+            option=sa_option,
+            verbose_opt=verbose, 
+            generate_plot=plot,
+            save_data=save
+        )
