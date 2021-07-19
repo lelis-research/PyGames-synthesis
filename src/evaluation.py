@@ -43,7 +43,7 @@ class EvaluationFactory:
 class Evaluation:
 
     MIN_SCORE = -1_000_000
-    STRONG_SCORE = 10000.0
+    STRONG_SCORE = 500
 
     def __init__(self, score_threshold, total_games, triage, batch):
         self.score_threshold = score_threshold
