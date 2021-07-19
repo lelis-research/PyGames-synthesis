@@ -28,6 +28,14 @@ def kappa_float(string):
     except:
         raise argparse.ArgumentTypeError('Kappa value has to be between 1 and 10 with 3 decimal places only')
 
+def total_games_int(string):
+    try:
+        value = int(string)
+        assert value in range(2, 1001)
+        return value
+    except:
+        raise argparse.ArgumentTypeError('Total games value has to be between 2 and 1000')
+
 
 def main():
 
@@ -41,17 +49,20 @@ def main():
     parser.add_argument('--batch', action='store_true', dest='batch_eval',
                         help='Run batch evaluation')
 
+    parser.add_argument('--config', action='store', dest='config_name', default='sa_default',
+                        help='Configuration name for the synthesizer. Used with -mr option.')
+
     parser.add_argument('-g', '--game', choices=available_games.keys(), dest='game', default='Catcher',
                         help='Game for which a strategy will be synthesized')
-
-    parser.add_argument('--tg', '--total-games', type=int, action='store', dest='total_games', default=48,
-                        help='Number of games to be played by programs during evaluation')
 
     parser.add_argument('--ibr', action='store_true', dest='ibr',
                         help='Run the Iterated Best Response. Will only with 2-player games.')
 
     parser.add_argument('-l', '--log', action='store', dest='log_file', default='log',
                         help='Name of log file in which results of search will be stored')
+
+    parser.add_argument('-mr', '--multi', type=int, action='store', dest='runs',
+                        help='Run synthesizer multi-times. Must specify a config name')
 
     parser.add_argument('--no-warn', action='store_true', dest='hide_warning',
                         help='Hide warning messages')
@@ -99,12 +110,18 @@ def main():
     parser.add_argument('--te', '--triage-eval', action='store_true', dest='triage_eval',
                         help='Run triage evaluation (can be used with batch evaluation)')
 
+    
+    parser.add_argument('--tg', '--total-games', type=total_games_int, action='store', dest='total_games',
+                        default=48, metavar='TOTAL_GAMES', help='Number of games to be played by programs during evaluation')
+
+
     parser.add_argument('-v', action='store_true', dest='verbose',
                         help='Logs more information to specified file during synthesis')
 
     parameters = parser.parse_args()
 
     algorithm = parameters.search_algorithm
+    config_name = parameters.config_name
     time_limit = int(parameters.time_limit)
     log_file = parameters.log_file
     score_threshold = int(parameters.score_threshold)
@@ -122,6 +139,7 @@ def main():
     total_games = parameters.total_games
     triage_eval = parameters.triage_eval
     batch_eval = parameters.batch_eval
+    runs = parameters.runs
 
     game = parameters.game
 
@@ -134,6 +152,12 @@ def main():
         'kappa': kappa, 'triage':is_triage,
         'parallel': is_parallel
         }
+
+    multi_runs = []
+    if runs > 1:
+        multi_runs.append(True)
+        multi_runs.append(runs)
+        multi_runs.append(config_name)
 
     if parameters.show_args:
         print('optimizer', run_optimizer)
@@ -158,7 +182,8 @@ def main():
             save_data,
             plot_filename,
             ibr,
-            total_games
+            total_games,
+            multi_runs.copy()
         )
 
     if algorithm == 'BUS':
