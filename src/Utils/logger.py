@@ -21,23 +21,24 @@ class Logger:
         if not os.path.exists(self.log_dir):
             os.makedirs(self.log_dir)
 
-        now = datetime.datetime.now()
-        self.log_file += '-' + now.strftime("%d-%b-%Y--%H-%M")
-        self.create_header(algorithm, now, header_details)
+        self.now = datetime.datetime.now()
+        self.log_file += '-' + self.now.strftime("%d-%b-%Y--%H-%M")
+        self.algorithm = algorithm
+        self.header_details = header_details
 
-    def create_header(self, algorithm, now, header_details):
-        print(f'{algorithm} Log - {now.strftime("%x %X")}')
+    def log_details(self):
+        print(f'{self.algorithm} Log - {self.now.strftime("%x %X")}')
 
         count = 0
-        for detail_name, detail in header_details.items():
-            print(f'{detail_name}: {detail}\t\t')
+        for detail_name, detail in self.header_details.items():
+            print(f'{detail_name}: {detail}\t\t', end='')
             count += 1
             
             # Go to next line after printing 3 details
             if count == 3:
                 print()
 
-            print()
+        print()
 
     def log_program(self, pstring, pdescr):
         header = pdescr.get('header')
