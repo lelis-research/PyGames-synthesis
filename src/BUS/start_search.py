@@ -12,7 +12,7 @@ the synthesis process, and calls the synthesizer with the desired arguments.
 """
 from src.BUS.bus import BUS
 from src.BUS.bus_dsl import *
-from src.evaluation import *
+from src.Evaluation.evaluation import *
 from src.Utils.logger import *
 import random
 

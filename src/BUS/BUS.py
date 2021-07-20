@@ -13,7 +13,7 @@ The evaluation object is defined in the Evaluation module.
 """
 from concurrent.futures import ProcessPoolExecutor
 from src.BUS.bus_dsl import *
-from src.evaluation import *
+from src.Evaluation.evaluation import *
 from src.Optimizer.optimizer import *
 import time
 
