@@ -34,7 +34,7 @@ class SimulatedAnnealing:
         terminal_nodes = []
 
         for child_type in valid_ith_child_types:
-            if child_type is None:
+            if child_type is None or type(child_type) is int:
                 terminal_nodes.append(child_type)
                 continue
 
@@ -270,8 +270,7 @@ class SimulatedAnnealing:
             # Save variance of scores obtained during evaluation
             # This can help the min. number of games to be played
             if len(scores) > 0:
-                self.scores_variance_dict[0] = {}
-                self.scores_variance_dict[0][0] = (variance(scores), self.get_timestamp())
+                self.scores_variance_dict[iterations] = (variance(scores), self.get_timestamp())
 
             # Set baseline for optimizer
             if self.run_optimizer:
@@ -290,11 +289,6 @@ class SimulatedAnnealing:
         while time() - self.start < self.time_limit:
             current_t = initial_t
             timestamp = self.get_timestamp()
-            self.scores_dict[iterations] = {}
-            self.best_pscore_dict[iterations] = {}
-
-            if self.scores_variance_dict.get(iterations) is None:
-                self.scores_variance_dict[iterations] = {}
 
             # Option 1: Generate random program and compare with best
             if option == 1:
@@ -302,8 +296,8 @@ class SimulatedAnnealing:
                 scores, current_eval = eval_funct.evaluate(current, verbose=True)
                 self.closed_list[current.to_string()] = (current_eval, timestamp)   # save to closed_list
 
-                if len(scores) > 0:
-                    self.scores_variance_dict[iterations][0] = (variance(scores), timestamp)
+                if len(scores) > 1:
+                    self.scores_variance_dict[iterations] = (variance(scores), timestamp)
 
                 if best is None or current_eval > best_eval:
                     best, best_eval = current, current_eval
@@ -319,7 +313,7 @@ class SimulatedAnnealing:
                         self.optimizer.set_baseline_eval(best_eval)
 
                     if best_eval != Evaluation.MIN_SCORE:
-                        self.best_pscore_dict[iterations][0] = (best_eval, timestamp)
+                        self.best_pscore_dict[iterations] = (best_eval, timestamp)
             
             # Option 2: Assign current to best solution in previous iteration
             elif option == 2 and best is not None:
@@ -337,15 +331,13 @@ class SimulatedAnnealing:
                 self.logger.log_program(current.to_string(), pdescr)
                 self.logger.log('Scores: ' + str(scores).strip('()'), end='\n\n')
 
-            if self.run_optimizer:
-                self.unoptimized_pscore_dict[iterations] = {}
-                self.optimized_pscore_dict[iterations] = {}
-
             if current_eval != Evaluation.MIN_SCORE:
-                self.scores_dict[iterations][0] = (current_eval, timestamp)
+                self.scores_dict[iterations] = (current_eval, timestamp)
+
+            iterations += 1
 
             # Call simulated annealing
-            best, best_eval = self.simulated_annealing(
+            best, best_eval, epochs = self.simulated_annealing(
                                 current_t,
                                 final_t,
                                 current,
@@ -358,10 +350,11 @@ class SimulatedAnnealing:
                                 ibr
                             )
 
-            iterations += 1
+            iterations += epochs
             self.logger.log('Total iterations: ' + str(iterations), end='\n\n')
 
         self.logger.log('Running Time: ' + str(round(time() - self.start, 2)) + 'seconds')
+        self.logger.log_details()
 
         # Log best program
         pdescr = {
@@ -413,7 +406,7 @@ class SimulatedAnnealing:
     def plot(self, plot_filename):
         plotter = Plotter()     # Plotter object
         plot_names = {
-            'x': 'Elapsed Time (mins)',
+            'x': 'Iterations',
             'y': 'Program Score',
             'z': 'Iterations',
             'title': 'SA Program Scores vs Total Iterations',
@@ -466,7 +459,7 @@ class SimulatedAnnealing:
             self.closed_list[candidate.to_string()] = (candidate_eval, timestamp)
 
             if len(scores) > 0:
-                self.scores_variance_dict[iterations][epoch+1] = (variance(scores), timestamp)
+                self.scores_variance_dict[iterations + epoch] = (variance(scores), timestamp)
 
             # Run optimizer if flag was specified
             if self.run_optimizer:
@@ -480,8 +473,8 @@ class SimulatedAnnealing:
                     # Store optimized candidates into closed_list
                     if is_optimized:
                         self.closed_list[candidate.to_string()] = (candidate_eval, timestamp)
-                        self.unoptimized_pscore_dict[iterations][epoch+1] = (unoptimized_candidate_eval, timestamp)
-                        self.optimized_pscore_dict[iterations][epoch+1] = (candidate_eval, timestamp)
+                        self.unoptimized_pscore_dict[iterations + epoch] = (unoptimized_candidate_eval, timestamp)
+                        self.optimized_pscore_dict[iterations + epoch] = (candidate_eval, timestamp)
 
                     self.ppool = []
 
@@ -505,11 +498,11 @@ class SimulatedAnnealing:
                 if self.run_optimizer:
                     self.optimizer.set_baseline_eval(best_eval)
                 
-                self.best_pscore_dict[iterations][epoch+1] = (best_eval, timestamp)
+                self.best_pscore_dict[iterations + epoch] = (best_eval, timestamp)
 
             # If candidate program does not raise an error, store scores
             if candidate_eval != Evaluation.MIN_SCORE:  
-                self.scores_dict[iterations][epoch+1] = (candidate_eval, timestamp)
+                self.scores_dict[iterations + epoch] = (candidate_eval, timestamp)
 
             # Log program to file
             if best_updated or verbose_opt:
@@ -521,7 +514,7 @@ class SimulatedAnnealing:
                     }
                 self.logger.log_program(candidate.to_string(), pdescr)
                 self.logger.log('Scores: ' + str(scores).strip('()'))
-                self.logger.log('Mutations: ' + str(mutations), end='\n\n')
+                self.logger.log('Mutations: ' + str(mutations) + '\tIterations: ' + str(iterations), end='\n\n')
 
             j_diff = candidate_eval - current_eval
             
@@ -536,4 +529,4 @@ class SimulatedAnnealing:
             if ibr and best_updated:
                 break
 
-        return best, best_eval
+        return best, best_eval, epoch+1
