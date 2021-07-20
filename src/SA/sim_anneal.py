@@ -14,7 +14,7 @@ import random
 import multiprocessing as mp
 from math import exp
 from src.dsl import *
-from src.evaluation import *
+from src.Evaluation.evaluation import *
 from src.Optimizer.optimizer import *
 from src.SA.plotter import *
 from statistics import *
@@ -56,7 +56,7 @@ class SimulatedAnnealing:
         return Node.instance(random.choice(list(valid_ith_child_types)))
 
     def complete_program(self, p, depth, max_depth, max_size):
-        if p is None:
+        if not isinstance(p, Node):
             return
 
         for i in range(p.get_max_number_children()):
