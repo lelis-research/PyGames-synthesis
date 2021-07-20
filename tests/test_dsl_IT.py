@@ -48,7 +48,7 @@ class TestIT(unittest.TestCase):
     def test_interpret_false_cond(self):
         # Test interpret method for if-condition evaluating to false
         it = self.init_IT('FALSE', 'BODY')
-        self.assertEqual(it.interpret(self.env), None, 'interpret method of IT should return None')
+        self.assertEqual(it.interpret(self.env), 'False', 'interpret method of IT should return None')
 
     def test_interpret_true_cond(self):
         # Test interpret method for if-condition evaluating to True
