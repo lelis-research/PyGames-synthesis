@@ -87,6 +87,13 @@ class Optimizer:
 
         return iter_breakdown.copy()
 
+    def slack(self, steps):
+        slack_value = self.baseline_eval * (((self.iterations - steps) * 1.75) / self.iterations)
+        if slack_value < 0:
+            slack_value *= -1
+
+        return slack_value
+
     def triage_optimize(self):
         bayesOpt = BayesianOptimization(
             f=None,
@@ -101,7 +108,7 @@ class Optimizer:
         is_optimized = False
 
         bayesOpt.register(params=current_params, target=current_eval)
-        baseline_break_down = self.break_down(self.baseline_eval)
+        # baseline_break_down = self.break_down(self.baseline_eval)
 
         for i, optimization_steps in enumerate(self.iter_breakdown):
             # Run Bayesian Optimization
@@ -114,17 +121,17 @@ class Optimizer:
             # Compare results with previous runs of the optimizer
             target, params = bayesOpt.max['target'], bayesOpt.max['params']
 
-            if self.baseline_eval >= 0:
-                # Want the params being obtained to gradually 
-                # become better than the baseline score
-                baseline_fraction = sum(baseline_break_down[:i+1])
+            # if self.baseline_eval >= 0:
+            #     # Want the params being obtained to gradually 
+            #     # become better than the baseline score
+            #     baseline_fraction = sum(baseline_break_down[:i+1])
 
-            else:
-                # Here, we subtract because the progress 
-                # needs to be in the positive direction
-                baseline_fraction = (2 * self.baseline_eval) - sum(baseline_break_down[:i+1])
+            # else:
+            #     # Here, we subtract because the progress 
+            #     # needs to be in the positive direction
+            #     baseline_fraction = (2 * self.baseline_eval) - sum(baseline_break_down[:i+1])
 
-            if target > baseline_fraction:
+            if target > self.baseline_eval - self.slack(optimization_steps):
                 current_eval = target
                 current_params = params
             else:
