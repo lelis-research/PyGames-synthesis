@@ -24,13 +24,11 @@ class Plotter(base_plt.Plotter):
 
         score = []
         time = []
-        for iteration in data_dict.keys():
-            score_dict = data_dict[iteration]
-            for epoch in score_dict:
-                score.append(score_dict[epoch][0])
-                time.append(score_dict[epoch][1])
-
-        iteration = list(range(0, len(score)))
+        iteration = []
+        for iter, score_time_tuple in data_dict.items():
+            score.append(score_time_tuple[0])
+            time.append(score_time_tuple[1])
+            iteration.append(iter)
 
         X, Y, Z = np.array(iteration), np.array(score), np.array(time)
 
