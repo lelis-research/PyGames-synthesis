@@ -20,6 +20,8 @@ classes in this module are derived from this Node class.
 """
 class Node:
 
+    valid_children_types = None
+
     def __init__(self):
         self.size = 1
         self.current_child_num = 0
@@ -140,7 +142,7 @@ class Constant(Node):
 
     @classmethod
     def new(cls, value):
-        assert value in np.arange(0, 101, 0.01)
+        assert value <= 100 or value >= 0
         inst = cls()
         inst.add_child(value)
         
@@ -232,6 +234,53 @@ class ForEach(Node):
 
         env[self.loopname] = None
 
+"""
+This class represents an nested if-then-else conditional statement with depth 1 in
+the DSL. In other words, the if-else bodies can have multiple NON-NESTED if-then statements.
+"""
+class NestedITEDepth1(Node):
+    
+    def __init__(self):
+        super(NestedITEDepth1, self).__init__()
+        self.max_number_children = 3
+
+    @classmethod
+    def new(cls, condition, if_body, else_body):
+        assert type(if_body).__name__ == Strategy.className()
+        assert type(else_body).__name__ == Strategy.className()
+        inst = cls()
+        inst.add_child(condition)
+        inst.add_child(if_body)
+        inst.add_child(else_body)
+
+        return inst
+
+    def to_string(self, indent=0):
+        tab = ""
+        for _ in range(indent):
+            tab += "\t"
+
+        condition = self.get_children()[0]
+        if_body = self.get_children()[1]
+        else_body = self.get_children()[2]
+
+        ite_string = f"""{tab}if {condition.to_string()}:\n"""
+        ite_string += f"""{if_body.to_string(indent+1)}"""
+        ite_string += f"""{tab}else:\n"""
+        ite_string += f"""{else_body.to_string(indent+1)}"""
+
+        return ite_string
+
+    def interpret(self, env):
+        condition = self.get_children()[0]
+        if_body = self.get_children()[1]
+        else_body = self.get_children()[2]
+
+        if condition.interpret(env):
+            return if_body.interpret(env)
+        else:
+            return else_body.interpret(env)
+
 
 """
 This class represents an if-then conditional statement in the DSL. It is
@@ -272,8 +321,7 @@ class IT(Node):
         if condition.interpret(env):
             return if_body.interpret(env)
 
-        if env.get(self.loopname) is not None:
-            return 'False'
+        return 'False'
     
 
 """
@@ -342,6 +390,40 @@ class PlayerPosition(Node):
 
 
 """
+This class implements a domain-specific function that returns the
+velocity of the player on the screen.
+"""
+class PlayerVelocity(Node):
+
+    def __init__(self):
+        super(PlayerVelocity, self).__init__()
+        self.max_number_children = 0
+
+    def to_string(self, indent=0):
+        return PlayerVelocity.className()
+
+    def interpret(self, env):
+        return env[self.statename]['player_velocity']
+
+
+"""
+This class implements a domain-specific function that returns
+the distance between the player and the non-player object on 
+screen
+"""
+class NonPlayerDistToPlayer(Node):
+
+    def __init__(self):
+        super(NonPlayerDistToPlayer, self).__init__()
+
+    def to_string(self, indent=0):
+        return NonPlayerDistToPlayer.className()
+
+    def interpret(self, env):
+        return env[self.statename]['non_player_dist_to_player']
+
+
+"""
 This class implements a domain-specific function that returns
 the x-position of the non-player object. The non-player object
 is the falling fruit in the Catcher game, while in Pong, it is
@@ -351,12 +433,30 @@ class NonPlayerObjectPosition(Node):
 
     def __init__(self):
         super(NonPlayerObjectPosition, self).__init__()
-        self.max_number_children = 0
+        if self.valid_children_types is not None:
+            self.max_number_children = len(self.get_valid_children_types())
+        else:
+            self.max_number_children = 0
+
+    @classmethod
+    def new(cls, index):
+        inst = cls()
+        inst.max_number_children = 1
+        inst.add_child(index)
+
+        return inst
 
     def to_string(self, indent=0):
+        if self.valid_children_types is not None:
+            pos_index = self.get_children()[0]
+            return NonPlayerObjectPosition.className() + f"[{pos_index}]"
         return NonPlayerObjectPosition.className()
 
     def interpret(self, env):
+        if len(self.get_children()) > 0:
+            pos_index = self.get_children()[0]
+            return env[self.statename]['non_player_position'][pos_index]
+
         return env[self.statename]['non_player_position']
 
 
@@ -489,6 +589,8 @@ class LessThan(Node):
         return f"{self.get_children()[0].to_string()} < {self.get_children()[1].to_string()}"
 
     def interpret(self, env):
+        child_1 = self.get_children()[0].interpret(env)
+        child_2 = self.get_children()[1].interpret(env)
         return self.get_children()[0].interpret(env) < self.get_children()[1].interpret(env)
 
 
@@ -679,7 +781,7 @@ class Strategy(Node):
         next_statements = self.get_children()[1]
 
         res = statement.interpret(env)
-        if res is None and next_statements is not None:
+        if res == 'False' and next_statements is not None:
             return next_statements.interpret(env)
 
         return res
