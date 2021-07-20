@@ -59,11 +59,18 @@ class EvaluationConfigBatch:
         else:
             return self.MIN_SCORE
 
+    def slack(self, games_played):
+        slack_value = self.best_eval * (((self.total_games - games_played) * 1.5) / self.total_games)
+        if slack_value < 0:
+            slack_value *= -1
+
+        return slack_value
+
     def check_triage_stop(self, games_played):
         # Check if mean score is less than best score 
         # and number of batches is equal to batch size
         num_batches = games_played // self.batch_size
-        return mean(self.max_scores) < self.best_eval and num_batches >= self.batch_size
+        return mean(self.max_scores) < self.best_eval - self.slack(games_played) and num_batches >= self.batch_size
 
     def check_continue(self, games_played):
         if games_played == self.total_games:
@@ -91,8 +98,15 @@ class EvaluationConfigNormal:
     def clean_up(self):
         pass
 
+    def slack(self, games_played):
+        slack_value = self.best_eval * (((self.total_games - games_played) * 1.5) / self.total_games)
+        if slack_value < 0:
+            slack_value *= -1
+
+        return slack_value
+
     def check_triage_stop(self, games_played):
-        return self.average_score < self.best_eval \
+        return self.average_score < self.best_eval - self.slack(games_played) \
             and games_played >= 0.5 * self.total_games
 
     def clean_up(self):
