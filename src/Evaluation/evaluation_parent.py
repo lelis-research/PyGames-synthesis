@@ -98,11 +98,11 @@ class Evaluation:
         while continue_eval:
             self.init_game()
             while not self.game_over():
-                # try:
-                score = self.play(program)
-                # except:
-                #     self.clean_up()
-                #     return tuple([]), Evaluation.MIN_SCORE
+                try:
+                    score = self.play(program)
+                except:
+                    self.clean_up()
+                    return tuple([]), Evaluation.MIN_SCORE
 
             games_played += 1
             scores.append(score)
