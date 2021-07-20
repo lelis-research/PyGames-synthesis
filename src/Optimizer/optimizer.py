@@ -9,9 +9,8 @@ synthesizers such as Bottom-Up Search to find the optimal value
 of operands/parameters in operations defined in the DSL.
 """
 from math import ceil
-from scipy.sparse import base
 from src.dsl import *
-from src.evaluation import Evaluation
+from src.Evaluation.evaluation import Evaluation
 from bayes_opt import BayesianOptimization, UtilityFunction
 import numpy as np
 

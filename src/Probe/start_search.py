@@ -13,7 +13,7 @@ from src.dsl import *
 from src.PROBE.rule import *
 from src.PROBE.probe import *
 from src.Utils.logger import Logger
-from src.evaluation import *
+from src.Evaluation.evaluation import *
 
 def start_probe(time_limit, log_file, is_parallel, game):
 

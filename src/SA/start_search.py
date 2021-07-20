@@ -12,7 +12,7 @@ the synthesis process, and calls the synthesizer with the desired arguments.
 """
 from src.SA.sim_anneal import *
 from src.SA.plotter import *
-from src.evaluation import *
+from src.Evaluation.evaluation import *
 from src.Utils.logger import *
 from src.Utils.dsl_config import *
 from os.path import join
