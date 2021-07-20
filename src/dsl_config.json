@@ -54,8 +54,7 @@
         "dsfs": [
             "NonPlayerObjectPosition",
             "PlayerPosition"
-        ],
-        "array_indexes": [0, 1, 2]
+        ]
     },
     "Pong": {
         "dsfs": [
@@ -63,7 +62,6 @@
             "PlayerPosition",
             "NonPlayerObjectApproaching"
         ],
-        "array_indexes": [0, 1, 2],
         "valid_children_types": {
             "Node": [["Strategy", "ITE", "NestedITEDepth1"]], 
             "NestedITEDepth1": [["LessThan", "GreaterThan", "EqualTo", "NonPlayerObjectApproaching"], ["Strategy"], ["Strategy"]], 
@@ -78,7 +76,8 @@
             "NonPlayerObjectPosition",
             "NonPlayerDistToPlayer"
         ],
-        "array_indexes": [0, 1, 2],
+        "scalars": [],
+        "array_indexes": [0, 1],
         "valid_children_types": {
             "Node": [["Strategy", "ITE", "NestedITEDepth1"]], 
             "NestedITEDepth1": [["LessThan", "GreaterThan", "EqualTo"], ["Strategy"], ["Strategy"]], 
@@ -86,7 +85,6 @@
             "arithmetic": [
                 [
                     "Constant",
-                    "VarScalar",
                     "NonPlayerObjectPosition",
                     "NonPlayerDistToPlayer",
                     "PlayerPosition",
@@ -98,7 +96,6 @@
                 ],
                 [
                     "Constant",
-                    "VarScalar",
                     "NonPlayerObjectPosition",
                     "NonPlayerDistToPlayer",
                     "PlayerPosition",
@@ -112,7 +109,6 @@
             "comparison": [
                 [
                     "Constant",
-                    "VarScalar",
                     "NonPlayerObjectPosition",
                     "NonPlayerDistToPlayer",
                     "PlayerPosition",
@@ -124,7 +120,6 @@
                 ], 
                 [
                     "Constant",
-                    "VarScalar",
                     "NonPlayerObjectPosition",
                     "NonPlayerDistToPlayer",
                     "PlayerPosition",
@@ -152,6 +147,7 @@
     ],
     "scalars": ["paddle_width"],
     "arrays": ["actions"],
+    "array_indexes": [0, 1, 2],
     "comparison": [
         "Minus",
         "Plus",
