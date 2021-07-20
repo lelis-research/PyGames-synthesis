@@ -14,7 +14,7 @@ import argparse, warnings
 from src.BUS.start_search import start_bus
 from src.SA.start_search import start_sa
 from src.PROBE.start_search import start_probe
-from src.evaluation import *
+from src.Evaluation.evaluation import *
 import numpy as np
 import os
 
