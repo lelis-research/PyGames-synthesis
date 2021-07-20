@@ -33,9 +33,21 @@ class DslConfig:
             for op in dsl_dict['operators']:
                 grammar['operators'].append(Node.get_class(op))
 
-            grammar['scalars'] = dsl_dict['scalars']
-            grammar['arrays'] = dsl_dict['arrays']
-            grammar['array_indexes'] = dsl_dict[game]['array_indexes']
+            if 'scalars' in dsl_dict[game]:
+                grammar['scalars'] = dsl_dict[game]['scalars']
+            else:
+                grammar['scalars'] = dsl_dict['scalars']
+
+            if 'arrays' in dsl_dict[game]:
+                grammar['arrays'] = dsl_dict[game]['arrays']
+            else:
+                grammar['arrays'] = dsl_dict['arrays']
+
+            if 'array_indexes' in dsl_dict[game]:
+                grammar['array_indexes'] = dsl_dict[game]['array_indexes']
+            else:
+                grammar['array_indexes'] = dsl_dict['array_indexes']
+
             grammar['constants'] = [random.uniform(-100.01, 100.01)]
 
             return grammar
@@ -81,6 +93,15 @@ class DslConfig:
 
                 else:
                     Node.get_class(node).valid_children_types = self.assign_valid_children_types(
+                                                        node,
+                                                        game_specific_children_types,
+                                                        valid_children_types
+                                                    )
+
+            if game_specific_children_types is not None:
+                for node in game_specific_children_types.keys():
+                    if node not in valid_children_types.keys():
+                        Node.get_class(node).valid_children_types = self.assign_valid_children_types(
                                                         node,
                                                         game_specific_children_types,
                                                         valid_children_types
