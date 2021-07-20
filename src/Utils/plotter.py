@@ -11,7 +11,6 @@ of scores over time.
 import matplotlib.pyplot as plt
 import numpy as np
 import os
-from mpl_toolkits import mplot3d
 
 class Plotter:
 
