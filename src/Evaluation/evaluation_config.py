@@ -60,7 +60,7 @@ class EvaluationConfigBatch:
             return self.MIN_SCORE
 
     def slack(self, games_played):
-        slack_value = self.best_eval * (((self.total_games - games_played) * 1.5) / self.total_games)
+        slack_value = self.best_eval * (((self.total_games - games_played) * 1.75) / self.total_games)
         if slack_value < 0:
             slack_value *= -1
 
@@ -99,7 +99,7 @@ class EvaluationConfigNormal:
         pass
 
     def slack(self, games_played):
-        slack_value = self.best_eval * (((self.total_games - games_played) * 1.5) / self.total_games)
+        slack_value = self.best_eval * (((self.total_games - games_played) * 1.75) / self.total_games)
         if slack_value < 0:
             slack_value *= -1
 
