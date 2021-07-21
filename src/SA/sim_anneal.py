@@ -181,7 +181,7 @@ class SimulatedAnnealing:
         if self.run_optimizer:
             self.optimizer = Optimizer(eval_funct, self.is_triage, self.n_iter, self.kappa)
 
-    def start_optimizer(self):
+    def start_optimizer(self, verbose=False):
         if self.is_parallel:
             with mp.Pool() as pool:
                 current_best = None
@@ -191,7 +191,7 @@ class SimulatedAnnealing:
                     optimized_p, optimized_const_values, new_score, is_optimized = res
                     arg_p, arg_pscore = arg
 
-                    if is_optimized:
+                    if is_optimized and verbose:
                         pdescr = {
                             'header': 'Optimized Program', 
                             'psize': optimized_p.get_size(), 
@@ -213,7 +213,7 @@ class SimulatedAnnealing:
             p, pscore = self.ppool[0]
             optimized_p, optimized_const_values, new_score, is_optimized = self.optimizer.optimize(p, pscore)
             
-            if is_optimized:
+            if is_optimized and verbose:
                 pdescr = {'header': 'Optimized Program', 'psize': optimized_p.get_size(), 'score': new_score}
                 self.logger.log_program(optimized_p.to_string(indent=1), pdescr)
                 self.logger.log('Constant Values: ' + str(optimized_const_values))
