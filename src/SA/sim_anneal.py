@@ -351,7 +351,6 @@ class SimulatedAnnealing:
                             )
 
             iterations += epochs
-            self.logger.log('Total iterations: ' + str(iterations), end='\n\n')
 
         self.logger.log('Running Time: ' + str(round(time() - self.start, 2)) + 'seconds')
         self.logger.log_details()
