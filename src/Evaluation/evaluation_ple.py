@@ -57,7 +57,7 @@ class EvaluationCatcher(EvaluationPle):
 
     def init_game(self):
         self.game = Catcher(width=500, height=500, init_lives=3)
-        self.p = PLE(self.game, fps=30, display_screen=True, rng=int(time.time()))
+        self.p = PLE(self.game, fps=30, display_screen=False, rng=int(time.time()))
 
 
 class EvaluationFlappyBird(EvaluationPle):
@@ -79,12 +79,9 @@ class EvaluationFlappyBird(EvaluationPle):
         env['state']['player_velocity'] = game_state.get('player_vel')
         env['paddle_width'] = game_state.get('paddle_width')
         env['actions'] = action_set
-        
-        import time
-        time.sleep(0.05)
 
         return env
 
     def init_game(self):
         self.game = FlappyBird()
-        self.p = PLE(self.game, fps=30, display_screen=True, rng=int(time.time()))
+        self.p = PLE(self.game, fps=30, display_screen=False, rng=int(time.time()))
