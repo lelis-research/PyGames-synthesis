@@ -353,7 +353,7 @@ class SimulatedAnnealing:
             iterations += epochs
 
         self.logger.log('Running Time: ' + str(round(time() - self.start, 2)) + 'seconds')
-        self.logger.log_details()
+        self.logger.log('Iterations: ' + str(iterations), end='\n\n')
 
         # Log best program
         pdescr = {
@@ -513,7 +513,7 @@ class SimulatedAnnealing:
                     }
                 self.logger.log_program(candidate.to_string(), pdescr)
                 self.logger.log('Scores: ' + str(scores).strip('()'))
-                self.logger.log('Mutations: ' + str(mutations) + '\tIterations: ' + str(iterations), end='\n\n')
+                self.logger.log('Mutations: ' + str(mutations), end='\n\n')
 
             j_diff = candidate_eval - current_eval
             
