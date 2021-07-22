@@ -21,10 +21,11 @@ class Logger:
         if not os.path.exists(self.log_dir):
             os.makedirs(self.log_dir)
 
-        self.now = datetime.datetime.now()
-        self.log_file += '-' + self.now.strftime("%d-%b-%Y--%H-%M")
-        self.algorithm = algorithm
-        self.header_details = header_details
+        now = datetime.datetime.now()
+        self.log_file += '-' + now.strftime("%d-%b-%Y--%H-%M")
+        algorithm = algorithm
+        header_details = header_details
+        self.create_header(algorithm, now, header_details)
 
     def create_header(self, algorithm, now, header_details):
         with open(join(self.log_dir + self.log_file), 'a') as p_file:
