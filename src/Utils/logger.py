@@ -26,19 +26,21 @@ class Logger:
         self.algorithm = algorithm
         self.header_details = header_details
 
-    def log_details(self):
-        print(f'{self.algorithm} Log - {self.now.strftime("%x %X")}')
+    def create_header(self, algorithm, now, header_details):
+        with open(join(self.log_dir + self.log_file), 'a') as p_file:
+            p_file.write(f'{algorithm} Log - ')
+            p_file.write(f'{now.strftime("%x %X")}\n')
 
-        count = 0
-        for detail_name, detail in self.header_details.items():
-            print(f'{detail_name}: {detail}\t\t', end='')
-            count += 1
-            
-            # Go to next line after printing 3 details
-            if count == 3:
-                print()
+            count = 0
+            for detail_name, detail in header_details.items():
+                p_file.write(f'{detail_name}: {detail}\t\t')
+                count += 1
+                
+                # Go to next line after printing 3 details
+                if count == 3:
+                    p_file.write('\n')
 
-        print()
+            p_file.write('\n')
 
     def log_program(self, pstring, pdescr):
         header = pdescr.get('header')
@@ -57,13 +59,14 @@ class Logger:
         if elapsed_time is None:
             elapsed_time = 'Not Specified'
 
-        print('=' * 100)
-        print(f'{header}\t Elapsed Time: {elapsed_time} mins')
-        print('=' * 100)
-        print(f'psize: {psize} \tscore: {score}\n')
-        print(f'{pstring}\n')
+        with open(join(self.log_dir + self.log_file), 'a') as p_file:
+            p_file.write('=' * 100)
+            p_file.write(f'\n{header}\t Elapsed Time: {elapsed_time} mins\n')
+            p_file.write('=' * 100)
+            p_file.write(f'\npsize: {psize} \tscore: {score}\n\n')
+            p_file.write(f'{pstring}\n\n')
 
-    def log(self, item, end=''):
+    def log(self, item, end=None):
 
         if end is None:
             end = '\n'
@@ -72,6 +75,7 @@ class Logger:
             if type(item) is not str:
                 item = str(item)
             
-            print(item + end)
+            with open(join(self.log_dir + self.log_file), 'a') as p_file:
+                p_file.write(item + end)
         except:
             raise Exception('Could not log item')
