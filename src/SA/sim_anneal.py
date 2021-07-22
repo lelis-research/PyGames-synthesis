@@ -487,6 +487,7 @@ class SimulatedAnnealing:
                 if best_eval >= eval_funct.STRONG_SCORE:
                     print('before run longer', best_eval)
                     best_eval = self.run_longer_eval(eval_funct, best)
+                    candidate_eval = best_eval
                     print('after run longer', best_eval)
 
                 # Set the best program and its score in eval_funct
