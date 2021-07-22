@@ -431,9 +431,11 @@ the ball.
 """
 class NonPlayerObjectPosition(Node):
 
+    valid_children_types = 'empty'
+
     def __init__(self):
         super(NonPlayerObjectPosition, self).__init__()
-        if self.valid_children_types is not None:
+        if self.valid_children_types != 'empty':
             self.max_number_children = len(self.get_valid_children_types())
         else:
             self.max_number_children = 0
@@ -447,13 +449,13 @@ class NonPlayerObjectPosition(Node):
         return inst
 
     def to_string(self, indent=0):
-        if self.valid_children_types is not None:
+        if self.valid_children_types != 'empty':
             pos_index = self.get_children()[0]
-            return NonPlayerObjectPosition.className() + f"[{pos_index}]"
+            return NonPlayerObjectPosition.className() + f"[{str(pos_index)}]"
         return NonPlayerObjectPosition.className()
 
     def interpret(self, env):
-        if len(self.get_children()) > 0:
+        if self.valid_children_types != 'empty':
             pos_index = self.get_children()[0]
             return env[self.statename]['non_player_position'][pos_index]
 
