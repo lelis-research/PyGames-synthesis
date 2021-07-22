@@ -265,7 +265,7 @@ class NestedITEDepth1(Node):
         else_body = self.get_children()[2]
 
         ite_string = f"""{tab}if {condition.to_string()}:\n"""
-        ite_string += f"""{if_body.to_string(indent+1)}"""
+        ite_string += f"""{if_body.to_string(indent+1)}\n"""
         ite_string += f"""{tab}else:\n"""
         ite_string += f"""{else_body.to_string(indent+1)}"""
 
