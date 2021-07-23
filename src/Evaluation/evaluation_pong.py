@@ -2,7 +2,7 @@
 Author: Olivier Vadiavaloo
 
 Description:
-This file
+This file contains the evaluation sub-class for the Pong domain.
 """
 ### import Pong game from pong3 ###
 from pong.pong3 import *
