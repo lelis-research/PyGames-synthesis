@@ -57,7 +57,7 @@ def start_probe(time_limit, log_file, is_parallel, game):
         VarFromArray.new('actions', 2)
     ]
 
-    eval_factory = EvaluationFactory(0)
+    eval_factory = EvaluationFactory(0, 10, False, 'NORMAL')
     eval_funct = eval_factory.get_eval_fun(game)
 
     logger = Logger(
