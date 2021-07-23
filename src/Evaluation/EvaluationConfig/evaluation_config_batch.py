@@ -1,0 +1,60 @@
+"""
+"""
+
+from statistics import *
+from src.Evaluation.EvaluationConfig.evaluation_config_parent import *
+
+class EvaluationConfigBatch(EvaluationConfig):
+    
+    def set_config_attributes(self, attributes):
+        self.batch_size = attributes[self.batch_size_name]
+        assert type(self.batch_size) is int, 'batch_size must be an integer'
+
+        super(EvaluationConfigBatch, self).set_config_attributes(attributes)
+
+    def set_batch_size(self, batch_size):
+        old_value = batch_size
+        self.batch_size = batch_size
+        return old_value
+
+    def get_batch_size(self):
+        return self.batch_size
+
+    def clean_up(self):
+        self.max_scores = []
+        self.last_score_index = 0
+
+    def compute_result(self, scores, games_played):
+        if not self.config_attributes_set:
+            raise Exception(
+                'Must set attributes of EvaluationConfigBatch object using set_config_attributes'
+            )
+
+        if games_played % self.batch_size == 0:
+            batch_scores = scores[self.last_score_index:]
+            max_batch_score = max(batch_scores)
+            self.max_scores.append(max_batch_score)
+            self.last_score_index = len(scores)
+
+        if len(self.max_scores) > 0:
+            return round(mean(self.max_scores), 2)
+        else:
+            return self.MIN_SCORE
+
+    def check_triage_stop(self, games_played):
+        # Check if mean score is less than best score 
+        # and number of batches is equal to batch size
+        num_batches = games_played // self.batch_size
+        return mean(self.max_scores) < self.best_eval - self.slack(games_played) and num_batches >= self.batch_size
+
+    def check_continue(self, games_played):
+        if games_played == self.total_games:
+            self.last_score_index = 0
+            return False
+
+        if self.triage:
+            if len(self.max_scores) > 0 and self.check_triage_stop(games_played):
+                self.last_score_index = 0
+                return False
+
+        return True
