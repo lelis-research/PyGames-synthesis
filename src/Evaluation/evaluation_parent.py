@@ -6,56 +6,53 @@ Author: Olivier Vadiavaloo
 Description:
 This file implements the parent Evaluation class.
 """
-from src.Evaluation.evaluation_config import *
+from src.Evaluation.EvaluationConfig.evaluation_config import *
 from statistics import *
+import multiprocessing as mp
+import os
 
 class Evaluation:
 
     MIN_SCORE = -1_000_000
     STRONG_SCORE = 500
 
-    def __init__(self, score_threshold, total_games, triage, batch):
+    def __init__(self, score_threshold, total_games, triage, config_name):
         self.score_threshold = score_threshold
-        self.total_games = total_games
         self.best = None
-        self.best_eval = Evaluation.MIN_SCORE
-        self.batch_size = 5
+        self.eval_config = None
 
-        config_factory = EvaluationConfigFactory(batch, triage)
-        self.eval_config = config_factory.get_config()
+        self.config_factory = EvaluationConfigFactory()
+        config_attributes = form_basic_attr_dict(
+                                triage,
+                                total_games,
+                                Evaluation.MIN_SCORE,
+                                Evaluation.MIN_SCORE,
+                                5
+                            )
 
-        if batch:
-            self.eval_config.set_config_attributes(self.batch_size, self.total_games, self.best_eval, Evaluation.MIN_SCORE)
-        else:
-            self.eval_config.set_config_attributes(total_games, self.best_eval)
+        self.change_config(config_name, config_attributes)
 
     def set_total_games(self, new_total_games):
-        previous_total_games = self.total_games
-        self.total_games = new_total_games
-        return previous_total_games
+        return self.eval_config.set_total_games(new_total_games)
+
+    def get_total_games(self):
+        return self.eval_config.get_total_games()
 
     def set_config(self, eval_config):
         self.eval_config = eval_config
     
-    def change_config(self, batch, triage, batch_size=None):
-        previous_eval_config = self.eval_config
-        config_factory = EvaluationConfigFactory(batch, triage)
-        self.eval_config = config_factory.get_config()
+    def change_config(self, config_name, config_attributes):
+        old_eval_config = self.eval_config
+        self.eval_config = self.config_factory.get_config(config_name, config_attributes)
 
-        if batch:
-            assert batch_size is not None
-            self.eval_config.set_config_attributes(batch_size, self.total_games, self.best_eval)
-        else:
-            self.eval_config.set_config_attributes(self.total_games, self.best_eval)
-
-        return previous_eval_config
+        return old_eval_config
 
     def set_best(self, best, best_eval):
         self.best = best
-        self.best_eval = best_eval
+        self.eval_config.set_best_eval(best_eval)
     
     def get_best(self):
-        return self.best, self.best_eval
+        return self.best, self.eval_config.get_best_eval()
 
     def get_score(self):
         raise Exception('Must implement get_score method')
@@ -84,6 +81,49 @@ class Evaluation:
     def check_continue(self, games_played):
         return self.eval_config.check_continue(games_played)
 
+    def evaluate_parallel(self, program, verbose=False):
+        """
+        The evaluate method runs a game and uses the program parameter as the
+        strategy to determine which actions to take at each game step. It works
+        just like the evaluate() method, except it executes the games in parallel.
+        This can speed up the evaluation phase if total_games is larger (e.g 1000).
+        """
+        old_total_games = self.eval_config.get_total_games()
+
+        new_config_attributes = form_basic_attr_dict(
+                                    False,
+                                    1,
+                                    self.eval_config.get_best_eval(),
+                                    Evaluation.MIN_SCORE,
+                                    None
+                                )
+
+        old_eval_config = self.change_config('NORMAL', new_config_attributes)
+
+        cpu_count = int(os.environ.get('SLURM_JOB_CPUS_PER_NODE', default=6))
+
+        scores = []
+        with mp.Pool(cpu_count) as pool:
+            evaluate_args = (program, False)
+            evaluate_args_list = []
+            for _ in range(old_total_games):
+                evaluate_args_list.append(evaluate_args)
+            
+            for res in pool.starmap(self.evaluate, evaluate_args_list):
+                scores.append(res)
+
+        print('scores', scores)
+
+        self.set_total_games(old_total_games)
+        result = self.compute_result(scores, old_total_games)
+
+        self.set_config(old_eval_config)
+
+        if verbose:
+            return scores, result
+        else:
+            return result
+
     def evaluate(self, program, verbose=False):
         """
         The evaluate method runs a game and uses the program parameter as
@@ -98,11 +138,11 @@ class Evaluation:
         while continue_eval:
             self.init_game()
             while not self.game_over():
-                try:
-                    score = self.play(program)
-                except:
-                    self.clean_up()
-                    return tuple([]), Evaluation.MIN_SCORE
+                # try:
+                score = self.play(program)
+                # except:
+                #     self.clean_up()
+                #     return tuple([]), Evaluation.MIN_SCORE
 
             games_played += 1
             scores.append(score)
