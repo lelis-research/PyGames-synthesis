@@ -417,15 +417,17 @@ class SimulatedAnnealing:
 
     def run_longer_eval(self, eval_funct, program):
         # Change the evaluation object's configuration
-        previous_config = eval_funct.change_config(False, False)
+        new_config_attributes = form_basic_attr_dict(
+                                    False,
+                                    1000,
+                                    eval_funct.get_best()[1],
+                                    eval_funct.MIN_SCORE,
+                                    None
+                                )
 
-        # Set total_number of games to 1000
-        previous_total_games = eval_funct.set_total_games(50)
-
-        program_eval = eval_funct.evaluate(program, verbose=False)
-
-        eval_funct.set_config(previous_config)
-        eval_funct.set_total_games(previous_total_games)
+        original_eval_config = eval_funct.change_config("NORMAL", new_config_attributes)
+        program_eval = eval_funct.evaluate_parallel(program, verbose=False)
+        eval_funct.set_config(original_eval_config)
 
         return program_eval
 
