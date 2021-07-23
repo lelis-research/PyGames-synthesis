@@ -18,7 +18,7 @@ from src.Evaluation.evaluation import *
 from statistics import *
 from src.SA.start_search import *
 
-# os.environ['SDL_VIDEODRIVER'] = 'dummy'
+os.environ['SDL_VIDEODRIVER'] = 'dummy'
 
 class Analytics:
 
@@ -113,54 +113,59 @@ class Analytics:
         return optimizer.max['target'], optimizer.max['params']
 
     def calc_batch_size(self):
-        # p = Strategy.new(
-        #     IT.new( 
-        #         GreaterThan.new( NonPlayerObjectPosition(), Plus.new( PlayerPosition(), Times.new( VarScalar.new('paddle_width'), Constant.new(0.5) ) ) ),
-        #             ReturnAction.new( VarFromArray.new('actions', Constant.new(1)) )
-        #     ),
-        #     Strategy.new( 
-        #         IT.new( 
-        #             LessThan.new( NonPlayerObjectPosition(), Minus.new( PlayerPosition(), Times.new( VarScalar.new('paddle_width'), Constant.new(0.5) ) ) ), 
-        #                 ReturnAction.new( VarFromArray.new('actions', Constant.new(0)) )
-        #         ),
-        #         ReturnAction.new( VarFromArray.new('actions', Constant.new(2)) )
-        #     ),
-        # )
-
-        p = NestedITEDepth1.new(
-                LessThan.new( NonPlayerDistToPlayer(), Constant.new(20) ),
-                Strategy.new(
-                    IT.new(
-                        LessThan.new( Plus.new( PlayerVelocity(), PlayerPosition() ), Times.new(NonPlayerObjectPosition.new(1), Constant.new(0.8) ) ),
-                        ReturnAction.new( VarFromArray.new('actions', Constant.new(1)) )
-                    ),
-                    Strategy.new(
-                        IT.new(
-                            GreaterThan.new( Plus.new( PlayerVelocity(), PlayerPosition() ), Times.new(NonPlayerObjectPosition.new(0), Constant.new(1.1) ) ),
-                            ReturnAction.new( VarFromArray.new('actions', Constant.new(0)) )
-                        ),
-                        None
-                    )
+        p = Strategy.new(
+            IT.new( 
+                GreaterThan.new( NonPlayerObjectPosition(), Plus.new( PlayerPosition(), Times.new( VarScalar.new('paddle_width'), Constant.new(0.5) ) ) ),
+                    ReturnAction.new( VarFromArray.new('actions', Constant.new(1)) )
+            ),
+            Strategy.new( 
+                IT.new( 
+                    LessThan.new( NonPlayerObjectPosition(), Minus.new( PlayerPosition(), Times.new( VarScalar.new('paddle_width'), Constant.new(0.5) ) ) ), 
+                        ReturnAction.new( VarFromArray.new('actions', Constant.new(0)) )
                 ),
-                Strategy.new(
-                    IT.new(
-                        LessThan.new( Plus.new( PlayerVelocity(), PlayerPosition() ), Times.new(NonPlayerObjectPosition.new(1), Constant.new(0.83) ) ),
-                        ReturnAction.new( VarFromArray.new('actions', Constant.new(1)) )
-                    ),
-                    Strategy.new(
-                        IT.new(
-                            GreaterThan.new( Plus.new( PlayerVelocity(), PlayerPosition() ), Times.new(NonPlayerObjectPosition.new(0), Constant.new(1.1) ) ),
-                            ReturnAction.new( VarFromArray.new('actions', Constant.new(0)) )
-                        ),
-                        None
-                    )
-                )
-            )
+                ReturnAction.new( VarFromArray.new('actions', Constant.new(2)) )
+            ),
+        )
 
-        factory = EvaluationFactory(0, 6, False, False)
-        eval_fun = factory.get_eval_fun('FlappyBird')
-        scores, avg_score = eval_fun.evaluate(p, verbose=True)
-        
+        # p = NestedITEDepth1.new(
+        #         LessThan.new( NonPlayerDistToPlayer(), Constant.new(20) ),
+        #         Strategy.new(
+        #             IT.new(
+        #                 LessThan.new( Plus.new( PlayerVelocity(), PlayerPosition() ), Times.new(NonPlayerObjectPosition.new(1), Constant.new(0.8) ) ),
+        #                 ReturnAction.new( VarFromArray.new('actions', Constant.new(1)) )
+        #             ),
+        #             Strategy.new(
+        #                 IT.new(
+        #                     GreaterThan.new( Plus.new( PlayerVelocity(), PlayerPosition() ), Times.new(NonPlayerObjectPosition.new(0), Constant.new(1.1) ) ),
+        #                     ReturnAction.new( VarFromArray.new('actions', Constant.new(0)) )
+        #                 ),
+        #                 None
+        #             )
+        #         ),
+        #         Strategy.new(
+        #             IT.new(
+        #                 LessThan.new( Plus.new( PlayerVelocity(), PlayerPosition() ), Times.new(NonPlayerObjectPosition.new(1), Constant.new(0.83) ) ),
+        #                 ReturnAction.new( VarFromArray.new('actions', Constant.new(1)) )
+        #             ),
+        #             Strategy.new(
+        #                 IT.new(
+        #                     GreaterThan.new( Plus.new( PlayerVelocity(), PlayerPosition() ), Times.new(NonPlayerObjectPosition.new(0), Constant.new(1.1) ) ),
+        #                     ReturnAction.new( VarFromArray.new('actions', Constant.new(0)) )
+        #                 ),
+        #                 None
+        #             )
+        #         )
+        #     )
+
+        factory = EvaluationFactory(0, 50, False, 'NORMAL')
+        eval_fun = factory.get_eval_fun('Catcher')
+
+        start = time.time()
+        scores, avg_score = eval_fun.evaluate_parallel(p, verbose=True)
+        end = time.time()
+
+        print(f'Running time: {end - start} seconds\n')
+
         counter = 0
         batch_count = 1
         batch = []
@@ -168,7 +173,7 @@ class Analytics:
         while counter < len(scores):
             batch.append(scores[counter])
             counter += 1
-            if counter % 2 == 0:
+            if counter % 5 == 0:
                 print(f'batch {batch_count}: {batch}, stdev {stdev(batch)}, mean: {mean(batch)}, max: {max(batch)}')
                 max_scores.append(max(batch))
                 batch = []
