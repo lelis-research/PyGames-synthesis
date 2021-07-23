@@ -100,7 +100,7 @@ class Evaluation:
 
         old_eval_config = self.change_config('NORMAL', new_config_attributes)
 
-        cpu_count = int(os.environ.get('SLURM_JOB_CPUS_PER_NODE', default=6))
+        cpu_count = int(os.environ.get('SLURM_JOB_CPUS_PER_NODE', default=os.cpu_count()))
 
         scores = []
         with mp.Pool(cpu_count) as pool:
