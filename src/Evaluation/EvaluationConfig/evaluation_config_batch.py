@@ -1,4 +1,12 @@
 """
+evaluation_config_batch.py
+
+Author: Olivier Vadiavaloo
+
+Description:
+This file implements an EvaluationConfig sub-class. In contrast to EvaluationConfigNormal,
+this class keeps track of the maximum scores of batches of games played by the strategy provided
+by the synthesizer and returns the average of the maximum scores as the strategy's score.
 """
 
 from statistics import *
