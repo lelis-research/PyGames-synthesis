@@ -52,7 +52,7 @@ The following information should be displayed:
 The domain-specific language (DSL) that was implemented in [src/DSL.py](https://github.com/olivier-vadiaval/catcher-synthesis/blob/main/src/DSL.py) can be summarized in the
 following context-free grammar (CFG):
 
-![image](https://user-images.githubusercontent.com/59672031/124654680-15db8e80-de5c-11eb-9a31-fb4839a91468.png)
+![image](https://user-images.githubusercontent.com/59672031/126842833-5827ee87-535c-458e-9583-eab5f600895f.png)
 
 where,
 * **I** is the initial symbol. 
