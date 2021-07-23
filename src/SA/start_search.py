@@ -23,8 +23,23 @@ def dump(config_name, data_filename):
     with open(config_name + '_paths', 'a') as paths_file:
         paths_file.write(data_filepath + '\n')
 
-def start_sa(time_limit, log_file, run_optimizer, game, triage_eval, batch_eval,
-    sa_option, verbose, plot, save, plot_filename, ibr, total_games, multi_runs):
+def start_sa(
+        time_limit, 
+        log_file, 
+        run_optimizer, 
+        game, 
+        triage_eval, 
+        batch_eval,
+        sa_option, 
+        verbose, 
+        plot, 
+        save, 
+        plot_filename, 
+        ibr, 
+        total_games, 
+        multi_runs
+    ):
+
     if ibr:
         assert available_games[game] == 2, f'Cannot perform IBR on {game}'
 
@@ -39,7 +54,12 @@ def start_sa(time_limit, log_file, run_optimizer, game, triage_eval, batch_eval,
     )
     sa = SimulatedAnnealing(time_limit, logger, run_optimizer)
 
-    eval_factory = EvaluationFactory(0, total_games, triage_eval, batch_eval)
+    if batch_eval:
+        config = 'BATCH'
+    else:
+        config = 'NORMAL'
+
+    eval_factory = EvaluationFactory(0, total_games, triage_eval, config)
     eval_funct = eval_factory.get_eval_fun(game)
     
     if multi_runs[0]:
