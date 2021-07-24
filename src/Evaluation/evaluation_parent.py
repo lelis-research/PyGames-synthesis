@@ -8,6 +8,8 @@ This file implements the parent Evaluation class.
 """
 from src.Evaluation.EvaluationConfig.evaluation_config import *
 from statistics import *
+from functools import partial
+from concurrent.futures import ProcessPoolExecutor
 import multiprocessing as mp
 import os
 
@@ -103,13 +105,15 @@ class Evaluation:
         cpu_count = int(os.environ.get('SLURM_JOB_CPUS_PER_NODE', default=os.cpu_count()))
 
         scores = []
-        with mp.Pool(cpu_count) as pool:
-            evaluate_args = (program, False)
+        with ProcessPoolExecutor(cpu_count) as executor:
+            evaluate_args = program
             evaluate_args_list = []
             for _ in range(old_total_games):
                 evaluate_args_list.append(evaluate_args)
             
-            for res in pool.starmap(self.evaluate, evaluate_args_list):
+            partial_evaluate = partial(self.evaluate, verbose=False)
+
+            for res in executor.map(partial_evaluate, evaluate_args_list):
                 scores.append(res)
 
         print('scores', scores)
