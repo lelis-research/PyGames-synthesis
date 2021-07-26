@@ -109,7 +109,7 @@ The following information should be displayed:
                         synthesis
 ```
 
-The above command-line arguments must be specified after ```python -m src.main``` such as:
+The above command-line arguments can be specified after ```python -m src.main``` to further configure the synthesizer and run it from the command-line without using the provided bash scripts. For instance,
 
 ```console
 python -m src.main -g Catcher -t 300 -o --optimizer-triage --tg 10
