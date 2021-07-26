@@ -116,8 +116,6 @@ class Evaluation:
             for res in executor.map(partial_evaluate, evaluate_args_list):
                 scores.append(res)
 
-        print('scores', scores)
-
         self.set_total_games(old_total_games)
         result = self.compute_result(scores, old_total_games)
 
