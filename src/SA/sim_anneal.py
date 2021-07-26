@@ -27,7 +27,7 @@ class SimulatedAnnealing:
         self.run_optimizer = run_optimizer['run_optimizer']
         self.n_iter = run_optimizer['iterations']
         self.kappa = run_optimizer['kappa']
-        self.is_parallel = run_optimizer['parallel']
+        self.opt_is_parallel = run_optimizer['parallel']
         self.logger = logger
 
     def get_terminal_node(self, p, valid_ith_child_types):
@@ -182,7 +182,7 @@ class SimulatedAnnealing:
             self.optimizer = Optimizer(eval_funct, self.is_triage, self.n_iter, self.kappa)
 
     def start_optimizer(self, verbose=False):
-        if self.is_parallel:
+        if self.opt_is_parallel:
             with mp.Pool() as pool:
                 current_best = None
                 current_best_score = Evaluation.MIN_SCORE
