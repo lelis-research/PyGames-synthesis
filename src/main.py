@@ -40,9 +40,9 @@ def total_games_int(string):
 def main():
 
     parser = argparse.ArgumentParser(
-            prog='catcher-synthesizer',
+            prog='pygame-games-synthesizer',
             usage='%(prog)s [OPTIONS]',
-            description='Synthesize strategies for Catcher',
+            description='Synthesize strategies',
             epilog='Happy Synthesizing! :-)'
     )
 
@@ -110,10 +110,8 @@ def main():
     parser.add_argument('--te', '--triage-eval', action='store_true', dest='triage_eval',
                         help='Run triage evaluation (can be used with batch evaluation)')
 
-    
     parser.add_argument('--tg', '--total-games', type=total_games_int, action='store', dest='total_games',
                         default=48, metavar='TOTAL_GAMES', help='Number of games to be played by programs during evaluation')
-
 
     parser.add_argument('-v', action='store_true', dest='verbose',
                         help='Logs more information to specified file during synthesis')
