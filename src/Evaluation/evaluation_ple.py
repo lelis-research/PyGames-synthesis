@@ -32,6 +32,11 @@ class EvaluationPle(Evaluation):
         self.p.act(action)
         return self.p.score()
 
+    def clean_up(self):
+        self.game = None
+        self.p = None
+        super(EvaluationPle, self).clean_up()
+
 
 class EvaluationCatcher(EvaluationPle):
 
