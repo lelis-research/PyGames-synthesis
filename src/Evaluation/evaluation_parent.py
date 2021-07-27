@@ -10,13 +10,12 @@ from src.Evaluation.EvaluationConfig.evaluation_config import *
 from statistics import *
 from functools import partial
 from concurrent.futures import ProcessPoolExecutor
-import multiprocessing as mp
 import os
 
 class Evaluation:
 
     MIN_SCORE = -1_000_000
-    STRONG_SCORE = 500
+    STRONG_SCORE = 100
 
     def __init__(self, score_threshold, total_games, triage, config_name):
         self.score_threshold = score_threshold
@@ -106,11 +105,7 @@ class Evaluation:
 
         scores = []
         with ProcessPoolExecutor(cpu_count) as executor:
-            evaluate_args = program
-            evaluate_args_list = []
-            for _ in range(old_total_games):
-                evaluate_args_list.append(evaluate_args)
-            
+            evaluate_args_list = [program for _ in range(old_total_games)]
             partial_evaluate = partial(self.evaluate, verbose=False)
 
             for res in executor.map(partial_evaluate, evaluate_args_list):
