@@ -149,6 +149,23 @@ class SimulatedAnnealing:
             return True
         return False
 
+    def check_new_best(self, candidate, candidate_eval, best_eval, eval_funct):
+        if candidate_eval > best_eval:
+            
+            if candidate_eval > eval_funct.STRONG_SCORE:
+                print('before run longer', candidate_eval)
+                more_accurate_eval = self.run_longer_eval(eval_funct, candidate)
+                print('after run longer', candidate_eval)
+
+                if more_accurate_eval > best_eval:
+                    return True, more_accurate_eval
+                else:
+                    return False, more_accurate_eval
+
+            return True, candidate_eval
+
+        return False, candidate_eval
+
     def init_var_child_types(self, grammar):
         VarArray.valid_children_types = [set(grammar['arrays'])]
         VarFromArray.valid_children_types = [set(grammar['arrays']), set(grammar['array_indexes'])]
@@ -171,7 +188,6 @@ class SimulatedAnnealing:
             self.ppool_max_size = 1
 
         # Initialize variables used to generate plots later on
-        self.scores_variance_dict = {}
         self.scores_dict = {}
         self.best_pscore_dict = {}
         self.optimized_pscore_dict = {}
@@ -262,19 +278,17 @@ class SimulatedAnnealing:
         # Option 2: Generate random program only once
         if option == 2:
             best = self.generate_random()
+            timestamp = self.get_timestamp()
             scores, best_eval = eval_funct.evaluate(best, verbose=True)
-            self.closed_list[best.to_string()] = (best_eval, self.get_timestamp())
+            self.closed_list[best.to_string()] = (best_eval, timestamp)
 
             eval_funct.set_best(best, best_eval)    # update best score in eval object
-
-            # Save variance of scores obtained during evaluation
-            # This can help the min. number of games to be played
-            if len(scores) > 0:
-                self.scores_variance_dict[iterations] = (variance(scores), self.get_timestamp())
 
             # Set baseline for optimizer
             if self.run_optimizer:
                     self.optimizer.set_baseline_eval(best_eval)
+
+            self.best_pscore_dict[iterations] = (best_eval, timestamp)
 
         else:
             best = None
@@ -296,24 +310,18 @@ class SimulatedAnnealing:
                 scores, current_eval = eval_funct.evaluate(current, verbose=True)
                 self.closed_list[current.to_string()] = (current_eval, timestamp)   # save to closed_list
 
-                if len(scores) > 1:
-                    self.scores_variance_dict[iterations] = (variance(scores), timestamp)
+                if best is not None:
+                    new_best, current_eval = self.check_new_best(current, current_eval, best_eval, eval_funct)
 
-                if best is None or current_eval > best_eval:
+                if best is None or new_best:
                     best, best_eval = current, current_eval
-
-                    # Evaluate strong programs for longer
-                    if best_eval >= eval_funct.STRONG_SCORE:
-                        best_eval = self.run_longer_eval(eval_funct, best)
-
                     eval_funct.set_best(best, best_eval)        # update best score in eval object
 
                     # Set baseline for optimizer
                     if self.run_optimizer:
                         self.optimizer.set_baseline_eval(best_eval)
 
-                    if best_eval != Evaluation.MIN_SCORE:
-                        self.best_pscore_dict[iterations] = (best_eval, timestamp)
+                    self.best_pscore_dict[iterations] = (best_eval, timestamp)
             
             # Option 2: Assign current to best solution in previous iteration
             elif option == 2 and best is not None:
@@ -378,14 +386,12 @@ class SimulatedAnnealing:
         plotter = Plotter()
         data_filenames_dict = plotter.construct_dat_filenames(plot_filename)
 
-        # names keyword arg is a list, not a dict
         # Bundle values of dict into a list
         data_filenames = []
         data_filenames.extend(list(data_filenames_dict.values()))
 
         if self.run_optimizer:
             plotter.save_data(
-                self.scores_variance_dict,
                 self.scores_dict, 
                 self.best_pscore_dict, 
                 self.unoptimized_pscore_dict,
@@ -394,13 +400,11 @@ class SimulatedAnnealing:
             )
 
         else:
-           plotter.save_data(
-                self.scores_variance_dict,
+            plotter.save_data(
                 self.scores_dict, 
                 self.best_pscore_dict,
                 names=data_filenames
             )
- 
 
     def plot(self, plot_filename):
         plotter = Plotter()     # Plotter object
@@ -419,7 +423,7 @@ class SimulatedAnnealing:
         # Change the evaluation object's configuration
         new_config_attributes = form_basic_attr_dict(
                                     False,
-                                    1000,
+                                    50,
                                     eval_funct.get_best()[1],
                                     eval_funct.MIN_SCORE,
                                     None
@@ -457,10 +461,6 @@ class SimulatedAnnealing:
 
             # Evaluate the mutated program
             scores, candidate_eval = eval_funct.evaluate(candidate, verbose=True)
-            self.closed_list[candidate.to_string()] = (candidate_eval, timestamp)
-
-            if len(scores) > 0:
-                self.scores_variance_dict[iterations + epoch] = (variance(scores), timestamp)
 
             # Run optimizer if flag was specified
             if self.run_optimizer:
@@ -473,24 +473,17 @@ class SimulatedAnnealing:
 
                     # Store optimized candidates into closed_list
                     if is_optimized:
-                        self.closed_list[candidate.to_string()] = (candidate_eval, timestamp)
                         self.unoptimized_pscore_dict[iterations + epoch] = (unoptimized_candidate_eval, timestamp)
                         self.optimized_pscore_dict[iterations + epoch] = (candidate_eval, timestamp)
 
                     self.ppool = []
 
-            # Update the best program if needed
-            if candidate_eval > best_eval:
+            new_best, candidate_eval = self.check_new_best(candidate, candidate_eval, best_eval, eval_funct)
+            
+            if new_best:
                 header = 'New Best Program'
                 best_updated = True
                 best, best_eval = candidate, candidate_eval
-
-                # Evaluate strong programs for longer
-                if best_eval >= eval_funct.STRONG_SCORE:
-                    print('before run longer', best_eval)
-                    best_eval = self.run_longer_eval(eval_funct, best)
-                    candidate_eval = best_eval
-                    print('after run longer', best_eval)
 
                 # Set the best program and its score in eval_funct
                 # Since triage is used, the best score in eval_funct must be updated
@@ -505,6 +498,8 @@ class SimulatedAnnealing:
             # If candidate program does not raise an error, store scores
             if candidate_eval != Evaluation.MIN_SCORE:  
                 self.scores_dict[iterations + epoch] = (candidate_eval, timestamp)
+
+            self.closed_list[candidate.to_string()] = (candidate_eval, timestamp)
 
             # Log program to file
             if best_updated or verbose_opt:
