@@ -423,7 +423,7 @@ class SimulatedAnnealing:
         # Change the evaluation object's configuration
         new_config_attributes = form_basic_attr_dict(
                                     False,
-                                    50,
+                                    1000,
                                     eval_funct.get_best()[1],
                                     eval_funct.MIN_SCORE,
                                     None
