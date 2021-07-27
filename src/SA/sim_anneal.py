@@ -155,7 +155,7 @@ class SimulatedAnnealing:
             if candidate_eval > eval_funct.STRONG_SCORE:
                 print('before run longer', candidate_eval)
                 more_accurate_eval = self.run_longer_eval(eval_funct, candidate)
-                print('after run longer', candidate_eval)
+                print('after run longer', more_accurate_eval)
 
                 if more_accurate_eval > best_eval:
                     return True, more_accurate_eval
