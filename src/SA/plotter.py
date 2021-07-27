@@ -116,7 +116,6 @@ class Plotter(base_plt.Plotter):
 
     def construct_dat_filenames(self, plot_filename):
         return {
-            'variance': 'score_variances_' + plot_filename.replace('graph', 'data') + '.dat',
             'all_scores': 'all_scores_' + plot_filename.replace('graph', 'data') + '.dat',
             'best_scores': 'best_scores_' + plot_filename.replace('graph', 'data') + '.dat',
             'unoptimized_scores': 'unoptimized_scores_' + plot_filename.replace('graph', 'data') + '.dat',
