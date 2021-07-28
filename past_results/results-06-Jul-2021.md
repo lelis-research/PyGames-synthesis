@@ -64,31 +64,31 @@ Thus, each experiment is run 5 times and the average scores and variance of the 
 #### Experiment 1
 
 <div align='center'>
-    <img src='https://github.com/olivier-vadiaval/PyGames-synthesis/blob/main/graph_no_optimizer.png?raw=true' />
+    <img src='https://github.com/olivier-vadiaval/PyGames-synthesis/blob/main/graphs/graph_no_optimizer.png' />
 </div>
 
 #### Experiment 2
 
 <div align='center'>
-    <img src='https://github.com/olivier-vadiaval/PyGames-synthesis/blob/main/graph_optimizer_no_triage.png?raw=true' />
+    <img src='https://github.com/olivier-vadiaval/PyGames-synthesis/blob/main/graphs/graph_optimizer_no_triage.png' />
 </div>
 
 #### Experiment 3
 
 <div align='center'>
-    <img src='https://github.com/olivier-vadiaval/PyGames-synthesis/blob/main/graph_optimizer_triage.png?raw=true' />
+    <img src='https://github.com/olivier-vadiaval/PyGames-synthesis/blob/main/graphs/graph_optimizer_triage.png' />
 </div>
 
 #### Experiment 4
 
 <div align='center'>
-    <img src='https://github.com/olivier-vadiaval/PyGames-synthesis/blob/main/graph_optimizer_no_triage_1000_iter_5_kappa.png?raw=true' />
+    <img src='https://github.com/olivier-vadiaval/PyGames-synthesis/blob/main/graphs/graph_optimizer_no_triage_1000_iter_5_kappa.png' />
 </div>
 
 #### Experiment 5
 
 <div align='center'>
-    <img src='https://github.com/olivier-vadiaval/PyGames-synthesis/blob/main/graph_optimizer_triage_1000_iter_5_kappa.png?raw=true' />
+    <img src='https://github.com/olivier-vadiaval/PyGames-synthesis/blob/main/graphs/graph_optimizer_triage_1000_iter_5_kappa.png' />
 </div>
 
 ___
