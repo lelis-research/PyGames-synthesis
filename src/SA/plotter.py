@@ -135,9 +135,9 @@ class Plotter(base_plt.Plotter):
         return paths_by_config
 
 
-if __name__ == '__main__':
+# if __name__ == '__main__':
 
-    plotter = Plotter()
+#     plotter = Plotter()
 
     # plot_names = {
     #         'x': 'Elapsed Time (mins)',
@@ -156,14 +156,14 @@ if __name__ == '__main__':
 
     # plotter.plot_from_file(paths, plot_names, same_fig=False, three_dim=False)
 
-    paths_by_config = {
-        'sa_no_opt_no_t_eval': {
-            0: 'data/best_scores_run0_sa_no_opt_no_t_eval_data.dat',
-            1: 'data/best_scores_run1_sa_no_opt_no_t_eval_data.dat',
-            2: 'data/best_scores_run2_sa_no_opt_no_t_eval_data.dat',
-            3: 'data/best_scores_run3_sa_no_opt_no_t_eval_data.dat',
-            4: 'data/best_scores_run4_sa_no_opt_no_t_eval_data.dat'
-        }
-    }
+    # paths_by_config = {
+    #     'sa_no_opt_triage_eval_avg_curve': {
+    #         0: 'data/best_scores_run0_sa_no_opt_triage_eval_data.dat',
+    #         1: 'data/best_scores_run1_sa_no_opt_triage_eval_data.dat',
+    #         2: 'data/best_scores_run2_sa_no_opt_triage_eval_data.dat',
+    #         3: 'data/best_scores_run3_sa_no_opt_triage_eval_data.dat',
+    #         4: 'data/best_scores_run4_sa_no_opt_triage_eval_data.dat'
+    #     }
+    # }
 
-    plotter.plot_average_curve(paths_by_config)
+    # plotter.plot_average_curve(paths_by_config)
