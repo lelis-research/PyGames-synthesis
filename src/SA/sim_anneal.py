@@ -288,7 +288,8 @@ class SimulatedAnnealing:
             if self.run_optimizer:
                     self.optimizer.set_baseline_eval(best_eval)
 
-            self.best_pscore_dict[iterations] = (best_eval, timestamp)
+            if best_eval != Evaluation.MIN_SCORE:
+                self.best_pscore_dict[iterations] = (best_eval, timestamp)
 
         else:
             best = None
@@ -321,7 +322,8 @@ class SimulatedAnnealing:
                     if self.run_optimizer:
                         self.optimizer.set_baseline_eval(best_eval)
 
-                    self.best_pscore_dict[iterations] = (best_eval, timestamp)
+                    if best_eval != Evaluation.MIN_SCORE:
+                        self.best_pscore_dict[iterations] = (best_eval, timestamp)
             
             # Option 2: Assign current to best solution in previous iteration
             elif option == 2 and best is not None:
