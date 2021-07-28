@@ -22,7 +22,15 @@ game=$1
 time=$2
 total_games=$3
 
+if [ -z "$multi_run" ]
+    then
+        mr=""
+    else
+        mr="-mr ${multi_run}"
+fi
+
 python -m src.main -t ${time} -l log_${game}_sa_no_optimizer \
     -g ${game} -s SimulatedAnnealing --tg ${total_games} \
     --plot --plot-name sa_no_optimizer_graph --save \
+    ${mr} \
     --no-warn
