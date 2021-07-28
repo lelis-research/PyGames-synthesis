@@ -21,8 +21,17 @@
 game=$1
 time=$2
 total_games=$3
+multi_run=$4
 
-python -m src.main -t ${time} -l log_${game}_sa_no_opt_triage_eval \
+if [ -z "$multi_run" ]
+    then
+        mr=""
+    else
+        mr="-mr ${multi_run}"
+fi
+
+python -u -m src.main -t ${time} -l log_${game}_sa_no_opt_triage_eval \
     -g ${game} -s SimulatedAnnealing --tg ${total_games} --te \
     --plot --plot-name sa_no_opt_triage_eval_graph --save \
+    ${mr} \
     --no-warn
