@@ -17,21 +17,44 @@
 # Log filename: log_[game]_sa_triage_opt-[date & time]
 # 
 # Total games: ${total_games}
+config="sa_triage_opt"
 
 game=$1
 time=$2
 total_games=$3
+multi_run=$4
+same_process=$5
+run_index=$6
 
-if [ -z "$multi_run" ]
+if [ "$multi_run" = "1" ]
     then
         mr=""
+        run_index=""
     else
-        mr="-mr ${multi_run}"
+        if [ "$same_process" = "same" ]
+            then
+                mr="-mr ${multi_run}"   # same process will run SA multiple times
+                run_index=""            # user doesn't need to specify a run index
+            else
+                mr=""
+                if [ -z "$run_index" ]
+                    then
+                        run_index=1     # user needs a run index, default value is 1
+                fi
+
+                echo "run index: $run_index"
+        fi
 fi
 
-python -m src.main -t ${time} -l log_${game}_sa_triage_opt \
+log_name=log_${run_index}_${game}_${config}
+plot_name=${game}_${run_index}_${config}_graph
+
+echo "log file: ${log_name}"
+echo "plot name: ${plot_name}"
+
+python -m src.main -t ${time} -l ${log_name} \
     -o --optimizer-triage \
     -g ${game} -s SimulatedAnnealing --tg ${total_games} \
-    --plot --plot-name sa_triage_opt_graph --save \
+    --plot --plot-name ${plot_name} --save ${config} \
     ${mr} \
     --no-warn
