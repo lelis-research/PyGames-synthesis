@@ -52,8 +52,8 @@ plot_name=${game}_${run_index}_${config}_graph
 echo "log file: ${log_name}"
 echo "plot name: ${plot_name}"
 
-python -m src.main -t ${time} -l ${log_name} \
+python -u -m src.main -t ${time} -l ${log_name} \
     -g ${game} -s SimulatedAnnealing --tg ${total_games} \
-    --plot --plot-name ${plot_name} --save ${config} \
+    --plot --plot-name ${plot_name} --save --config ${config} \
     ${mr} \
     --no-warn
