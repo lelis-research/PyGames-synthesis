@@ -17,21 +17,10 @@ class Evaluation:
     MIN_SCORE = -1_000_000
     STRONG_SCORE = 100
 
-    def __init__(self, score_threshold, total_games, triage, config_name):
+    def __init__(self, score_threshold, eval_config):
         self.score_threshold = score_threshold
         self.best = None
-        self.eval_config = None
-
-        self.config_factory = EvaluationConfigFactory()
-        config_attributes = form_basic_attr_dict(
-                                triage,
-                                total_games,
-                                Evaluation.MIN_SCORE,
-                                Evaluation.MIN_SCORE,
-                                5
-                            )
-
-        self.change_config(config_name, config_attributes)
+        self.eval_config = eval_config
 
     def set_total_games(self, new_total_games):
         return self.eval_config.set_total_games(new_total_games)
@@ -44,7 +33,8 @@ class Evaluation:
     
     def change_config(self, config_name, config_attributes):
         old_eval_config = self.eval_config
-        self.eval_config = self.config_factory.get_config(config_name, config_attributes)
+        config_factory = EvaluationConfigFactory()
+        self.eval_config = config_factory.get_config(config_name, config_attributes)
 
         return old_eval_config
 
@@ -58,6 +48,12 @@ class Evaluation:
     def get_score(self):
         raise Exception('Must implement get_score method')
 
+    def get_confidence_value(self):
+        return self.eval_config.get_confidence_value()
+
+    def get_random_var_bound(self):
+        return self.eval_config.get_random_var_bound()
+
     def game_over(self):
         raise Exception('Must implement game_over method')
 
@@ -69,9 +65,6 @@ class Evaluation:
     
     def init_game(self):
         raise Exception('Must implement init_game method')
-
-    def slack(self, games_played):
-        return 0
     
     def clean_up(self):
         self.eval_config.clean_up()
@@ -79,22 +72,24 @@ class Evaluation:
     def compute_result(self, scores, games_played):
         return self.eval_config.compute_result(scores, games_played)
 
-    def check_continue(self, games_played):
-        return self.eval_config.check_continue(games_played)
+    def check_continue(self, current_program_score, games_played):
+        return self.eval_config.check_continue(current_program_score, games_played)
 
     def evaluate_parallel(self, program, verbose=False):
         """
-        The evaluate method runs a game and uses the program parameter as the
-        strategy to determine which actions to take at each game step. It works
-        just like the evaluate() method, except it executes the games in parallel.
-        This can speed up the evaluation phase if total_games is larger (e.g 1000).
+        This method runs a game and uses the program parameter as the strategy 
+        to determine which actions to take at each game step. It works just like 
+        the evaluate() method, except it executes the games in parallel. This can 
+        speed up the evaluation phase if total_games is larger (e.g 1000).
         """
         old_total_games = self.eval_config.get_total_games()
 
         new_config_attributes = form_basic_attr_dict(
                                     False,
+                                    None,
+                                    None,
                                     1,
-                                    self.eval_config.get_best_eval(),
+                                    self.get_best()[1],
                                     Evaluation.MIN_SCORE,
                                     None
                                 )
@@ -145,7 +140,7 @@ class Evaluation:
             scores.append(score)
 
             result = self.compute_result(scores, games_played)
-            continue_eval = self.check_continue(games_played)
+            continue_eval = self.check_continue(result, games_played)
 
         self.clean_up()
         if verbose:
