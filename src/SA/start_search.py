@@ -13,6 +13,7 @@ the synthesis process, and calls the synthesizer with the desired arguments.
 from src.SA.sim_anneal import *
 from src.SA.plotter import *
 from src.Evaluation.evaluation import *
+from src.Evaluation.EvaluationConfig.evaluation_config import *
 from src.Utils.logger import *
 from src.Utils.dsl_config import *
 from os.path import join
@@ -29,7 +30,7 @@ def start_sa(
         run_optimizer, 
         game, 
         triage_eval, 
-        batch_eval,
+        eval_config_name,
         sa_option, 
         verbose, 
         plot, 
@@ -52,14 +53,26 @@ def start_sa(
         'Simulated Annealing',
         {**run_optimizer, **{'time': time_limit}}
     )
+   
     sa = SimulatedAnnealing(time_limit, logger, run_optimizer)
+    triage, random_var_bound, confidence_value = triage_eval
+    config_factory = EvaluationConfigFactory()
+    config_attributes = form_basic_attr_dict(
+        triage,
+        random_var_bound,
+        confidence_value,
+        total_games,
+        Evaluation.MIN_SCORE,
+        Evaluation.MIN_SCORE,
+        5
+    )
 
-    if batch_eval:
-        config = 'BATCH'
-    else:
-        config = 'NORMAL'
+    eval_config = config_factory.get_config(eval_config_name, config_attributes)
+    eval_factory = EvaluationFactory(
+        0, 
+        eval_config
+    )
 
-    eval_factory = EvaluationFactory(0, total_games, triage_eval, config)
     eval_funct = eval_factory.get_eval_fun(game)
     
     if multi_runs[0]:
