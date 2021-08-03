@@ -70,7 +70,7 @@ def main():
     parser.add_argument('-o', '--optimize', action='store_true', dest='optimize',
                         help='Run Bayesian Optimizer on top of synthesizer')
 
-    parser.add_argument('--optimizer-iter', type=int, dest='n_iter', default=10,
+    parser.add_argument('--optimizer-iter', type=int, dest='n_iter', default=25,
                         help='Number of iterations that the optimization process is run. Must be used with --optimize option')
 
     parser.add_argument('--optimizer-kappa', type=kappa_float, dest='kappa', default=2.5, metavar='KAPPA',
