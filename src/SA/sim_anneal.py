@@ -230,7 +230,12 @@ class SimulatedAnnealing:
             optimized_p, optimized_const_values, new_score, is_optimized = self.optimizer.optimize(p, pscore)
             
             if is_optimized and verbose:
-                pdescr = {'header': 'Optimized Program', 'psize': optimized_p.get_size(), 'score': new_score}
+                pdescr = {
+                    'header': 'Optimized Program', 
+                    'psize': optimized_p.get_size(), 
+                    'score': new_score,
+                    'timestamp': self.get_timestamp()
+                    }
                 self.logger.log_program(optimized_p.to_string(indent=1), pdescr)
                 self.logger.log('Constant Values: ' + str(optimized_const_values))
                 self.logger.log('Previous Score: ' + str(pscore), end='\n\n')
@@ -425,6 +430,8 @@ class SimulatedAnnealing:
         # Change the evaluation object's configuration
         new_config_attributes = form_basic_attr_dict(
                                     False,
+                                    eval_funct.get_random_var_bound(),
+                                    eval_funct.get_confidence_value(),
                                     1000,
                                     eval_funct.get_best()[1],
                                     eval_funct.MIN_SCORE,
@@ -471,7 +478,7 @@ class SimulatedAnnealing:
 
                 if len(self.ppool) >= self.ppool_max_size:
                     unoptimized_candidate_eval = candidate_eval
-                    candidate, candidate_eval, is_optimized = self.start_optimizer()
+                    candidate, candidate_eval, is_optimized = self.start_optimizer(verbose_opt)
 
                     # Store optimized candidates into closed_list
                     if is_optimized:
