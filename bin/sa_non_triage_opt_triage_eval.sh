@@ -22,9 +22,11 @@ config="sa_non_triage_opt_triage_eval"
 game=$1
 time=$2
 total_games=$3
-multi_run=$4
-same_process=$5
-run_index=$6
+confidence=$4
+var_bound=$5
+multi_run=$6
+same_process=$7
+run_index=$8
 
 if [ "$multi_run" = "1" ]
     then
@@ -52,9 +54,9 @@ plot_name=${game}_${run_index}_${config}_graph
 echo "log file: ${log_name}"
 echo "plot name: ${plot_name}"
 
-python -m src.main -t ${time} -l ${log_name} \
+python -u -m src.main -t ${time} -l ${log_name} \
     -o \
-    -g ${game} -s SimulatedAnnealing --tg ${total_games} --te \
-    --plot --plot-name ${plot_name} --save ${config} \
+    -g ${game} -s SimulatedAnnealing --tg ${total_games} --te ${var_bound} ${confidence} \
+    --plot --plot-name ${plot_name} --save --config ${config} \
     ${mr} \
     --no-warn
