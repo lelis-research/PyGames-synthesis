@@ -107,7 +107,7 @@ def main():
     parser.add_argument('-t', '--time', action='store', dest='time_limit', default=300,
                         help='Running time limit in seconds')
 
-    parser.add_argument('--te', '--triage-eval', action='store_true', dest='triage_eval',
+    parser.add_argument('--te', '--triage-eval', type=float, nargs=2, dest='triage_eval',
                         help='Run triage evaluation (can be used with batch evaluation)')
 
     parser.add_argument('--tg', '--total-games', type=total_games_int, action='store', dest='total_games',
@@ -153,6 +153,21 @@ def main():
         'parallel': is_parallel
         }
 
+    if triage_eval is None:
+        triage_eval = (False, None, None)
+
+    elif len(triage_eval) > 0:
+        confidence_value = triage_eval[1]
+        if confidence_value > 1 or confidence_value < 0:
+            raise Exception('Confidence level must be in the interval [0, 1].')
+
+        triage_eval.insert(0, True)
+
+    if batch_eval:
+        eval_config_name = 'BATCH'
+    else:
+        eval_config_name = 'NORMAL'
+
     multi_runs = []
     if runs > 1:
         multi_runs.append(True)
@@ -178,7 +193,7 @@ def main():
             run_optimizer, 
             game,
             triage_eval,
-            batch_eval,
+            eval_config_name,
             sa_option, 
             verbose, 
             generate_plot,
