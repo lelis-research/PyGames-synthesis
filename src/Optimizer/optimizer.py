@@ -8,11 +8,10 @@ This module provides an Optimizer class that can be used by
 synthesizers such as Bottom-Up Search to find the optimal value
 of operands/parameters in operations defined in the DSL.
 """
-from math import ceil
-from src.dsl import *
-from src.Evaluation.evaluation import Evaluation
 from bayes_opt import BayesianOptimization, UtilityFunction
+from src.dsl import *
 import numpy as np
+import math
 
 class Optimizer:
 
@@ -87,19 +86,15 @@ class Optimizer:
 
         return iter_breakdown.copy()
 
-    def slack(self, steps):
-        slack_value = self.baseline_eval * (((self.iterations - steps) * 1.75) / self.iterations)
-        if slack_value < 0:
-            slack_value *= -1
-
-        return slack_value
-
     def triage_optimize(self):
         bayesOpt = BayesianOptimization(
             f=None,
             pbounds=self.const_range_list,
             verbose=0
         )
+
+        def compute_epsilon(num_iterations):
+            return 500 * math.sqrt(math.log(2 / (1 - math.sqrt(0.95))) / (2 * num_iterations))
 
         utility = UtilityFunction(kind='ucb', kappa=self.kappa, xi=0.0)
 
@@ -108,33 +103,39 @@ class Optimizer:
         is_optimized = False
 
         bayesOpt.register(params=current_params, target=current_eval)
-        # baseline_break_down = self.break_down(self.baseline_eval)
 
-        for i, optimization_steps in enumerate(self.iter_breakdown):
-            # Run Bayesian Optimization
-            for _ in range(optimization_steps):
-                next_point = bayesOpt.suggest(utility)
-                self.set_const_value(next_point)
-                target = self.eval_funct.evaluate(self.ast)
-                bayesOpt.register(params=next_point, target=target)
+        # Run Bayesian Optimization
+        # print('starting optimization')
+        # print('iterations', self.iterations)
+        num_iterations = 0
+        while num_iterations < self.iterations:
+            # print('iter', num_iterations)
+            next_point = bayesOpt.suggest(utility)
+            self.set_const_value(next_point)
+            target = self.eval_funct.evaluate(self.ast)
+            bayesOpt.register(params=next_point, target=target)
+            num_iterations += 1
 
-            # Compare results with previous runs of the optimizer
-            target, params = bayesOpt.max['target'], bayesOpt.max['params']
+            current_eval, current_params = bayesOpt.max['target'], bayesOpt.max['params']
 
-            # if self.baseline_eval >= 0:
-            #     # Want the params being obtained to gradually 
-            #     # become better than the baseline score
-            #     baseline_fraction = sum(baseline_break_down[:i+1])
+            # print('finished eval')
+            epsilon = compute_epsilon(num_iterations)
+            current_eval_ub = current_eval + epsilon
+            # print('num iterations', num_iterations)
+            # print('current epsilon', epsilon)
+            # print('current_eval', current_eval)
+            # print('current_eval_ub', current_eval_ub)
+            # print()
 
-            # else:
-            #     # Here, we subtract because the progress 
-            #     # needs to be in the positive direction
-            #     baseline_fraction = (2 * self.baseline_eval) - sum(baseline_break_down[:i+1])
+            baseline_epsilon = compute_epsilon(self.iterations)
+            baseline_lb = self.baseline_eval - baseline_epsilon
+            # print('baseline epsilon', baseline_epsilon)
+            # print('baseline', self.baseline_eval)
+            # print('baseline_lb', baseline_lb)
+            # print()
+            # print('-' * 30)
 
-            if target > self.baseline_eval - self.slack(optimization_steps):
-                current_eval = target
-                current_params = params
-            else:
+            if current_eval_ub <= baseline_lb:
                 break
 
         if current_eval > self.initial_score:
