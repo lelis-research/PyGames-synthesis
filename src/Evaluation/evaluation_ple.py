@@ -17,9 +17,6 @@ import time
 
 class EvaluationPle(Evaluation):
 
-    def __init__(self, score_threshold, total_games, triage, batch=True):
-        super(EvaluationPle, self).__init__(score_threshold, total_games, triage, batch)
-
     def get_score(self):
         return self.game.getScore()
 
