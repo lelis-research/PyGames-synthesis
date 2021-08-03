@@ -25,9 +25,21 @@ class EvaluationConfigFactory:
             raise Exception(f'No such EvaluationConfig object: {self.config_name}')
 
 
-def form_basic_attr_dict(triage, total_games, best_eval, min_score, batch_size):
+def form_basic_attr_dict(
+        triage, 
+        var_bound, 
+        confidence_value, 
+        total_games, 
+        best_eval, 
+        min_score, 
+        batch_size
+    ):
     config_attributes = {}
+
     config_attributes[EvaluationConfig.triage_name] = triage
+    config_attributes[EvaluationConfig.triage_var_bound_name] = var_bound
+    config_attributes[EvaluationConfig.confidence_value_name] = confidence_value
+
     config_attributes[EvaluationConfig.best_eval_name] = best_eval
     config_attributes[EvaluationConfig.total_games_name] = total_games
     config_attributes[EvaluationConfig.min_score_name] = min_score
