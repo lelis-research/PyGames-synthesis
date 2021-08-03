@@ -14,15 +14,11 @@ from statistics import *
 
 class EvaluationConfigNormal(EvaluationConfig):
 
-    def check_triage_stop(self, games_played):
-        return self.average_score < self.best_eval - self.slack(games_played) \
-            and games_played >= 0.5 * self.total_games
-
-    def check_continue(self, games_played):
+    def check_continue(self, program_current_score, games_played):
         if games_played == self.total_games:
             return False
 
-        if self.triage and self.check_triage_stop(games_played):
+        if self.triage and self.check_triage_stop(program_current_score, games_played):
             return False
 
         return True
