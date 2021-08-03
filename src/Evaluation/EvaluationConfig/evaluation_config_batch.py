@@ -9,8 +9,8 @@ this class keeps track of the maximum scores of batches of games played by the s
 by the synthesizer and returns the average of the maximum scores as the strategy's score.
 """
 
-from statistics import *
 from src.Evaluation.EvaluationConfig.evaluation_config_parent import *
+from statistics import *
 
 class EvaluationConfigBatch(EvaluationConfig):
     
@@ -49,19 +49,13 @@ class EvaluationConfigBatch(EvaluationConfig):
         else:
             return self.MIN_SCORE
 
-    def check_triage_stop(self, games_played):
-        # Check if mean score is less than best score 
-        # and number of batches is equal to batch size
-        num_batches = games_played // self.batch_size
-        return mean(self.max_scores) < self.best_eval - self.slack(games_played) and num_batches >= self.batch_size
-
-    def check_continue(self, games_played):
+    def check_continue(self, program_current_score, games_played):
         if games_played == self.total_games:
             self.last_score_index = 0
             return False
 
-        if self.triage:
-            if len(self.max_scores) > 0 and self.check_triage_stop(games_played):
+        if self.triage and len(self.max_scores) > 0:
+            if self.check_triage_stop(program_current_score, games_played):
                 self.last_score_index = 0
                 return False
 
