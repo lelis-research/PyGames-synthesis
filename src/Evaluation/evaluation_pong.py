@@ -13,9 +13,6 @@ import copy as cp
 
 class EvaluationPong(Evaluation):
 
-    def __init__(self, score_threshold, total_games, triage, batch=True):
-        super(EvaluationPong, self).__init__(score_threshold, total_games, triage, batch)
-
     def update_env(self, player, game_state, action_set):
         env = {}
         env['state'] = {}
