@@ -21,14 +21,11 @@ available_games = {'Catcher': 1, 'Pong': 2, 'FlappyBird': 1}
 
 class EvaluationFactory:
 
-    def __init__(self, threshold, total_games, triage, batch):
-        self.set_games_dict(threshold, total_games, triage, batch)
-
-    def set_games_dict(self, threshold, total_games, triage, batch):
+    def __init__(self, threshold, eval_config):
         self.games_dict = {
-            'Catcher': EvaluationCatcher(threshold, total_games, triage, batch), 
-            'Pong': EvaluationPong(threshold, total_games, triage, batch), 
-            'FlappyBird': EvaluationFlappyBird(threshold, total_games, triage, batch)
+            'Catcher': EvaluationCatcher(threshold, eval_config), 
+            'Pong': EvaluationPong(threshold, eval_config), 
+            'FlappyBird': EvaluationFlappyBird(threshold, eval_config)
         }
 
     def get_eval_fun(self, eval_str):
