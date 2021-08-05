@@ -21,7 +21,7 @@ class EvaluationConfigBatch(EvaluationConfig):
         super(EvaluationConfigBatch, self).set_config_attributes(attributes)
 
     def set_batch_size(self, batch_size):
-        old_value = batch_size
+        old_value = self.batch_size
         self.batch_size = batch_size
         return old_value
 
