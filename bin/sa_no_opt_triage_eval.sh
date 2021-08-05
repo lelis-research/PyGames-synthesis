@@ -58,4 +58,4 @@ python -u -m src.main -t ${time} -l ${log_name} \
     -g ${game} -s SimulatedAnnealing --tg ${total_games} --te ${var_bound} ${confidence} \
     --plot --plot-name ${plot_name} --save --config ${config} \
     ${mr} \
-    --no-warn
+    --no-warn >> /dev/null 2>&1 &
