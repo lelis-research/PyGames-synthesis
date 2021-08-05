@@ -29,5 +29,7 @@ class EvaluationConfigNormal(EvaluationConfig):
                 'Must set attributes of EvaluationConfigBatch object using set_config_attributes'
             )
         
-        self.average_score = round(mean(scores), 2)
-        return self.average_score
+        if self.by_win_rate:
+            return self.compute_win_rate(scores, games_played)
+
+        return round(mean(scores), 2)
