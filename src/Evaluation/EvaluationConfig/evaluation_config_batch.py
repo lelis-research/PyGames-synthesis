@@ -55,7 +55,11 @@ class EvaluationConfigBatch(EvaluationConfig):
             return False
 
         if self.triage and len(self.max_scores) > 0:
-            if self.check_triage_stop(program_current_score, games_played):
+            if self.check_triage_stop(
+                    program_current_score,
+                    self.compute_epsilon(games_played),
+                    self.compute_epsilon(self.total_games)
+            ):
                 self.last_score_index = 0
                 return False
 
