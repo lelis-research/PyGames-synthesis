@@ -76,8 +76,10 @@ class Optimizer:
     def evaluation_fun(self, **kwargs):
         const_nodes = np.fromiter(kwargs.values(), dtype=float)
         self.set_const_value(const_nodes.tolist())
-        score = self.eval_funct.evaluate(self.ast)
-        return score
+        scores, target = self.eval_funct.evaluate(self.ast, verbose=True)
+        self.all_scores[self.ast.to_string()] = scores
+
+        return target
 
     def break_down(self, value):
         iter_breakdown = []
@@ -100,6 +102,9 @@ class Optimizer:
 
         current_eval = self.initial_score
         current_params = self.original_values
+        all_scores = {}
+        all_scores[self.ast.to_string()] = self.initial_scores
+
         is_optimized = False
 
         bayesOpt.register(params=current_params, target=current_eval)
@@ -112,9 +117,11 @@ class Optimizer:
             # print('iter', num_iterations)
             next_point = bayesOpt.suggest(utility)
             self.set_const_value(next_point)
-            target = self.eval_funct.evaluate(self.ast)
+            scores, target = self.eval_funct.evaluate(self.ast, verbose=True)
             bayesOpt.register(params=next_point, target=target)
             num_iterations += 1
+
+            all_scores[self.ast.to_string()] = scores
 
             current_eval, current_params = bayesOpt.max['target'], bayesOpt.max['params']
 
@@ -142,7 +149,7 @@ class Optimizer:
             is_optimized = True
 
         self.set_const_value(current_params)
-        return self.ast, current_params, current_eval, is_optimized
+        return self.ast, current_params, current_eval, all_scores[self.ast.to_string()], is_optimized
 
     def non_triage_optimize(self):
         bayesOpt = BayesianOptimization(
@@ -152,6 +159,9 @@ class Optimizer:
         )
 
         is_optimized = False
+        self.all_scores = {}
+        self.all_scores[self.ast.to_string()] = self.initial_scores
+
         bayesOpt.maximize(init_points=20, n_iter=self.iterations, kappa=self.kappa)
         target, params = bayesOpt.max['target'], bayesOpt.max['params']
 
@@ -159,21 +169,22 @@ class Optimizer:
             is_optimized = True
 
         self.set_const_value(params)
-        return self.ast, params, target, is_optimized
+        return self.ast, params, target, self.all_scores[self.ast.to_string()], is_optimized
 
-    def optimize(self, ast, initial_ast_score):
+    def optimize(self, ast, initial_ast_score, initial_ast_scores):
         self.ast = ast
         self.initial_score = initial_ast_score
+        self.initial_scores = initial_ast_scores
 
         self.const_range_list, self.original_values = self.get_const_range()
         if len(self.original_values) == 0:
-            return self.ast, self.original_values, initial_ast_score, False
+            return self.ast, self.original_values, initial_ast_score, initial_ast_scores, False
 
-        try:
-            if self.is_triage:
-                return self.triage_optimize()
-            else:
-                return self.non_triage_optimize()
-        except:
-            self.set_const_value(self.original_values)
-            return self.ast, self.original_values, self.initial_score, False
+        # try:
+        if self.is_triage:
+            return self.triage_optimize()
+        else:
+            return self.non_triage_optimize()
+        # except:
+            # self.set_const_value(self.original_values)
+            # return self.ast, self.original_values, self.initial_score, False
