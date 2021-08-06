@@ -8,6 +8,7 @@ This file implements the classes used by synthesizers to evaluate
 generated programs. A factory object is used to obtain an Evaluation
 object based on desired configuration (triage, batch).
 """
+from src.Evaluation.EvaluationConfig.evaluation_config_cheby import EvaluationConfigCheby
 from statistics import *
 from src.Evaluation.EvaluationConfig.evaluation_config_normal import *
 from src.Evaluation.EvaluationConfig.evaluation_config_batch import *
@@ -20,6 +21,9 @@ class EvaluationConfigFactory:
         
         elif config_name == 'NORMAL':
             return EvaluationConfigNormal(config_attributes)
+
+        elif config_name == 'CHEBY':
+            return EvaluationConfigCheby(config_attributes)
 
         else:
             raise Exception(f'No such EvaluationConfig object: {self.config_name}')
