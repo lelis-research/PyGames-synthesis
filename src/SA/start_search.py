@@ -66,6 +66,9 @@ def start_sa(
         Evaluation.MIN_SCORE,
         5
     )
+        
+    if available_games[game] >= 2:
+        config_attributes[EvaluationConfig.by_win_rate_name] = True
 
     eval_config = config_factory.get_config(eval_config_name, config_attributes)
     eval_factory = EvaluationFactory(
