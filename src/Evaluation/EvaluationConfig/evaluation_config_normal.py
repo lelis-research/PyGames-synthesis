@@ -18,7 +18,11 @@ class EvaluationConfigNormal(EvaluationConfig):
         if games_played == self.total_games:
             return False
 
-        if self.triage and self.check_triage_stop(program_current_score, games_played):
+        if self.triage and self.check_triage_stop(
+                program_current_score,
+                self.compute_epsilon(games_played),
+                self.compute_epsilon(self.total_games)
+        ):
             return False
 
         return True
