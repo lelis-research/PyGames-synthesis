@@ -14,6 +14,7 @@ the generated program's performance.
 The EvaluationConfig class is used by the Evaluation class which implements the evaluation
 logic at a higher level.
 """
+from pygame_games.ple import games
 from statistics import *
 import math
 
@@ -26,6 +27,7 @@ class EvaluationConfig:
     batch_size_name = 'batch_size'
     confidence_value_name = 'confidence_value'
     triage_var_bound_name = 'triage_var_bound'
+    by_win_rate_name = 'by_win_rate'
 
     def __init__(self, attributes):
         self.config_attributes_set = False
@@ -38,6 +40,12 @@ class EvaluationConfig:
         self.total_games = attributes[self.total_games_name]
         self.best_eval = attributes[self.best_eval_name]
         self.MIN_SCORE = attributes[self.min_score_name]
+
+        # by_win_rate can be None by default
+        self.by_win_rate = attributes.get(self.by_win_rate_name)
+        if self.by_win_rate:
+            self.triage_random_var_bound = 1
+
         self.config_attributes_set = True
         self.clean_up()
 
@@ -60,6 +68,9 @@ class EvaluationConfig:
     def set_best_eval(self, best_eval):
         self.best_eval = best_eval
 
+    def set_best_eval_variance(self, variance):
+        pass
+
     def get_best_eval(self):
         return self.best_eval
 
@@ -72,25 +83,28 @@ class EvaluationConfig:
     def clean_up(self):
         pass
 
-    def compute_results(self, scores, games_played):
-        raise Exception('Must implement compute_results method')
+    def compute_result(self, scores, games_played):
+        raise Exception('Must implement compute_result')
+
+    def compute_win_rate(self, wins_and_losses, games_played):
+        # wins represented by 1's, losses represented by 0's
+        filtered_win_scores = list(filter(lambda arg: arg == 1, wins_and_losses))
+        num_wins = len(filtered_win_scores)
+        return round(num_wins / games_played, 2)
 
     def check_continue(self, program_current_score, games_played):
         raise Exception('Must implement check_continue method')
 
-    def check_triage_stop(self, program_current_score, games_played):
+    def compute_epsilon(self, number_evals):
+        # Hoeffding inequality
+        return self.triage_random_var_bound * \
+            math.sqrt(math.log(2 / (1 - math.sqrt(self.triage_confidence_value))) / (2 * number_evals))
 
-        def compute_epsilon(number_evals):
-            return self.triage_random_var_bound * \
-                math.sqrt(math.log(2 / (1 - math.sqrt(self.triage_confidence_value))) / (2 * number_evals))
-
-        epsilon_current_best = compute_epsilon(self.total_games)
-        epsilon_program = compute_epsilon(games_played)
+    def check_triage_stop(self, program_current_score, epsilon_program, epsilon_current_best):
 
         # print('CI', self.triage_confidence_value)
         # print('random var bound', self.triage_random_var_bound)
 
-        # print('games_played', games_played)
         # print('current best score', self.best_eval)
         # print('transform current best score', transform_current_best)
         # print('epsilon current best score', epsilon_current_best)
