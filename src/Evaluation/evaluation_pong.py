@@ -29,7 +29,11 @@ class EvaluationPong(Evaluation):
         return env
 
     def get_score(self):
-        return self.game.get_rewards()[0]   # return rewards of p1
+        p1_score, p2_score = self.game.get_scores()
+        if p1_score > p2_score:
+            return 1
+        else:
+            return 0
     
     def init_game(self):
         self.game = Pong()
