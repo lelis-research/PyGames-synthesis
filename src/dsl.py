@@ -246,8 +246,8 @@ class NestedITEDepth1(Node):
 
     @classmethod
     def new(cls, condition, if_body, else_body):
-        assert type(if_body).__name__ == Strategy.className()
-        assert type(else_body).__name__ == Strategy.className()
+        assert type(if_body).__name__ in [Strategy.className(), ReturnAction.className()]
+        assert type(else_body).__name__ in [Strategy.className(), ReturnAction.className()]
         inst = cls()
         inst.add_child(condition)
         inst.add_child(if_body)
@@ -591,8 +591,6 @@ class LessThan(Node):
         return f"{self.get_children()[0].to_string()} < {self.get_children()[1].to_string()}"
 
     def interpret(self, env):
-        child_1 = self.get_children()[0].interpret(env)
-        child_2 = self.get_children()[1].interpret(env)
         return self.get_children()[0].interpret(env) < self.get_children()[1].interpret(env)
 
 
