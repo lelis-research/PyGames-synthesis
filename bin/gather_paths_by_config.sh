@@ -26,6 +26,8 @@ touch $paths_file
 
 rm ${paths_file}
 
+echo "# ${config}" >> ${paths_file}
+
 for ((i=0; i < $total_runs; i++)) {
     if [ -z "$was_single_process" ]
         then
