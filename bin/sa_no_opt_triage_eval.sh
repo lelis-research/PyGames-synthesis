@@ -1,4 +1,8 @@
 #!/bin/bash
+#SBATCH --account=rrg-lelis
+#SBATCH --time=0-01:00
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=1G
 
 # Run synthesizer with the following configuration
 # Algorithm: Simulated Annealing
@@ -49,7 +53,7 @@ if [ "$multi_run" = "1" ]
 fi
 
 log_name=log_${run_index}_${game}_${config}
-plot_name=${game}_${run_index}_${config}_graph
+plot_name=${game}_${run_index}_${config}_graph${optional_suffix}
 
 echo "log file: ${log_name}"
 echo "plot name: ${plot_name}"
@@ -57,5 +61,5 @@ echo "plot name: ${plot_name}"
 python -u -m src.main -t ${time} -l ${log_name} \
     -g ${game} -s SimulatedAnnealing --tg ${total_games} --te ${var_bound} ${confidence} \
     --plot --plot-name ${plot_name} --save --config ${config} \
-    ${mr} \
+    ${mr} --eval-type CHEBY --sa-option 2 \
     --no-warn >> /dev/null 2>&1 &
