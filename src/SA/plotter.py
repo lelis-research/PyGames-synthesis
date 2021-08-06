@@ -22,7 +22,14 @@ class Plotter(base_plt.Plotter):
     def parse_data(self, data_dict, three_dim):
         # assert len(data_dict) > 0, 'Empty data dictionary'
         if len(data_dict) == 0:
-            return np.array([]), np.array([])
+            X = np.array([])
+            Y = np.array([])
+            Z = np.array([])
+
+            if three_dim:
+                return X, Y, Z
+            else:
+                return X, Y
 
         score = []
         time = []
