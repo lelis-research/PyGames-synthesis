@@ -38,9 +38,14 @@ class Evaluation:
 
         return old_eval_config
 
-    def set_best(self, best, best_eval):
+    def set_best(self, best, best_eval, scores):
         self.best = best
         self.eval_config.set_best_eval(best_eval)
+        
+        if best_eval == self.MIN_SCORE:
+            self.eval_config.set_best_eval_variance(0)
+        else:
+            self.eval_config.set_best_eval_variance(variance(scores))
     
     def get_best(self):
         return self.best, self.eval_config.get_best_eval()
