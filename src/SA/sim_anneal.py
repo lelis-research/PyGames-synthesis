@@ -149,22 +149,22 @@ class SimulatedAnnealing:
             return True
         return False
 
-    def check_new_best(self, candidate, candidate_eval, best_eval, eval_funct):
+    def check_new_best(self, candidate, candidate_eval, candidate_scores, best_eval, eval_funct):
         if candidate_eval > best_eval:
             
             if candidate_eval > eval_funct.STRONG_SCORE:
                 print('before run longer', candidate_eval)
-                more_accurate_eval = self.run_longer_eval(eval_funct, candidate)
+                more_accurate_scores, more_accurate_eval = self.run_longer_eval(eval_funct, candidate)
                 print('after run longer', more_accurate_eval)
 
                 if more_accurate_eval > best_eval:
-                    return True, more_accurate_eval
+                    return True, more_accurate_eval, more_accurate_scores
                 else:
-                    return False, more_accurate_eval
+                    return False, more_accurate_eval, more_accurate_scores
 
-            return True, candidate_eval
+            return True, candidate_eval, candidate_scores
 
-        return False, candidate_eval
+        return False, candidate_eval, candidate_scores
 
     def init_var_child_types(self, grammar):
         VarArray.valid_children_types = [set(grammar['arrays'])]
@@ -204,8 +204,8 @@ class SimulatedAnnealing:
                 current_best_score = Evaluation.MIN_SCORE
                 current_best_is_optimized = False
                 for arg, res in zip(self.ppool, pool.starmap(self.optimizer.optimize, self.ppool, chunksize=20)):
-                    optimized_p, optimized_const_values, new_score, is_optimized = res
-                    arg_p, arg_pscore = arg
+                    optimized_p, optimized_const_values, new_score, new_scores, is_optimized = res
+                    arg_p, arg_pscore, arg_pscores = arg
 
                     if is_optimized and verbose:
                         pdescr = {
@@ -220,14 +220,16 @@ class SimulatedAnnealing:
                         
                     if new_score > current_best_score:
                         current_best_score = new_score
+                        current_best_scores = new_scores
                         current_best = optimized_p
                         current_best_is_optimized = is_optimized
 
-                return current_best, current_best_score, current_best_is_optimized
+                return current_best, current_best_score, current_best_scores, current_best_is_optimized
 
         else:
-            p, pscore = self.ppool[0]
-            optimized_p, optimized_const_values, new_score, is_optimized = self.optimizer.optimize(p, pscore)
+            p, pscore, pscores = self.ppool[0]
+            results = self.optimizer.optimize(p, pscore, pscores)
+            optimized_p, optimized_const_values, new_score, new_scores, is_optimized = results
             
             if is_optimized and verbose:
                 pdescr = {
@@ -240,7 +242,7 @@ class SimulatedAnnealing:
                 self.logger.log('Constant Values: ' + str(optimized_const_values))
                 self.logger.log('Previous Score: ' + str(pscore), end='\n\n')
             
-            return optimized_p, new_score, is_optimized
+            return optimized_p, new_score, new_scores, is_optimized
 
     def get_timestamp(self):
         return round((time() - self.start) / 60, 2)
@@ -287,7 +289,7 @@ class SimulatedAnnealing:
             scores, best_eval = eval_funct.evaluate(best, verbose=True)
             self.closed_list[best.to_string()] = (best_eval, timestamp)
 
-            eval_funct.set_best(best, best_eval)    # update best score in eval object
+            eval_funct.set_best(best, best_eval, scores)    # update best score in eval object
 
             # Set baseline for optimizer
             if self.run_optimizer:
@@ -317,11 +319,11 @@ class SimulatedAnnealing:
                 self.closed_list[current.to_string()] = (current_eval, timestamp)   # save to closed_list
 
                 if best is not None:
-                    new_best, current_eval = self.check_new_best(current, current_eval, best_eval, eval_funct)
+                    new_best, current_eval, scores = self.check_new_best(current, current_eval, scores, best_eval, eval_funct)
 
                 if best is None or new_best:
                     best, best_eval = current, current_eval
-                    eval_funct.set_best(best, best_eval)        # update best score in eval object
+                    eval_funct.set_best(best, best_eval, scores)        # update best score in eval object
 
                     # Set baseline for optimizer
                     if self.run_optimizer:
@@ -335,7 +337,7 @@ class SimulatedAnnealing:
                 current = best
                 current_eval = best_eval
 
-            if verbose_opt:
+            if verbose_opt or iterations == 0:
                 # Log initial program to file
                 pdescr = {
                             'header': 'Initial Program',
@@ -432,17 +434,17 @@ class SimulatedAnnealing:
                                     False,
                                     eval_funct.get_random_var_bound(),
                                     eval_funct.get_confidence_value(),
-                                    1000,
+                                    40,
                                     eval_funct.get_best()[1],
                                     eval_funct.MIN_SCORE,
                                     None
                                 )
 
         original_eval_config = eval_funct.change_config("NORMAL", new_config_attributes)
-        program_eval = eval_funct.evaluate_parallel(program, verbose=False)
+        scores, program_eval = eval_funct.evaluate_parallel(program, verbose=True)
         eval_funct.set_config(original_eval_config)
 
-        return program_eval
+        return scores, program_eval
 
     def simulated_annealing(
             self,
@@ -473,21 +475,20 @@ class SimulatedAnnealing:
 
             # Run optimizer if flag was specified
             if self.run_optimizer:
-                self.ppool.append((candidate, candidate_eval))
+                self.ppool.append((candidate, candidate_eval, scores))
                 # print('self.ppool_len', len(self.ppool))
 
                 if len(self.ppool) >= self.ppool_max_size:
                     unoptimized_candidate_eval = candidate_eval
-                    candidate, candidate_eval, is_optimized = self.start_optimizer(verbose_opt)
+                    candidate, candidate_eval, scores, is_optimized = self.start_optimizer(verbose_opt)
 
-                    # Store optimized candidates into closed_list
                     if is_optimized:
                         self.unoptimized_pscore_dict[iterations + epoch] = (unoptimized_candidate_eval, timestamp)
                         self.optimized_pscore_dict[iterations + epoch] = (candidate_eval, timestamp)
 
                     self.ppool = []
 
-            new_best, candidate_eval = self.check_new_best(candidate, candidate_eval, best_eval, eval_funct)
+            new_best, candidate_eval, scores = self.check_new_best(candidate, candidate_eval, scores, best_eval, eval_funct)
             
             if new_best:
                 header = 'New Best Program'
@@ -496,7 +497,7 @@ class SimulatedAnnealing:
 
                 # Set the best program and its score in eval_funct
                 # Since triage is used, the best score in eval_funct must be updated
-                eval_funct.set_best(best, best_eval)
+                eval_funct.set_best(best, best_eval, scores)
 
                 # Update the baseline score of the optimizer
                 if self.run_optimizer:
