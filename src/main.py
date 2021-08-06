@@ -46,8 +46,8 @@ def main():
             epilog='Happy Synthesizing! :-)'
     )
 
-    parser.add_argument('--batch', action='store_true', dest='batch_eval',
-                        help='Run batch evaluation')
+    parser.add_argument('--eval-type', choices=['CHEBY', 'NORMAL', 'BATCH'], dest='eval_config_type',
+                        default='NORMAL', help='Run batch evaluation')
 
     parser.add_argument('--config', action='store', dest='config_name', default='sa_default',
                         help='Configuration name for the synthesizer. Used with -mr option.')
@@ -136,7 +136,7 @@ def main():
     plot_filename = parameters.plot_filename
     total_games = parameters.total_games
     triage_eval = parameters.triage_eval
-    batch_eval = parameters.batch_eval
+    eval_config_name = parameters.eval_config_type
     runs = parameters.runs
     if runs is None:
         runs = 1
@@ -162,11 +162,6 @@ def main():
             raise Exception('Confidence level must be in the interval [0, 1].')
 
         triage_eval.insert(0, True)
-
-    if batch_eval:
-        eval_config_name = 'BATCH'
-    else:
-        eval_config_name = 'NORMAL'
 
     multi_runs = []
     if runs > 1:
