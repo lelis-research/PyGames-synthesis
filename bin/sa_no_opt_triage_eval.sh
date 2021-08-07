@@ -31,6 +31,7 @@ var_bound=$5
 multi_run=$6
 same_process=$7
 run_index=$8
+optional_suffix=$9
 
 if [ "$multi_run" = "1" ]
     then

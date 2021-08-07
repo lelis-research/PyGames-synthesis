@@ -29,6 +29,7 @@ total_games=$3
 multi_run=$4
 same_process=$5
 run_index=$6
+optional_suffix=$7
 
 if [ "$multi_run" = "1" ]
     then
