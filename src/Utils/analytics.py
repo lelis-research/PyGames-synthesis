@@ -10,10 +10,12 @@ the save_data method of the plotter class can analyzed and the mean, std deviati
 and the like can be returned.
 """
 import os
+from src.Evaluation.EvaluationConfig.evaluation_config_cheby import EvaluationConfigCheby
 from bayes_opt import BayesianOptimization
 from src.SA.plotter import *
 from math import ceil
 from src.dsl import *
+from src.Evaluation.EvaluationConfig.evaluation_config import *
 from src.Evaluation.evaluation import *
 from statistics import *
 from src.SA.start_search import *
@@ -113,21 +115,21 @@ class Analytics:
         return optimizer.max['target'], optimizer.max['params']
 
     def calc_batch_size(self):
-        p = Strategy.new(
-            IT.new( 
-                GreaterThan.new( NonPlayerObjectPosition(), Plus.new( PlayerPosition(), Times.new( VarScalar.new('paddle_width'), Constant.new(0.5) ) ) ),
-                    ReturnAction.new( VarFromArray.new('actions', Constant.new(1)) )
-            ),
-            Strategy.new( 
-                IT.new( 
-                    LessThan.new( NonPlayerObjectPosition(), Minus.new( PlayerPosition(), Times.new( VarScalar.new('paddle_width'), Constant.new(0.5) ) ) ), 
-                        ReturnAction.new( VarFromArray.new('actions', Constant.new(0)) )
-                ),
-                ReturnAction.new( VarFromArray.new('actions', Constant.new(2)) )
-            ),
-        )
+        # catcher_p = Strategy.new(
+        #     IT.new( 
+        #         GreaterThan.new( NonPlayerObjectPosition(), Plus.new( PlayerPosition(), Times.new( VarScalar.new('paddle_width'), Constant.new(0.5) ) ) ),
+        #             ReturnAction.new( VarFromArray.new('actions', Constant.new(1)) )
+        #     ),
+        #     Strategy.new( 
+        #         IT.new( 
+        #             LessThan.new( NonPlayerObjectPosition(), Minus.new( PlayerPosition(), Times.new( VarScalar.new('paddle_width'), Constant.new(0.5) ) ) ), 
+        #                 ReturnAction.new( VarFromArray.new('actions', Constant.new(0)) )
+        #         ),
+        #         ReturnAction.new( VarFromArray.new('actions', Constant.new(2)) )
+        #     ),
+        # )
 
-        # p = NestedITEDepth1.new(
+        # flappy_bird_p = NestedITEDepth1.new(
         #         LessThan.new( NonPlayerDistToPlayer(), Constant.new(20) ),
         #         Strategy.new(
         #             IT.new(
@@ -157,11 +159,45 @@ class Analytics:
         #         )
         #     )
 
-        factory = EvaluationFactory(0, 50, False, 'NORMAL')
-        eval_fun = factory.get_eval_fun('Catcher')
+        pong_p = NestedITEDepth1.new(
+            NonPlayerObjectApproaching(),
+            Strategy.new(
+                IT.new(
+                    GreaterThan.new( Minus.new( PlayerPosition(), Times.new( VarScalar.new('paddle_width'), Constant.new(0.85) ) ), NonPlayerObjectPosition() ),
+                    ReturnAction.new( VarFromArray.new('actions', Constant.new(0)) )
+                ),
+                Strategy.new(
+                    IT.new(
+                        LessThan.new( Plus.new( PlayerPosition(), Times.new( VarScalar.new('paddle_width'), Constant.new(0.85) ) ), NonPlayerObjectPosition() ),
+                        ReturnAction.new( VarFromArray.new('actions', Constant.new(1)) )
+                    ),
+                    ReturnAction.new( VarFromArray.new('actions', Constant.new(2)) )
+                )
+            ),
+            ReturnAction.new( VarFromArray.new('actions', Constant.new(2)) )
+        )
+
+        eval_config_attr = form_basic_attr_dict(
+            True,
+            1,
+            0.95,
+            50,
+            2100,
+            Evaluation.MIN_SCORE,
+            5
+        )
+
+        eval_config_attr[EvaluationConfigCheby.k_eval_name] = 10
+        eval_config_attr[EvaluationConfigCheby.by_win_rate_name] = True
+        eval_config_factory = EvaluationConfigFactory()
+        eval_config = eval_config_factory.get_config('CHEBY', eval_config_attr)
+        eval_config.set_best_eval_variance(2.01)
+
+        factory = EvaluationFactory(0, eval_config)
+        eval_fun = factory.get_eval_fun('Pong')
 
         start = time.time()
-        scores, avg_score = eval_fun.evaluate_parallel(p, verbose=True)
+        scores, avg_score = eval_fun.evaluate(pong_p, verbose=True)
         end = time.time()
 
         print(f'Running time: {end - start} seconds\n')
