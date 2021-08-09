@@ -102,25 +102,8 @@ class EvaluationConfig:
 
     def check_triage_stop(self, program_current_score, epsilon_program, epsilon_current_best):
 
-        # print('CI', self.triage_confidence_value)
-        # print('random var bound', self.triage_random_var_bound)
-
-        # print('current best score', self.best_eval)
-        # print('transform current best score', transform_current_best)
-        # print('epsilon current best score', epsilon_current_best)
-        # print('current best lower bound', self.best_eval - epsilon_current_best)
-        # print('current best lower bound (x500)', self.best_eval - (epsilon_current_best * 500))
-        # print('transform current best lb (100)', transform_current_best - (epsilon_current_best * 100))
-        # print()
-
-        # print('program score', program_current_score)
-        # print('transform program score', transform_program_curr_score)
-        # print('epsilon program score', epsilon_program)
-        # print('program score upper bound', program_current_score + epsilon_program)
-        # print('program score upper bound (x500)', program_current_score + (epsilon_program * 500))
-        # print('transform program score ub (100)', transform_program_curr_score + (epsilon_program * 100))
-        # print('=' * 20)
-        # print()
+        # epsilon_program = compute_epsilon(games_played_so_far)
+        # epsilon_current_best = compute_epsilon(total_games_to_be_played)
 
         if (program_current_score + epsilon_program) <= (self.best_eval - epsilon_current_best):
             return True
