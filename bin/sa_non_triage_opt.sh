@@ -51,7 +51,7 @@ if [ "$multi_run" = "1" ]
         fi
 fi
 
-log_name=log_${run_index}_${game}_${config}
+log_name=log_${run_index}_${game}_${config}${optional_suffix}
 plot_name=${game}_${run_index}_${config}_graph${optional_suffix}
 
 echo "log file: ${log_name}"
