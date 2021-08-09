@@ -180,11 +180,11 @@ class Optimizer:
         if len(self.original_values) == 0:
             return self.ast, self.original_values, initial_ast_score, initial_ast_scores, False
 
-        # try:
-        if self.is_triage:
-            return self.triage_optimize()
-        else:
-            return self.non_triage_optimize()
-        # except:
-            # self.set_const_value(self.original_values)
-            # return self.ast, self.original_values, self.initial_score, False
+        try:
+            if self.is_triage:
+                return self.triage_optimize()
+            else:
+                return self.non_triage_optimize()
+        except:
+            self.set_const_value(self.original_values)
+            return self.ast, self.original_values, self.initial_score, self.initial_scores, False
