@@ -1,4 +1,11 @@
 """
+evaluation_config_cheby.py
+
+Author: Olivier Vadiavaloo
+
+Description:
+This module implements a config. sub-class that uses the Chebyshev inequality
+for its triage.
 """
 
 from src.Evaluation.EvaluationConfig.evaluation_config_parent import *
