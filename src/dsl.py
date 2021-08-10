@@ -201,7 +201,7 @@ class ForEach(Node):
     @classmethod
     def new(cls, iterable, loop_body):
         assert isinstance(iterable, VarArray)
-        assert isinstance(loop_body, IT) or isinstance(loop_body, ITE)
+        assert isinstance(loop_body, Strategy)
         inst = cls()
         inst.add_child(iterable)
         inst.add_child(loop_body)
@@ -374,18 +374,73 @@ class ITE(Node):
 
 """
 This class implements a domain-specific function that returns
+the direction in which the player is heading.
+"""
+class PlayerDirection(Node):
+
+    def __init__(self):
+        super(PlayerDirection, self).__init__()
+        if self.valid_children_types != 'empty':
+            self.max_number_children = len(self.get_valid_children_types())
+        else:
+            self.max_number_children = 0
+
+    @classmethod
+    def new(cls, index):
+        inst = cls()
+        inst.max_number_children = 2
+        inst.add_child(index)
+
+        return inst
+
+    def to_string(self, indent=0):
+        if self.valid_children_types != 'empty':
+            pos_index = self.get_children()[0]
+            direction = self.get_children()[1]
+            return PlayerDirection.className() + f"[{str(pos_index)}][{str(direction)}]"
+        return PlayerDirection.className()
+
+    def interpret(self, env):
+        if self.valid_children_types != 'empty':
+            pos_index = self.get_children()[0]
+            direction = self.get_children()[1]
+            return env[self.statename]['player_direction'][pos_index] == direction
+
+        return env[self.statename]['player_direction']
+
+
+"""
+This class implements a domain-specific function that returns
 the x-position of the player on the screen.
 """
 class PlayerPosition(Node):
 
     def __init__(self):
         super(PlayerPosition, self).__init__()
-        self.max_number_children = 0
+        if self.valid_children_types != 'empty':
+            self.max_number_children = len(self.get_valid_children_types())
+        else:
+            self.max_number_children = 0
+
+    @classmethod
+    def new(cls, index):
+        inst = cls()
+        inst.max_number_children = 1
+        inst.add_child(index)
+
+        return inst
 
     def to_string(self, indent=0):
+        if self.valid_children_types != 'empty':
+            pos_index = self.get_children()[0]
+            return PlayerPosition.className() + f"[{str(pos_index)}]"
         return PlayerPosition.className()
 
     def interpret(self, env):
+        if self.valid_children_types != 'empty':
+            pos_index = self.get_children()[0]
+            return env[self.statename]['player_position'][pos_index]
+
         return env[self.statename]['player_position']
 
 
