@@ -7,6 +7,7 @@ Description:
 This file contains the implementation of the evaluation sub-classes for PLE games.
 """
 ### import games from Pygame-Learning-Environment ###
+from pygame_games.ple.games.snake import Snake
 from pygame_games.ple.games.catcher import Catcher
 from pygame_games.ple.games.flappybird import FlappyBird
 from pygame_games.ple.ple import PLE
@@ -81,4 +82,31 @@ class EvaluationFlappyBird(EvaluationPle):
 
     def init_game(self):
         self.game = FlappyBird()
+        self.p = PLE(self.game, fps=30, display_screen=False, rng=int(time.time()))
+
+
+class EvaluationSnake(EvaluationPle):
+
+    def update_env(self, game_state, action_set):
+        env = {}
+        env['state'] = {}
+        env['state']['non_player_approaching'] = True
+        env['state']['non_player_position'] = []
+        env['state']['non_player_position'].append(game_state.get('food_x'))
+        env['state']['non_player_position'].append(game_state.get('food_y'))
+        
+        env['state']['player_position'] = []
+        env['state']['player_position'].append(game_state.get('snake_head_x'))
+        env['state']['player_position'].append(game_state.get('snake_head_y'))
+        
+        env['state']['player_direction'] = []
+        env['state']['player_direction'].append(game_state.get('snake_dir').x)
+        env['state']['player_direction'].append(game_state.get('snake_dir').y)
+
+        env['paddle_width'] = game_state.get('paddle_width')
+        env['body_dist_list'] = game_state['snake_body']
+        env['actions'] = action_set
+
+    def init_game(self):
+        self.game = Snake()
         self.p = PLE(self.game, fps=30, display_screen=False, rng=int(time.time()))
