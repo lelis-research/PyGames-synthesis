@@ -110,11 +110,8 @@ class Optimizer:
         bayesOpt.register(params=current_params, target=current_eval)
 
         # Run Bayesian Optimization
-        # print('starting optimization')
-        # print('iterations', self.iterations)
         num_iterations = 0
         while num_iterations < self.iterations:
-            # print('iter', num_iterations)
             next_point = bayesOpt.suggest(utility)
             self.set_const_value(next_point)
             scores, target = self.eval_funct.evaluate(self.ast, verbose=True)
@@ -125,22 +122,11 @@ class Optimizer:
 
             current_eval, current_params = bayesOpt.max['target'], bayesOpt.max['params']
 
-            # print('finished eval')
             epsilon = compute_epsilon(num_iterations)
             current_eval_ub = current_eval + epsilon
-            # print('num iterations', num_iterations)
-            # print('current epsilon', epsilon)
-            # print('current_eval', current_eval)
-            # print('current_eval_ub', current_eval_ub)
-            # print()
 
             baseline_epsilon = compute_epsilon(self.iterations)
             baseline_lb = self.baseline_eval - baseline_epsilon
-            # print('baseline epsilon', baseline_epsilon)
-            # print('baseline', self.baseline_eval)
-            # print('baseline_lb', baseline_lb)
-            # print()
-            # print('-' * 30)
 
             if current_eval_ub <= baseline_lb:
                 break
