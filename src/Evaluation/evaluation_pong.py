@@ -45,15 +45,8 @@ class EvaluationPong(Evaluation):
         actions = []
         p1 = program
 
-        if self.best is not None:
-            p2 = self.best
-        else:
-            p2 = cp.deepcopy(p1)
-
         env = self.update_env('p1', self.game.game_state(), [K_q, K_a, None])
-        actions.append(p1.interpret(env))
-        env = self.update_env('p2', self.game.game_state(), [K_p, K_l, None])
-        actions.append(p2.interpret(env))
+        action = p1.interpret(env)
 
-        self.game.step(actions)
+        self.game.step(action)
         return self.get_score()
