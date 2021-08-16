@@ -13,6 +13,8 @@ from time import time
 import random
 import multiprocessing as mp
 from math import exp
+
+from numpy import isin
 from src.dsl import *
 from src.Evaluation.evaluation import *
 from src.Optimizer.optimizer import *
@@ -62,8 +64,13 @@ class SimulatedAnnealing:
         for i in range(p.get_max_number_children()):
             valid_ith_child_types = p.get_valid_children_types()[i]
 
+            if isinstance(p, ReturnAction):
+                action_index = random.choice(list(valid_ith_child_types))
+                child = VarFromArray.new('actions', action_index)
+                p.add_child(child)
+
             # if p is a scalar or constant, no need to call complete_program on child
-            if isinstance(p, VarScalar) or isinstance(p, VarFromArray) or \
+            elif isinstance(p, VarScalar) or isinstance(p, VarFromArray) or \
                 isinstance(p, Constant) or isinstance(p, VarArray):
                 child = random.choice(list(valid_ith_child_types))
                 p.add_child(child)
@@ -102,8 +109,10 @@ class SimulatedAnnealing:
                 valid_ith_child_types = p.get_valid_children_types()[i]
                 
                 child = Node.instance(random.choice(list(valid_ith_child_types)))
+                if isinstance(p, ReturnAction):
+                    child = VarFromArray.new('actions', child)
 
-                if isinstance(child, Node):
+                elif isinstance(child, Node):
                     self.complete_program(child, self.initial_depth, self.max_depth, self.max_size-p.get_size())
                 p.replace_child(child, i)
 
