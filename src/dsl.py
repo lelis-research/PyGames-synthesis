@@ -20,7 +20,7 @@ classes in this module are derived from this Node class.
 """
 class Node:
 
-    valid_children_types = None
+    valid_children_types = 'empty'
 
     def __init__(self):
         self.size = 1
@@ -36,7 +36,7 @@ class Node:
         if type(self).__name__ == Constant.className():
             assert type(child).__name__ != Constant.className()
 
-        assert len(self.children) < self.max_number_children
+        assert len(self.children) < self.max_number_children, f'{len(self.children)} not less than {self.max_number_children}, {type(self).__name__}'
         self.children.append(child)
         self.current_child_num += 1
         
