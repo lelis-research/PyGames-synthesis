@@ -4,7 +4,7 @@
         "Strategy": [["IT"], ["Strategy", "ReturnAction", "None"]],
         "IT": [["LessThan", "GreaterThan", "EqualTo"], ["ReturnAction"]],
         "ITE": [["LessThan", "GreaterThan", "EqualTo"], ["ReturnAction"], ["ReturnAction"]],
-        "ReturnAction": [["VarFromArray"]],
+        "ReturnAction": [[0, 1, 2]],
         "arithmetic": [
             [
                 "Constant",
@@ -77,6 +77,7 @@
             "NonPlayerDistToPlayer"
         ],
         "scalars": [],
+        "ReturnAction": [[0, 1]],
         "array_indexes": [0, 1],
         "valid_children_types": {
             "Node": [["Strategy", "ITE", "NestedITEDepth1"]], 
@@ -124,6 +125,93 @@
                     "NonPlayerDistToPlayer",
                     "PlayerPosition",
                     "PlayerVelocity",
+                    "Plus",
+                    "Minus",
+                    "Divide",
+                    "Times"
+                ]
+            ]
+        }
+    },
+    "Snake": {
+        "dsfs": [
+            "PlayerPosition",
+            "PlayerDirection",
+            "NonPlayerObjectPosition"
+        ],
+        "scalars": [],
+        "arrays": ["actions", "body_dist_list"],
+        "ReturnAction": [[0, 1, 2, 3, 4]],
+        "array_indexes": [0, 1, 2, 3, 4],
+        "valid_children_types": {
+            "Node": [["Strategy", "ITE", "NestedITEDepth1", "ForEach"]], 
+            "NestedITEDepth1": [
+                [
+                    "LessThan", 
+                    "GreaterThan", 
+                    "EqualTo",
+                    "PlayerDirection"
+                ],
+                ["Strategy"],
+                ["Strategy"]
+            ],
+            "IT": [
+                [
+                    "LessThan", 
+                    "GreaterThan", 
+                    "EqualTo",
+                    "PlayerDirection"
+                ], 
+                ["ReturnAction"]
+            ],
+            "ITE": [
+                [
+                    "LessThan", 
+                    "GreaterThan", 
+                    "EqualTo",
+                    "PlayerDirection"
+                ], 
+                ["ReturnAction"], 
+                ["ReturnAction"]
+            ],
+            "ForEach": [["VarArray"], ["Strategy"]],
+            "PlayerDirection": [[0, 1], [-1, 1]],
+            "PlayerPosition": [[0, 1]],
+            "NonPlayerObjectPosition": [[0, 1]],
+            "arithmetic": [
+                [
+                    "Constant",
+                    "NonPlayerObjectPosition",
+                    "PlayerPosition",
+                    "Plus",
+                    "Minus",
+                    "Divide",
+                    "Times"
+                ],
+                [
+                    "Constant",
+                    "NonPlayerObjectPosition",
+                    "PlayerPosition",
+                    "Plus",
+                    "Minus",
+                    "Divide",
+                    "Times"
+                ]
+            ],
+            "comparison": [
+                [
+                    "Constant",
+                    "NonPlayerObjectPosition",
+                    "PlayerPosition",
+                    "Plus",
+                    "Minus",
+                    "Divide",
+                    "Times"
+                ], 
+                [
+                    "Constant",
+                    "NonPlayerObjectPosition",
+                    "PlayerPosition",
                     "Plus",
                     "Minus",
                     "Divide",
