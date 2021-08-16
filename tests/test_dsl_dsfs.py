@@ -21,6 +21,12 @@ class TestPlayerPosition(unittest.TestCase):
         with self.assertRaises(KeyError, msg=test_msg) as cm:
             p_position.interpret(self.env)
 
+    def test_interpret_with_index(self):
+        PlayerPosition.valid_children_types = [set([0, 1, 2])]
+        p_position = PlayerPosition.new(2)
+        self.env['state']['player_position'] = [60, 40, 100]
+        self.assertEqual(p_position.interpret(self.env), 100, 'interpret method of PlayerPosition should return 100')
+
 
 class TestNonPlayerPosition(unittest.TestCase):
 
@@ -40,6 +46,13 @@ class TestNonPlayerPosition(unittest.TestCase):
 
         with self.assertRaises(KeyError, msg=test_msg) as cm:
             p_position.interpret(self.env)
+
+    def test_interpret_with_index(self):
+        NonPlayerObjectPosition.valid_children_types = [set([0, 1, 2])]
+        p_position = NonPlayerObjectPosition.new(1)
+
+        self.env['state']['non_player_position'] = [55, 45, 36]
+        self.assertEqual(p_position.interpret(self.env), 45, 'interpret method NonPlayerObjectPosition object should return 45')
 
 
 if __name__ == '__main__':
