@@ -7,14 +7,16 @@ Description:
 This file contains the implementation of the evaluation sub-classes for PLE games.
 """
 ### import games from Pygame-Learning-Environment ###
-from pygame_games.ple.games.snake import Snake
 from pygame_games.ple.games.catcher import Catcher
+from pygame_games.ple.games.pong import Pong
 from pygame_games.ple.games.flappybird import FlappyBird
+from pygame_games.ple.games.snake import Snake
 from pygame_games.ple.ple import PLE
 
 from src.Evaluation.evaluation_parent import *
 
 import time
+import random
 
 class EvaluationPle(Evaluation):
 
@@ -58,6 +60,24 @@ class EvaluationCatcher(EvaluationPle):
         self.p = PLE(self.game, fps=30, display_screen=False, rng=int(time.time()))
 
 
+class EvaluationPong(EvaluationPle):
+
+    def update_env(self, game_state, action_set):
+        env = {}
+        env['state'] = {}
+        env['state']['non_player_approaching'] = game_state['ball_velocity_x'] < 0
+        env['state']['non_player_position'] = game_state['ball_y']
+        env['state']['player_position'] = game_state['player_y']
+
+        env['paddle_width'] = game_state.get('paddle_width')
+        env['actions'] = action_set
+        return env
+
+    def init_game(self):
+        self.game = Pong(width=500, height=500, MAX_SCORE=20)
+        self.p = PLE(self.game, fps=30, display_screen=True, rng=int(time.time()))
+
+
 class EvaluationFlappyBird(EvaluationPle):
 
     def update_env(self, game_state, action_set):
@@ -82,7 +102,7 @@ class EvaluationFlappyBird(EvaluationPle):
 
     def init_game(self):
         self.game = FlappyBird()
-        self.p = PLE(self.game, fps=30, display_screen=False, rng=int(time.time()))
+        self.p = PLE(self.game, fps=30, display_screen=False, rng=random.choice([2, 3, 5, 7, 11, 91]))
 
 
 class EvaluationSnake(EvaluationPle):
