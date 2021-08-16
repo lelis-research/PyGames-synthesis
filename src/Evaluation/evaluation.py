@@ -12,7 +12,7 @@ https://pygame-learning-environment.readthedocs.io/en/latest/user/games/catcher.
 
 """
 from src.Evaluation.evaluation_ple import *
-from src.Evaluation.evaluation_pong import *
+# from src.Evaluation.evaluation_pong import *
 from src.Evaluation.evaluation_parent import *
 
 # keys: game
