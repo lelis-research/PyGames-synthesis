@@ -378,6 +378,8 @@ the direction in which the player is heading.
 """
 class PlayerDirection(Node):
 
+    valid_children_types = 'empty'
+
     def __init__(self):
         super(PlayerDirection, self).__init__()
         if self.valid_children_types != 'empty':
@@ -414,6 +416,8 @@ This class implements a domain-specific function that returns
 the x-position of the player on the screen.
 """
 class PlayerPosition(Node):
+
+    valid_children_types = 'empty'
 
     def __init__(self):
         super(PlayerPosition, self).__init__()
