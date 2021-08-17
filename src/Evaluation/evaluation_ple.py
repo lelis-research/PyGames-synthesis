@@ -80,6 +80,8 @@ class EvaluationPong(EvaluationPle):
 
 class EvaluationFlappyBird(EvaluationPle):
 
+    STRONG_SCORE = 55
+
     def update_env(self, game_state, action_set):
         """
         This method updates the env variable based on the game_state and
