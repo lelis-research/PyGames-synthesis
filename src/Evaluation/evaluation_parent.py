@@ -15,7 +15,8 @@ import os
 class Evaluation:
 
     MIN_SCORE = -1_000_000
-    STRONG_SCORE = 100
+    STRONG_SCORE = 1000
+    RUN_LONGER_TOTAL_GAMES = 1000
 
     def __init__(self, score_threshold, eval_config):
         self.score_threshold = score_threshold
