@@ -443,7 +443,7 @@ class SimulatedAnnealing:
                                     False,
                                     eval_funct.get_random_var_bound(),
                                     eval_funct.get_confidence_value(),
-                                    40,
+                                    eval_funct.RUN_LONGER_TOTAL_GAMES,
                                     eval_funct.get_best()[1],
                                     eval_funct.MIN_SCORE,
                                     None
