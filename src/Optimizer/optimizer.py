@@ -28,7 +28,7 @@ class Optimizer:
 
     def get_const_range(self):
         pbounds = {}
-        original_values = []
+        original_values = {}
         i = 1
         queue = []
         queue.append(self.ast)
@@ -40,7 +40,7 @@ class Optimizer:
             if isinstance(node, Constant):
                 node_name = 'Const' + str(i)
                 i += 1
-                original_values.append(node.get_children()[0])
+                original_values[node_name] = node.get_children()[0]
                 interval = (0.001, 100.001)
                 pbounds[node_name] = interval
             
@@ -128,7 +128,7 @@ class Optimizer:
             baseline_epsilon = compute_epsilon(self.iterations)
             baseline_lb = self.baseline_eval - baseline_epsilon
 
-            if current_eval_ub <= baseline_lb:
+            if current_eval_ub <= baseline_lb and num_iterations % 5 == 0:
                 break
 
         if current_eval > self.initial_score:
