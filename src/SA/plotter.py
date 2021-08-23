@@ -71,12 +71,13 @@ class Plotter(base_plt.Plotter):
         iter_frame = pd.DataFrame({'score': union_score, 'time': union_time, 'name': union_config_name})
 
         fig, ax = plt.subplots()
-        sns_plot = sb.lineplot(x='time', y='score', hue='name', style='name', ci='sd', markers=False, data=iter_frame)
+        sns_plot = sb.lineplot(x='time', y='score', hue='name', n_boot=1000,
+            ci=70, style='name', markers=False, data=iter_frame)
         ax.set_ylabel('Score')
         ax.set_xlabel('Running Time (mins)')
 
         handles, labels = ax.get_legend_handles_labels()
-        ax.legend(handles=handles[1:], labels=labels[1:])
+        ax.legend(handles=handles[0:], labels=labels[0:])
 
         plot_name = 'average_curve'
         sns_plot.get_figure().savefig(plot_name + '.png')
@@ -88,7 +89,7 @@ class Plotter(base_plt.Plotter):
         union_config_name = []
         for config_name, scores_by_config_run in scores_by_config.items():
             for run_index, score in scores_by_config_run.items():
-                x_range = np.linspace(0, x_upper_bound, num=50, endpoint=True)
+                x_range = np.linspace(0, x_upper_bound, num=100, endpoint=True)
 
                 interpolated_function = interp1d(times_by_config[config_name][run_index], score)
                 interpolated_scores = interpolated_function(x_range)
@@ -100,12 +101,12 @@ class Plotter(base_plt.Plotter):
         return union_time, union_score, union_config_name
 
     def find_min_max_time(self, all_times):
-        max_scores = []
+        max_times = []
         for times_by_config_run in all_times.values():
             for time in times_by_config_run.values():
-                max_scores.append(max(time))
-
-        return min(max_scores)
+                max_times.append(max(time))
+        
+        return min(max_times)
 
     def parse_all_paths(self, paths_by_config):
         all_scores = {}
@@ -116,6 +117,14 @@ class Plotter(base_plt.Plotter):
             for run_index, path in paths_by_config_run.items():
                 time, score = self.parse_dat_file(path)
             
+                if time[0] != 0:
+                    time.insert(0, 0)
+                    score.insert(0, round(0.0, 2))
+
+                time.append(running_time)
+                best_overall_score = score[-1]
+                score.append(best_overall_score)
+
                 all_scores[config_name][run_index] = score
                 all_times[config_name][run_index] = time
 
@@ -144,9 +153,10 @@ class Plotter(base_plt.Plotter):
         return paths_by_config
 
 
-# if __name__ == '__main__':
+if __name__ == '__main__':
 
-#     plotter = Plotter()
+    # running_time = INSERT RUNNING TIME
+    # plotter = Plotter()
 
     # plot_names = {
     #         'x': 'Elapsed Time (mins)',
@@ -166,13 +176,7 @@ class Plotter(base_plt.Plotter):
     # plotter.plot_from_file(paths, plot_names, same_fig=False, three_dim=False)
 
     # paths_by_config = {
-    #     'sa_no_opt_triage_eval_avg_curve': {
-    #         0: 'data/best_scores_run0_sa_no_opt_triage_eval_data.dat',
-    #         1: 'data/best_scores_run1_sa_no_opt_triage_eval_data.dat',
-    #         2: 'data/best_scores_run2_sa_no_opt_triage_eval_data.dat',
-    #         3: 'data/best_scores_run3_sa_no_opt_triage_eval_data.dat',
-    #         4: 'data/best_scores_run4_sa_no_opt_triage_eval_data.dat'
-    #     }
+    #     INSERT PATHS TO DATA FILES BY CONFIG AND BY RUN INDEX
     # }
 
     # plotter.plot_average_curve(paths_by_config)
