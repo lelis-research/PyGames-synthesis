@@ -492,6 +492,7 @@ class SimulatedAnnealing:
                     candidate, candidate_eval, scores, is_optimized = self.start_optimizer(verbose_opt)
 
                     if is_optimized:
+                        timestamp = self.get_timestamp()
                         self.unoptimized_pscore_dict[iterations + epoch] = (unoptimized_candidate_eval, timestamp)
                         self.optimized_pscore_dict[iterations + epoch] = (candidate_eval, timestamp)
 
