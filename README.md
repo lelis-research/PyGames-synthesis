@@ -79,53 +79,41 @@ The following information should be displayed:
 
 ```
   -h, --help            show this help message and exit
-  --batch               Run batch evaluation
-  --config CONFIG_NAME  Configuration name for the synthesizer. Used with -mr
-                        option.
-  -g {Catcher,Pong,FlappyBird}, --game {Catcher,Pong,FlappyBird}
+  --eval-type {CHEBY,NORMAL,BATCH}
+                        Run batch evaluation
+  --config CONFIG_NAME  Configuration name for the synthesizer. Used with -mr option.
+  -g {Catcher,Pong,FlappyBird,Snake}, --game {Catcher,Pong,FlappyBird,Snake}
                         Game for which a strategy will be synthesized
-  --ibr                 Run the Iterated Best Response. Will only with
-                        2-player games.
+  --ibr                 Run the Iterated Best Response. Will only with 2-player games.
   -l LOG_FILE, --log LOG_FILE
-                        Name of log file in which results of search will be
-                        stored
+                        Name of log file in which results of search will be stored
   -mr RUNS, --multi RUNS
-                        Run synthesizer multi-times. Must specify a config
-                        name
+                        Run synthesizer multi-times. Must specify a config name
   --no-warn             Hide warning messages
   -o, --optimize        Run Bayesian Optimizer on top of synthesizer
   --optimizer-iter N_ITER
-                        Number of iterations that the optimization process is
-                        run. Must be used with --optimize option
+                        Number of iterations that the optimization process is run. Must be used with --optimize option
   --optimizer-kappa KAPPA
-                        Kappa value to use with Bayesian Optimizer. Must be
-                        used with --optimize option
-  --optimizer-triage    Run Bayesian Optimizer with triage. Must be used with
-                        --optimize option
+                        Kappa value to use with Bayesian Optimizer. Must be used with --optimize option
+  --optimizer-triage    Run Bayesian Optimizer with triage. Must be used with --optimize option
   -p, --parallel        Run the optimizer with parallel processing features
   --plot                Generate plot during synthesis
   --plot-name PLOT_FILENAME
-                        Name of file storing the plotted figure if --plot is
-                        specified
-  --sa-option {1,2}     Option 1 makes it less likely for SA to be stuck in a
-                        local max
+                        Name of file storing the plotted figure if --plot is specified
+  --sa-option {1,2}     Option 1 makes it less likely for SA to be stuck in a local max
   --save                Save result of search
   --score SCORE_THRESHOLD
-                        Initial score threshold to be achieved by programs
-                        synthesized with BUS
+                        Initial score threshold to be achieved by programs synthesized with BUS
   -s SEARCH_ALGORITHM, -S SEARCH_ALGORITHM, --search SEARCH_ALGORITHM
-                        Search Algorithm (Simulated Annealing or Bottom-Up
-                        Search)
+                        Search Algorithm (Simulated Annealing or Bottom-Up Search)
   --show-args           Show arguments passed in to synthesizer
   -t TIME_LIMIT, --time TIME_LIMIT
                         Running time limit in seconds
-  --te, --triage-eval   Run triage evaluation (can be used with batch
-                        evaluation)
+  --te TRIAGE_EVAL TRIAGE_EVAL, --triage-eval TRIAGE_EVAL TRIAGE_EVAL
+                        Run triage evaluation (can be used with batch evaluation)
   --tg TOTAL_GAMES, --total-games TOTAL_GAMES
-                        Number of games to be played by programs during
-                        evaluation
-  -v                    Logs more information to specified file during
-                        synthesis
+                        Number of games to be played by programs during evaluation
+  -v                    Logs more information to specified file during synthesis
 ```
 
 The above command-line arguments can be specified after ```python -m src.main``` to further configure the synthesizer and run it from the command-line without using the provided bash scripts. For instance,
