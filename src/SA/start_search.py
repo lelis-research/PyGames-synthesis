@@ -11,6 +11,7 @@ the synthesis process, and calls the synthesizer with the desired arguments.
 
 """
 from src.SA.sim_anneal import *
+from src.SA.program_mutator import *
 from src.SA.plotter import *
 from src.Evaluation.evaluation import *
 from src.Evaluation.EvaluationConfig.evaluation_config import *
@@ -23,6 +24,14 @@ def dump(config_name, data_filename):
     
     with open(config_name + '_paths', 'a') as paths_file:
         paths_file.write(data_filepath + '\n')
+
+
+def init_var_child_types(grammar):
+        VarArray.valid_children_types = [set(grammar['arrays'])]
+        VarFromArray.valid_children_types = [set(grammar['arrays']), set(grammar['array_indexes'])]
+        VarScalar.valid_children_types = [set(grammar['scalars'])]
+        Constant.valid_children_types = [set(grammar['constants'])]
+
 
 def start_sa(
         time_limit, 
@@ -47,14 +56,17 @@ def start_sa(
     dsl_config = DslConfig('./src/dsl_config.json')
     dsl_config.init_valid_children_types(game)
     grammar = dsl_config.get_grammar(game)
+    init_var_child_types(grammar)
 
     logger = Logger(
         log_file,
         'Simulated Annealing',
         {**run_optimizer, **{'time': time_limit}}
     )
+
+    program_mutator = ProgramMutator(0, 4, 50)
    
-    sa = SimulatedAnnealing(time_limit, logger, run_optimizer)
+    sa = SimulatedAnnealing(time_limit, logger, run_optimizer, program_mutator)
     triage, random_var_bound, confidence_value = triage_eval
     config_factory = EvaluationConfigFactory()
     config_attributes = form_basic_attr_dict(
