@@ -153,7 +153,7 @@ class Plotter(base_plt.Plotter):
         return paths_by_config
 
 
-if __name__ == '__main__':
+# if __name__ == '__main__':
 
     # running_time = INSERT RUNNING TIME
     # plotter = Plotter()
