@@ -131,7 +131,7 @@ following context-free grammar (CFG):
 
 where,
 * **I** is the initial symbol. 
-* The A symbol provides access to an array of 3 actions.
+* The A symbol provides access to an array of actions.
 * The D symbol provides arithmetic operations and the domain-specific functions (DSFs) through D1 and D2.
 * T provides constants that can be used in the arithmetic operations.
 * S1 is the production rule for potentially nested if statements and/or successive if statements.
