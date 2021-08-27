@@ -127,7 +127,7 @@ python -m src.main -g Catcher -t 300 -o --optimizer-triage --tg 10
 The domain-specific language (DSL) that was implemented in [src/DSL.py](https://github.com/olivier-vadiaval/catcher-synthesis/blob/main/src/DSL.py) can be summarized in the
 following context-free grammar (CFG):
 
-![image](https://user-images.githubusercontent.com/59672031/131173305-e1681cb0-0f96-4b54-bce8-f43f98bf223d.png)
+![image](https://user-images.githubusercontent.com/59672031/131175243-704a1ed5-002b-4f3b-8338-24a0ac22a229.png)
 
 where,
 * **I** is the initial symbol. 
