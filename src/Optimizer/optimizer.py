@@ -15,13 +15,15 @@ import math
 
 class Optimizer:
 
-    def __init__(self, eval_funct, is_triage, iterations, kappa):
+    def __init__(self, eval_funct, is_triage, iterations, kappa, parallel=False):
         self.eval_funct = eval_funct
         self.is_triage = is_triage
         self.iterations = iterations
         self.kappa = kappa
-        if is_triage:
-            self.iter_breakdown = self.break_down(iterations)
+        self.parallel = parallel
+    
+    def get_parallel(self):
+        return self.parallel
 
     def set_baseline_eval(self, baseline_eval):
         self.baseline_eval = baseline_eval
@@ -80,13 +82,6 @@ class Optimizer:
         self.all_scores[self.ast.to_string()] = scores
 
         return target
-
-    def break_down(self, value):
-        iter_breakdown = []
-        for i in [21, 30, 49]:
-            iter_breakdown.append(int((i / 100) * value))
-
-        return iter_breakdown.copy()
 
     def triage_optimize(self):
         bayesOpt = BayesianOptimization(
