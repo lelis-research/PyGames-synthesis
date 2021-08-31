@@ -66,7 +66,6 @@ def start_sa(
 
     program_mutator = ProgramMutator(0, 4, 50)
    
-    sa = SimulatedAnnealing(time_limit, logger, run_optimizer, program_mutator)
     triage, random_var_bound, confidence_value = triage_eval
     config_factory = EvaluationConfigFactory()
     config_attributes = form_basic_attr_dict(
@@ -79,9 +78,6 @@ def start_sa(
         5
     )
         
-    # if available_games[game] >= 2:
-    #     config_attributes[EvaluationConfig.by_win_rate_name] = True
-
     eval_config = config_factory.get_config(eval_config_name, config_attributes)
     eval_factory = EvaluationFactory(
         0, 
@@ -89,6 +85,25 @@ def start_sa(
     )
 
     eval_funct = eval_factory.get_eval_fun(game)
+
+    is_triage_optimizer = run_optimizer['triage']
+    n_iter = run_optimizer['iterations']
+    kappa = run_optimizer['kappa']
+    opt_is_parallel = run_optimizer['parallel']
+    is_run_optimizer = run_optimizer['run_optimizer']
+
+    if is_run_optimizer:
+        optimizer = Optimizer(
+            eval_funct,
+            is_triage_optimizer, 
+            n_iter, 
+            kappa, 
+            parallel=opt_is_parallel
+        )
+    else:
+        optimizer = None
+
+    sa = SimulatedAnnealing(time_limit, logger, optimizer, program_mutator)
     
     if multi_runs[0]:
         plotter = Plotter()
@@ -97,12 +112,10 @@ def start_sa(
             n_plot_filename = 'run' + str(run) + '_' + plot_filename
             print(f'Starting run #{run}')
             sa.synthesize(
-                grammar, 
                 2000, 
                 1, 
                 eval_funct,
                 n_plot_filename, 
-                ibr,
                 option=sa_option,
                 verbose_opt=verbose, 
                 generate_plot=plot,
@@ -116,12 +129,10 @@ def start_sa(
     
     else:
         sa.synthesize(
-            grammar, 
             2000, 
             1, 
             eval_funct,
             plot_filename, 
-            ibr,
             option=sa_option,
             verbose_opt=verbose, 
             generate_plot=plot,
