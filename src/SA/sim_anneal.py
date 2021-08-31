@@ -17,19 +17,21 @@ from math import exp
 from src.dsl import *
 from src.Evaluation.evaluation import *
 from src.Optimizer.optimizer import *
+from src.Optimizer.start_optimizer import *
 from src.SA.plotter import *
 from statistics import *
 
 class SimulatedAnnealing:
 
-    def __init__(self, time_limit, logger, run_optimizer, program_mutator):
+    def __init__(self, time_limit, logger, optimizer, program_mutator):
         self.time_limit = time_limit
-        self.is_triage = run_optimizer['triage']
-        self.run_optimizer = run_optimizer['run_optimizer']
-        self.n_iter = run_optimizer['iterations']
-        self.kappa = run_optimizer['kappa']
-        self.opt_is_parallel = run_optimizer['parallel']
         self.logger = logger
+        if optimizer is None:
+            self.run_optimizer = False
+        else:
+            self.run_optimizer = True
+            self.optimizer = optimizer
+
         self.program_mutator = program_mutator
 
     def reduce_temp(self, current_t, epoch):
@@ -63,10 +65,11 @@ class SimulatedAnnealing:
         self.beta = 100
         self.ppool = []     # for storing solutions to be optimized
 
-        if self.opt_is_parallel:
-            # Change this number to change the number of
-            # solutions to be optimized in parallel
-            self.ppool_max_size = 5
+        if self.run_optimizer:
+            if self.optimizer.get_parallel():
+                # Change this number to change the number of
+                # solutions to be optimized in parallel
+                self.ppool_max_size = 5
         else:
             self.ppool_max_size = 1
 
@@ -76,68 +79,15 @@ class SimulatedAnnealing:
         self.optimized_pscore_dict = {}
         self.unoptimized_pscore_dict = {}
 
-        # Declare optimizer if command-line option was specified
-        if self.run_optimizer:
-            self.optimizer = Optimizer(eval_funct, self.is_triage, self.n_iter, self.kappa)
-
-    def start_optimizer(self, verbose=False):
-        if self.opt_is_parallel:
-            with mp.Pool() as pool:
-                current_best = None
-                current_best_score = Evaluation.MIN_SCORE
-                current_best_is_optimized = False
-                for arg, res in zip(self.ppool, pool.starmap(self.optimizer.optimize, self.ppool, chunksize=20)):
-                    optimized_p, optimized_const_values, new_score, new_scores, is_optimized = res
-                    arg_p, arg_pscore, arg_pscores = arg
-
-                    if is_optimized and verbose:
-                        pdescr = {
-                            'header': 'Optimized Program', 
-                            'psize': optimized_p.get_size(), 
-                            'score': new_score,
-                            'timestamp': self.get_timestamp()
-                            }
-                        self.logger.log('Constant Values: ' + str(optimized_const_values))
-                        self.logger.log_program(optimized_p.to_string(indent=1), pdescr)
-                        self.logger.log('Previous Score: ' + str(arg_pscore), end='\n\n')
-                        
-                    if new_score > current_best_score:
-                        current_best_score = new_score
-                        current_best_scores = new_scores
-                        current_best = optimized_p
-                        current_best_is_optimized = is_optimized
-
-                return current_best, current_best_score, current_best_scores, current_best_is_optimized
-
-        else:
-            p, pscore, pscores = self.ppool[0]
-            results = self.optimizer.optimize(p, pscore, pscores)
-            optimized_p, optimized_const_values, new_score, new_scores, is_optimized = results
-            
-            if is_optimized and verbose:
-                pdescr = {
-                    'header': 'Optimized Program', 
-                    'psize': optimized_p.get_size(), 
-                    'score': new_score,
-                    'timestamp': self.get_timestamp()
-                    }
-                self.logger.log_program(optimized_p.to_string(indent=1), pdescr)
-                self.logger.log('Constant Values: ' + str(optimized_const_values))
-                self.logger.log('Previous Score: ' + str(pscore), end='\n\n')
-            
-            return optimized_p, new_score, new_scores, is_optimized
-
     def get_timestamp(self):
         return round((time() - self.start) / 60, 2)
 
     def synthesize(
             self,
-            grammar, 
             current_t, 
             final_t, 
             eval_funct, 
             plot_filename,
-            ibr,
             option=1, 
             verbose_opt=False, 
             generate_plot=False,
@@ -245,7 +195,6 @@ class SimulatedAnnealing:
                                 iterations,
                                 eval_funct,
                                 verbose_opt,
-                                ibr
                             )
 
             iterations += epochs
@@ -338,7 +287,6 @@ class SimulatedAnnealing:
             iterations,
             eval_funct,
             verbose_opt,
-            ibr
         ):
         epoch = 0
         mutations = 0
@@ -361,7 +309,13 @@ class SimulatedAnnealing:
 
                 if len(self.ppool) >= self.ppool_max_size:
                     unoptimized_candidate_eval = candidate_eval
-                    candidate, candidate_eval, scores, is_optimized = self.start_optimizer(verbose_opt)
+                    candidate, candidate_eval, scores, is_optimized = start_optimizer(
+                        self.optimizer,
+                        self.ppool,
+                        self.logger,
+                        self.get_timestamp,
+                        verbose=verbose_opt
+                    )
 
                     if is_optimized:
                         timestamp = self.get_timestamp()
@@ -413,9 +367,5 @@ class SimulatedAnnealing:
             
             current_t = self.reduce_temp(current_t, epoch)
             epoch += 1
-
-            # If using IBR, break out of loop once a best response is found
-            if ibr and best_updated:
-                break
 
         return best, best_eval, epoch+1
