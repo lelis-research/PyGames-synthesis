@@ -127,16 +127,15 @@ python -m src.main -g Catcher -t 300 -o --optimizer-triage --tg 10
 The domain-specific language (DSL) that was implemented in [src/DSL.py](https://github.com/olivier-vadiaval/catcher-synthesis/blob/main/src/DSL.py) can be summarized in the
 following context-free grammar (CFG):
 
-![image](https://user-images.githubusercontent.com/59672031/126842833-5827ee87-535c-458e-9583-eab5f600895f.png)
+![image](https://user-images.githubusercontent.com/59672031/131175243-704a1ed5-002b-4f3b-8338-24a0ac22a229.png)
 
 where,
 * **I** is the initial symbol. 
-* The A symbol provides access to an array of 3 actions.
+* The A symbol provides access to an array of actions.
 * The D symbol provides arithmetic operations and the domain-specific functions (DSFs) through D1 and D2.
 * T provides constants that can be used in the arithmetic operations.
 * S1 is the production rule for potentially nested if statements and/or successive if statements.
 * S2 adds if-else statements.
-* S3 adds for loops to the DSL. The body of the loop can be either S1 or S2.
 * B provides comparison operators.
 * ε represents an empty string.
 
